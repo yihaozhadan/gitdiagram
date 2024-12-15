@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import hello
+from app.routers import analyze
 
 app = FastAPI()
 
@@ -18,11 +18,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(hello.router)
+app.include_router(analyze.router)
 
 # Root route
 
 
 @app.get("/")
-async def read_root():
+async def hello():
     return {"message": "Welcome to the GitDiagram API!"}
