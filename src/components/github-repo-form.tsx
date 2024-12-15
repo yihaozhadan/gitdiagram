@@ -1,22 +1,34 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { DarkModeToggle } from "./dark-mode-toggle";
 
 export default function GitHubRepoForm() {
   const [repoUrl, setRepoUrl] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Submitted URL:", repoUrl);
+    setError("");
+
+    // Parse GitHub URL
+    const githubUrlPattern = /github\.com\/([^\/]+)\/([^\/]+)/;
+    const match = githubUrlPattern.exec(repoUrl);
+
+    if (!match) {
+      setError("Please enter a valid GitHub repository URL");
+      return;
+    }
+
+    const [, username, repo] = match;
+    router.push(`/${username}/${repo}`);
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 transition-colors duration-300 dark:bg-gray-900">
-      <DarkModeToggle />
       <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-6 shadow-md dark:bg-gray-800">
         <div>
           <h1 className="text-center text-4xl font-bold text-gray-900 dark:text-white">
@@ -37,6 +49,9 @@ export default function GitHubRepoForm() {
               className="relative block w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm dark:border-gray-700 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
             />
           </div>
+          {error && (
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          )}
           <div>
             <Button
               type="submit"
