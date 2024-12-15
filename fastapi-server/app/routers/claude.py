@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-router = APIRouter(prefix="/api/claude", tags=["Claude"])
+router = APIRouter(prefix="/hello", tags=["Claude"])
 
 client = anthropic.Anthropic()
 
