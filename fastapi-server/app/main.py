@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import claude
+from app.routers import hello
 
 app = FastAPI()
 
@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(claude.router)
+app.include_router(hello.router)
 
 # Root route
 
