@@ -7,7 +7,7 @@ app = FastAPI()
 # Allow requests from your frontend (adjust frontend URL if needed)
 origins = [
     "http://localhost:3000",  # Example frontend
-    "http://your-frontend.com"
+    "https://gitdiagram.com"
 ]
 
 app.add_middleware(
@@ -19,3 +19,10 @@ app.add_middleware(
 )
 
 app.include_router(claude.router)
+
+# Root route
+
+
+@app.get("/")
+async def read_root():
+    return {"message": "Welcome to the Claude API!"}
