@@ -1,10 +1,10 @@
 import MermaidChart from "~/components/mermaid-diagram";
 
-export default function Repo({
-  params,
-}: {
+interface PageProps {
   params: { username: string; repo: string };
-}) {
+}
+
+export default function Repo({ params }: PageProps) {
   const diagram = `
     graph TD;
       A[Root Directory] --> B[Frontend];
