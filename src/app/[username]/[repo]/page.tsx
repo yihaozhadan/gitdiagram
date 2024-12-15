@@ -1,10 +1,11 @@
+"use client";
+
+import { useParams } from "next/navigation";
 import MermaidChart from "~/components/mermaid-diagram";
 
-interface PageProps {
-  params: { username: string; repo: string };
-}
+export default function Repo() {
+  const params = useParams<{ username: string; repo: string }>();
 
-export default function Repo({ params }: PageProps) {
   const diagram = `
     graph TD;
       A[Root Directory] --> B[Frontend];
