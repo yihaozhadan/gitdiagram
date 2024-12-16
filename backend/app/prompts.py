@@ -94,11 +94,8 @@ Guidelines for diagram components and relationships:
 
 Your output should be valid Mermaid.js code that can be rendered into a diagram. Begin your response with the Mermaid.js code fence:
 
-```mermaid
+Your response must strictly be just the Mermaid.js code, without any additional text or explanations.
+No code fence or markdown ticks needed, simply return the Mermaid.js code.
 
-[Your Mermaid.js code here]
-
-```
-
-Ensure that your diagram adheres strictly to the given explanation, without adding or omitting any significant components or relationships. If you need clarification on any part of the system design, state your assumptions
+Ensure that your diagram adheres strictly to the given explanation, without adding or omitting any significant components or relationships. 
 """
