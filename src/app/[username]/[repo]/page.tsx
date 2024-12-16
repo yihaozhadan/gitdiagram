@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import GHForm from "~/components/gh-form";
+import Loading from "~/components/loading";
 import MermaidChart from "~/components/mermaid-diagram";
 
 interface DiagramResponse {
@@ -49,8 +50,14 @@ export default function Repo() {
           repo={params.repo}
         />
       </div>
-      <div className="flex w-full justify-center pt-8">
-        {loading ? <p>Loading diagram...</p> : <MermaidChart chart={diagram} />}
+      <div className="mt-8 flex w-full justify-center">
+        {loading ? (
+          <div className="mt-12">
+            <Loading />
+          </div>
+        ) : (
+          <MermaidChart chart={diagram} />
+        )}
       </div>
     </div>
   );

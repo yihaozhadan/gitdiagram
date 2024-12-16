@@ -6,6 +6,16 @@ export default {
   content: ["./src/**/*.tsx"],
   theme: {
     extend: {
+      keyframes: {
+        fadeInUp: {
+          "0%": { opacity: 0, transform: "translateY(10px)" },
+          "50%": { opacity: 1, transform: "translateY(0)" },
+          "100%": { opacity: 0, transform: "translateY(-10px)" },
+        },
+      },
+      animation: {
+        "fade-in-up": "fadeInUp 3s ease-in-out infinite",
+      },
       fontFamily: {
         sans: ["var(--font-geist-sans)", ...fontFamily.sans],
       },
