@@ -2,6 +2,8 @@
 
 import { useParams } from "next/navigation";
 import MermaidChart from "~/components/mermaid-diagram";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 
 export default function Repo() {
   const params = useParams<{ username: string; repo: string }>();
@@ -13,28 +15,33 @@ export default function Repo() {
       B --> D[Components];
       B --> E[Utils];
       C --> F[API];
-      click B "https://github.com/your-repo/frontend" "Go to Frontend Directory"
-      click C "https://github.com/your-repo/backend" "Go to Backend Directory"
-      click D "https://github.com/your-repo/frontend/components" "Go to Components Directory"
-      click F "https://github.com/your-repo/backend/api" "Go to API Directory"
+      click B "https://github.com/${params.username}/${params.repo}/frontend" "Go to Frontend Directory"
+      click C "https://github.com/${params.username}/${params.repo}/backend" "Go to Backend Directory"
+      click D "https://github.com/${params.username}/${params.repo}/frontend/components" "Go to Components Directory"
+      click F "https://github.com/${params.username}/${params.repo}/backend/api" "Go to API Directory"
   `;
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="w-full max-w-2xl rounded-xl bg-white p-8 shadow-md dark:bg-gray-800">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Repository Details
-        </h1>
-        <div className="mt-4 space-y-2">
-          <p className="text-gray-600 dark:text-gray-400">
-            Username: <span className="font-semibold">{params.username}</span>
-          </p>
-          <p className="text-gray-600 dark:text-gray-400">
-            Repository: <span className="font-semibold">{params.repo}</span>
-          </p>
+    <div className="flex min-h-screen flex-col">
+      <main className="flex-1">
+        <div className="container my-8">
+          <div className="rounded-lg border bg-card p-8 shadow-sm">
+            <div className="mb-6 flex items-center space-x-2">
+              <Input
+                value={`https://github.com/${params.username}/${params.repo}`}
+                readOnly
+                className="font-mono"
+              />
+              <Button>Ingest</Button>
+            </div>
+            <div className="flex justify-center">
+              <div className="w-full max-w-4xl">
+                <MermaidChart chart={diagram} />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      hello
-      <MermaidChart chart={diagram} />
+      </main>
     </div>
   );
 }
