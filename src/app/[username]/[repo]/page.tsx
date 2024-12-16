@@ -1,9 +1,8 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import GHForm from "~/components/gh-form";
 import MermaidChart from "~/components/mermaid-diagram";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
 
 export default function Repo() {
   const params = useParams<{ username: string; repo: string }>();
@@ -22,26 +21,17 @@ export default function Repo() {
   `;
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <main className="flex-1">
-        <div className="container my-8">
-          <div className="rounded-lg border bg-card p-8 shadow-sm">
-            <div className="mb-6 flex items-center space-x-2">
-              <Input
-                value={`https://github.com/${params.username}/${params.repo}`}
-                readOnly
-                className="font-mono"
-              />
-              <Button>Ingest</Button>
-            </div>
-            <div className="flex justify-center">
-              <div className="w-full max-w-4xl">
-                <MermaidChart chart={diagram} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
+    <div className="flex min-h-screen flex-col items-center">
+      <div className="flex w-full justify-center pt-8">
+        <GHForm
+          showExamples={false}
+          username={params.username}
+          repo={params.repo}
+        />
+      </div>
+      <div className="flex w-full justify-center pt-8">
+        <MermaidChart chart={diagram} />
+      </div>
     </div>
   );
 }

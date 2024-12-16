@@ -1,21 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Sparkles } from "lucide-react";
+import React from "react";
 
 const exampleRepos = {
   FastAPI: "/fastapi/fastapi",
   "ai-chatbot": "/vercel/ai-chatbot",
 };
 
-export default function GHForm() {
+interface GHFormProps {
+  showExamples?: boolean;
+  username?: string;
+  repo?: string;
+}
+
+export default function GHForm({
+  showExamples = true,
+  username,
+  repo,
+}: GHFormProps) {
   const [repoUrl, setRepoUrl] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    if (username && repo) {
+      setRepoUrl(`https://github.com/${username}/${repo}`);
+    }
+  }, [username, repo]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +50,8 @@ export default function GHForm() {
     router.push(`/${username}/${repo}`);
   };
 
-  const handleExampleClick = (repoPath: string) => {
+  const handleExampleClick = (repoPath: string, e: React.MouseEvent) => {
+    e.preventDefault();
     router.push(repoPath);
   };
 
@@ -60,21 +78,23 @@ export default function GHForm() {
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {/* Example Repositories */}
-        <div className="space-y-2">
-          <div className="text-gray-700">Try these example repositories:</div>
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(exampleRepos).map(([name, path]) => (
-              <Button
-                key={name}
-                variant="outline"
-                className="border-2 border-black bg-purple-300 font-semibold text-black transition-transform hover:-translate-y-0.5 hover:transform hover:bg-purple-400"
-                onClick={() => handleExampleClick(path)}
-              >
-                {name}
-              </Button>
-            ))}
+        {showExamples && (
+          <div className="space-y-2">
+            <div className="text-gray-700">Try these example repositories:</div>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(exampleRepos).map(([name, path]) => (
+                <Button
+                  key={name}
+                  variant="outline"
+                  className="border-2 border-black bg-purple-300 font-semibold text-black transition-transform hover:-translate-y-0.5 hover:transform hover:bg-purple-400"
+                  onClick={(e) => handleExampleClick(path, e)}
+                >
+                  {name}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </form>
 
       {/* Decorative Sparkle */}
