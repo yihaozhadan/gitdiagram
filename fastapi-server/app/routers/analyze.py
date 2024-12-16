@@ -38,11 +38,12 @@ def call_claude_api(prompt: str) -> str:
 
 
 @router.get("/")
-async def analyze(owner: str, repo: str):
+async def analyze(username: str, repo: str):
     try:
         # get file tree and README content
-        file_tree = github_service.get_github_file_paths_as_list(owner, repo)
-        readme = github_service.get_github_readme(owner, repo)
+        file_tree = github_service.get_github_file_paths_as_list(
+            username, repo)
+        readme = github_service.get_github_readme(username, repo)
 
         # fill in placeholders for first prompt
         prompt1 = FIRST_PROMPT.format(file_tree=file_tree, readme=readme)
