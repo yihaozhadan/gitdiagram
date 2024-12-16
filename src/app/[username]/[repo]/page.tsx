@@ -28,6 +28,7 @@ export default function Repo() {
         );
         const data = (await response.json()) as DiagramResponse;
         const diagramText = data.response[0]?.text ?? "";
+        console.log("Diagram fetched: ", diagramText);
         setDiagram(diagramText);
       } catch (error) {
         console.error("Error fetching diagram:", error);
