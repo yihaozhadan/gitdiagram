@@ -5,6 +5,13 @@ import { useEffect, useState } from "react";
 import GHForm from "~/components/gh-form";
 import MermaidChart from "~/components/mermaid-diagram";
 
+interface DiagramResponse {
+  response: {
+    text: string;
+    type: string;
+  }[];
+}
+
 export default function Repo() {
   const params = useParams<{ username: string; repo: string }>();
   const [diagram, setDiagram] = useState<string>("");
@@ -19,9 +26,9 @@ export default function Repo() {
         const response = await fetch(
           `${baseUrl}/analyze?username=${params.username}&repo=${params.repo}`,
         );
-        const data = await response.text();
-        console.log("Diagram data:", data);
-        setDiagram(data);
+        const data = (await response.json()) as DiagramResponse;
+        const diagramText = data.response[0]?.text ?? "";
+        setDiagram(diagramText);
       } catch (error) {
         console.error("Error fetching diagram:", error);
       } finally {
