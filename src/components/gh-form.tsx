@@ -56,9 +56,8 @@ export default function GHForm({
   };
 
   return (
-    <Card className="relative w-full max-w-3xl border-[3px] border-black bg-purple-100 p-8 shadow-[8px_8px_0_0_#000000]">
+    <Card className="relative w-full max-w-3xl border-[3px] border-black bg-purple-200 p-8 shadow-[8px_8px_0_0_#000000]">
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* URL Input and Ingest Button */}
         <div className="flex gap-4">
           <Input
             placeholder="https://github.com/username/repo"
@@ -86,7 +85,7 @@ export default function GHForm({
                 <Button
                   key={name}
                   variant="outline"
-                  className="border-2 border-black bg-purple-300 font-semibold text-black transition-transform hover:-translate-y-0.5 hover:transform hover:bg-purple-400"
+                  className="border-2 border-black bg-purple-400 font-semibold text-black transition-transform hover:-translate-y-0.5 hover:transform hover:bg-purple-300"
                   onClick={(e) => handleExampleClick(path, e)}
                 >
                   {name}
