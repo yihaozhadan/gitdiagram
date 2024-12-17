@@ -3,11 +3,10 @@
 
 import { sql } from "drizzle-orm";
 import {
-  index,
-  integer,
   pgTableCreator,
   timestamp,
   varchar,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -18,11 +17,12 @@ import {
  */
 export const createTable = pgTableCreator((name) => `gitdiagram_${name}`);
 
-export const posts = createTable(
-  "post",
+export const diagramCache = createTable(
+  "diagram_cache",
   {
-    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-    name: varchar("name", { length: 256 }),
+    username: varchar("username", { length: 256 }).notNull(),
+    repo: varchar("repo", { length: 256 }).notNull(),
+    diagram: varchar("diagram", { length: 10000 }).notNull(), // Adjust length as needed
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -30,7 +30,7 @@ export const posts = createTable(
       () => new Date(),
     ),
   },
-  (example) => ({
-    nameIndex: index("name_idx").on(example.name),
+  (table) => ({
+    pk: primaryKey({ columns: [table.username, table.repo] }),
   }),
 );

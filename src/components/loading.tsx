@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { trio } from "ldrs";
+import dynamic from "next/dynamic";
 
-trio.register();
+// Move the trio import and registration to a client-side only component
+const LoadingAnimation = dynamic(() => import("./loading-animation"), {
+  ssr: false,
+});
 
 const messages = [
   "Generating diagram...",
@@ -25,15 +28,15 @@ const Loading = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentMessageIndex((prevIndex) => (prevIndex + 1) % messages.length);
-    }, 3000); // Change message every 3 seconds
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="flex h-full flex-col items-center justify-center">
-      <l-trio size="40" speed="2.0" color="black" />
-      <div className="animate-fade-in-up mt-2 text-lg">
+      <LoadingAnimation />
+      <div className="mt-2 animate-fade-in-up text-lg">
         {messages[currentMessageIndex]}
       </div>
     </div>

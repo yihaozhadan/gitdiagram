@@ -2,16 +2,11 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { fetchDiagram } from "~/lib/fetch-backend";
+import { getCachedDiagram, cacheDiagram } from "~/app/_actions/cache";
 import GHForm from "~/components/gh-form";
 import Loading from "~/components/loading";
 import MermaidChart from "~/components/mermaid-diagram";
-
-interface DiagramResponse {
-  response: {
-    text: string;
-    type: string;
-  }[];
-}
 
 export default function Repo() {
   const params = useParams<{ username: string; repo: string }>();
@@ -19,26 +14,28 @@ export default function Repo() {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    async function fetchDiagram() {
+    async function getDiagram() {
       setLoading(true);
       try {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_API_DEV_URL ?? "https://api.gitdiagram.com";
-        const response = await fetch(
-          `${baseUrl}/analyze?username=${params.username}&repo=${params.repo}`,
-        );
-        const data = (await response.json()) as DiagramResponse;
-        const diagramText = data.response[0]?.text ?? "";
-        console.log("Diagram fetched: ", diagramText);
-        setDiagram(diagramText);
+        // First, try to get the cached diagram
+        const cached = await getCachedDiagram(params.username, params.repo);
+
+        if (cached) {
+          setDiagram(cached);
+        } else {
+          // If not cached, fetch and cache the diagram
+          const diagramText = await fetchDiagram(params.username, params.repo);
+          await cacheDiagram(params.username, params.repo, diagramText);
+          setDiagram(diagramText);
+        }
       } catch (error) {
-        console.error("Error fetching diagram:", error);
+        console.error("Error in getDiagram:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    void fetchDiagram();
+    void getDiagram();
   }, [params.username, params.repo]);
 
   return (
