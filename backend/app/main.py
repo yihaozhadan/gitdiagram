@@ -4,19 +4,16 @@ from app.routers import analyze
 
 app = FastAPI()
 
-# Allow requests from your frontend (adjust frontend URL if needed)
-origins = [
-    "http://localhost:3000",  # Example frontend
-    "https://gitdiagram.com",
-    "https://api.gitdiagram.com"
-]
-
+# Make sure this middleware is added before any routes
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["https://gitdiagram.com", "http://localhost:3000"],
     allow_credentials=True,
-    allow_methods=["*"],
+    # Be explicit about allowed methods
+    allow_methods=["GET"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=600,  # Cache preflight requests for 10 minutes
 )
 
 app.include_router(analyze.router)
