@@ -53,7 +53,9 @@ export default function Repo() {
             <Loading />
           </div>
         ) : (
-          <MermaidChart chart={diagram} />
+          <div className="flex w-full justify-center px-4">
+            <MermaidChart chart={diagram} />
+          </div>
         )}
       </div>
     </div>
