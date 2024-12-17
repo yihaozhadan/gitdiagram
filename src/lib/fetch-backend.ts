@@ -13,7 +13,7 @@ export async function fetchDiagram(
       `${baseUrl}/analyze?username=${username}&repo=${repo}`,
     );
     const data = (await response.json()) as DiagramResponse;
-    console.log("backend data: ", data);
+    console.log("diagram code from backend: ", data);
     return data.response;
   } catch (error) {
     console.error("Error fetching diagram:", error);

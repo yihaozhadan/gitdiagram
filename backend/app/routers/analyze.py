@@ -37,6 +37,7 @@ def call_claude_api(prompt: str) -> str:
     return message.content
 
 
+@router.get("")
 @router.get("/")
 async def analyze(username: str, repo: str):
     try:

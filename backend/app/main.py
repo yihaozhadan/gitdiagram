@@ -7,7 +7,8 @@ app = FastAPI()
 # Allow requests from your frontend (adjust frontend URL if needed)
 origins = [
     "http://localhost:3000",  # Example frontend
-    "https://gitdiagram.com"
+    "https://gitdiagram.com",
+    "https://api.gitdiagram.com"
 ]
 
 app.add_middleware(
