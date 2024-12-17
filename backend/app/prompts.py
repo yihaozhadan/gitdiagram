@@ -92,10 +92,13 @@ Guidelines for diagram components and relationships:
 - Include any important notes or annotations mentioned in the explanation
 - Just follow the explanation. It will have everything you need.
 
-Your output should be valid Mermaid.js code that can be rendered into a diagram. Begin your response with the Mermaid.js code fence:
+Your output should be valid Mermaid.js code that can be rendered into a diagram.
 
 Your response must strictly be just the Mermaid.js code, without any additional text or explanations.
 No code fence or markdown ticks needed, simply return the Mermaid.js code.
 
 Ensure that your diagram adheres strictly to the given explanation, without adding or omitting any significant components or relationships. 
+
+Important notes:
+- In Mermaid.js syntax, we cannot include slashes without being inside quotes. For example: `GT[/api/generate-timeline]:::api` is a syntax error but `GT["/api/generate-timeline"]:::api` is valid.
 """
