@@ -13,13 +13,12 @@ const MermaidChart = ({ chart }: MermaidChartProps) => {
       startOnLoad: true,
       theme: "default",
       htmlLabels: true,
-      fontSize: 16,
     });
     mermaid.contentLoaded();
   }, []);
 
   return (
-    <div className="w-full max-w-[1200px] p-4">
+    <div className="w-full max-w-[1000px] p-4">
       <div className="mermaid">{chart}</div>
     </div>
   );

@@ -23,7 +23,6 @@ export default function Repo() {
         if (cached) {
           setDiagram(cached);
         } else {
-          // If not cached, fetch and cache the diagram
           const diagramText = await fetchDiagram(params.username, params.repo);
           await cacheDiagram(params.username, params.repo, diagramText);
           setDiagram(diagramText);

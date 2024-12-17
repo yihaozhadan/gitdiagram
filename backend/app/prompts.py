@@ -1,3 +1,18 @@
+# This is our processing. This is where GitDiagram makes the magic happen
+# There is a lot of DETAIL we need to extract from the repository to produce detailed and accurate diagrams
+# I will immediately put out there that I'm trying to reduce costs. Theoretically, I could, for like 5x better accuracy, include most file content as well which would make for perfect diagrams, but thats too many tokens for my wallet, and would probably greatly increase generation time. (maybe a paid feature?)
+
+# THE PROCESS:
+
+# imagine it like this:
+# def prompt1(file_tree, readme) -> explanation of diagram
+# def prompt2(explanation, file_tree) -> maps relevant directories and files to parts of diagram for interactivity
+# def prompt3(explanation, map) -> Mermaid.js code
+
+# Note: Originally prompt1 and prompt2 were combined - but I tested it, and turns out mapping relevant dirs and files in one prompt along with generating detailed and accurate diagrams was difficult for Claude 3.5 Sonnet. It lost detail in the explanation and dedicated more "effort" to the mappings, so this is now its own prompt.
+
+# This is my first take at prompt engineering so if you have any ideas on optimizations please make an issue on the GitHub!
+
 FIRST_PROMPT = """
 You are tasked with explaining to a principal software engineer how to draw the best and most accurate system design diagram / architecture of a given project. This explanation should be tailored to the specific project's purpose and structure. To accomplish this, you will be provided with two key pieces of information:
 
@@ -46,25 +61,61 @@ Analyze these components carefully, as they will provide crucial information abo
 
 7. Emphasize the importance of keeping the diagram at an appropriate level of abstraction, avoiding too much detail while still capturing the essential architectural elements.
 
-After providing these instructions, ask the principal software engineer to explain their proposed system design diagram in detail, including:
-
-- The main components they've identified
-- The relationships between these components
-- Any architectural patterns or principles they've incorporated
-- How the diagram reflects the specific nature of the project (e.g., full-stack app, open-source tool)
-- Any assumptions or decisions they made while creating the diagram
-
-Encourage them to iterate on the diagram based on feedback and further analysis of the codebase.
-
 Present your explanation and instructions within <explanation> tags, ensuring that you tailor your advice to the specific project based on the provided file tree and README content.
 """
 
-# just adding some clear separation between the two prompts
+# just adding some clear separation between the prompts
 # ************************************************************
 # ************************************************************
-
 
 SECOND_PROMPT = """
+You are tasked with mapping key components of a system design to their corresponding files and directories in a project's file structure. You will be provided with a detailed explanation of the system design/architecture and a file tree of the project.
+
+First, carefully read the system design explanation:
+
+<explanation>
+{explanation}
+</explanation>
+
+Now, examine the file tree of the project:
+
+<file_tree>
+{file_tree}
+</file_tree>
+
+Your task is to analyze the system design explanation and identify key components, modules, or services mentioned. Then, try your best to map these components to what you believe could be their corresponding directories and files in the provided file tree.
+
+Guidelines:
+1. Focus on major components described in the system design.
+2. Look for directories and files that clearly correspond to these components.
+3. Include both directories and specific files when relevant.
+4. If a component doesn't have a clear corresponding file or directory, simply dont include it in the map.
+
+Before providing your final answer, use the <scratchpad> to think through your process:
+1. List the key components identified in the system design.
+2. For each component, brainstorm potential corresponding directories or files.
+3. Verify your mappings by double-checking the file tree.
+
+<scratchpad>
+[Your thought process here]
+</scratchpad>
+
+Now, provide your final answer in the following format:
+
+<component_mapping>
+1. [Component Name]: [File/Directory Path]
+2. [Component Name]: [File/Directory Path]
+[Continue for all identified components]
+</component_mapping>
+
+Remember to be as specific as possible in your mappings, only use what is given to you from the file tree, and to strictly follow the components mentioned in the explanation. 
+"""
+
+# just adding some clear separation between the prompts
+# ************************************************************
+# ************************************************************
+
+THIRD_PROMPT = """
 You are a principal software engineer tasked with creating a system design diagram using Mermaid.js based on a detailed explanation. Your goal is to accurately represent the architecture and design of the project as described in the explanation.
 
 Here's the detailed explanation of the design:
@@ -72,6 +123,13 @@ Here's the detailed explanation of the design:
 <explanation>
 {explanation}
 </explanation>
+
+
+And from the explanation, as a bonus, a few of the identified components have been mapped to their paths in the project, whether it is a directory or file:
+
+<component_mapping>
+{component_mapping}
+</component_mapping>
 
 To create the Mermaid.js diagram:
 
@@ -92,6 +150,13 @@ Guidelines for diagram components and relationships:
 - Include any important notes or annotations mentioned in the explanation
 - Just follow the explanation. It will have everything you need.
 
+
+You must include click events for components of the diagram that have been specified in the provided component_mapping:
+- If it is a directory, it would be a click event to https://github.com/[username]/[repo]/tree/[branch]/<INSERT PATH HERE>
+and if it is a file it would be to https://github.com/[username]/[repo]/blob/[branch]/<INSERT PATH HERE>
+- Do this for as many components as specified in the component mapping, include directories and files.
+- It is very important that you do this for as many files as possible. The more the better.
+
 Your output should be valid Mermaid.js code that can be rendered into a diagram.
 
 Your response must strictly be just the Mermaid.js code, without any additional text or explanations.
@@ -100,5 +165,5 @@ No code fence or markdown ticks needed, simply return the Mermaid.js code.
 Ensure that your diagram adheres strictly to the given explanation, without adding or omitting any significant components or relationships. 
 
 Important notes:
-- In Mermaid.js syntax, we cannot include slashes without being inside quotes. For example: `GT[/api/generate-timeline]:::api` is a syntax error but `GT["/api/generate-timeline"]:::api` is valid.
+- In Mermaid.js syntax, we cannot include slashes without being inside quotes. For example: `EX[/api/process]:::api` is a syntax error but `EX["/api/process"]:::api` is valid.
 """

@@ -1,8 +1,5 @@
 export interface DiagramResponse {
-  response: {
-    text: string;
-    type: string;
-  }[];
+  response: string;
 }
 
 export async function fetchDiagram(
@@ -16,9 +13,8 @@ export async function fetchDiagram(
       `${baseUrl}/analyze?username=${username}&repo=${repo}`,
     );
     const data = (await response.json()) as DiagramResponse;
-    const diagramText = data.response[0]?.text ?? "";
-    console.log("Diagram fetched: ", diagramText);
-    return diagramText;
+    console.log("backend data: ", data);
+    return data.response;
   } catch (error) {
     console.error("Error fetching diagram:", error);
     throw error;
