@@ -31,6 +31,14 @@ async def generate(request: Request, username: str, repo: str):
             username, repo)
         readme = github_service.get_github_readme(username, repo)
 
+        # Check combined token count
+        combined_content = f"{file_tree}\n{readme}"
+        token_count = claude_service.count_tokens(combined_content)
+        if token_count > 50000:
+            return {
+                "error": f"File tree and README combined exceeds token limit (50,000). Current size: {token_count} tokens"
+            }
+
         # fill in placeholders for first prompt
         prompt1 = FIRST_PROMPT.format(file_tree=file_tree, readme=readme)
 

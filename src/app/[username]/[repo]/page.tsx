@@ -61,9 +61,11 @@ export default function Repo() {
         ) : error ? (
           <div className="mt-12 text-center">
             <p className="text-lg font-medium text-red-600">{error}</p>
-            <p className="mt-2 text-sm text-gray-600">
-              Rate limits: 1 request per minute, 5 requests per day
-            </p>
+            {error.includes("Rate limit") && (
+              <p className="mt-2 text-sm text-gray-600">
+                Rate limits: 1 request per minute, 5 requests per day
+              </p>
+            )}
           </div>
         ) : (
           <div className="flex w-full justify-center px-4">

@@ -82,7 +82,7 @@ class GitHubService:
                     return "\n".join(paths)
 
         raise ValueError(
-            "Could not fetch repository file tree. Repository might be empty or private.")
+            "Could not fetch repository file tree. Repository might not exist, be empty or private.")
 
     def get_github_readme(self, username, repo):
         """
