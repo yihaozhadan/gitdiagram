@@ -11,11 +11,13 @@ import MermaidChart from "~/components/mermaid-diagram";
 export default function Repo() {
   const params = useParams<{ username: string; repo: string }>();
   const [diagram, setDiagram] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     async function getDiagram() {
       setLoading(true);
+      setError("");
       try {
         // First, try to get the cached diagram
         const cached = await getCachedDiagram(params.username, params.repo);
@@ -23,12 +25,17 @@ export default function Repo() {
         if (cached) {
           setDiagram(cached);
         } else {
-          const diagramText = await fetchDiagram(params.username, params.repo);
-          await cacheDiagram(params.username, params.repo, diagramText);
-          setDiagram(diagramText);
+          const result = await fetchDiagram(params.username, params.repo);
+          if (result.error) {
+            setError(result.error);
+          } else if (result.response) {
+            await cacheDiagram(params.username, params.repo, result.response);
+            setDiagram(result.response);
+          }
         }
       } catch (error) {
         console.error("Error in getDiagram:", error);
+        setError("Something went wrong. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -50,6 +57,13 @@ export default function Repo() {
         {loading ? (
           <div className="mt-12">
             <Loading />
+          </div>
+        ) : error ? (
+          <div className="mt-12 text-center">
+            <p className="text-lg font-medium text-red-600">{error}</p>
+            <p className="mt-2 text-sm text-gray-600">
+              Rate limits: 1 request per minute, 5 requests per day
+            </p>
           </div>
         ) : (
           <div className="flex w-full justify-center px-4">
