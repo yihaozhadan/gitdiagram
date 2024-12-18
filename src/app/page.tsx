@@ -18,7 +18,7 @@ export default function HomePage() {
           Github URL
         </p>
       </div>
-      <div className="flex justify-center">
+      <div className="mb-12 flex justify-center lg:mb-0">
         <GHForm />
       </div>
     </main>
