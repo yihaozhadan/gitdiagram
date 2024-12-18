@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, HTTPException
 from dotenv import load_dotenv
 from app.services.github_service import GitHubService
 from app.services.claude_service import ClaudeService
 from app.core.limiter import limiter
 import os
 from app.prompts import FIRST_PROMPT, SECOND_PROMPT, THIRD_PROMPT
+from anthropic._exceptions import RateLimitError
 
 load_dotenv()
 
@@ -75,5 +76,10 @@ async def generate(request: Request, username: str, repo: str):
             .replace("[branch]", default_branch)
 
         return {"response": processed_diagram}
+    except RateLimitError as e:
+        raise HTTPException(
+            status_code=429,
+            detail="Service is currently experiencing high demand. Please try again in a few minutes."
+        )
     except Exception as e:
         return {"error": str(e)}
