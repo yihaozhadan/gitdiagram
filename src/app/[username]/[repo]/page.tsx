@@ -38,7 +38,7 @@ export default function Repo() {
   }, [params.username, params.repo]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center">
+    <div className="flex min-h-screen flex-col items-center p-4">
       <div className="flex w-full justify-center pt-8">
         <GHForm
           showExamples={false}

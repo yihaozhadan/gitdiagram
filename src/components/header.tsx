@@ -4,7 +4,7 @@ import { FaGithub } from "react-icons/fa";
 
 export function Header() {
   return (
-    <header className="border-b-[3px] border-black lg:px-8">
+    <header className="border-b-[3px] border-black px-8">
       <div className="container mx-auto flex h-16 max-w-4xl items-center justify-between">
         <Link href="/" className="flex items-center">
           <span className="text-xl font-semibold">

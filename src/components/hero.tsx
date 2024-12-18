@@ -14,15 +14,15 @@ const Hero = () => {
           fill="#a855f7"
           stroke="#000"
           strokeWidth="3.445"
-        ></path>
+        />
         <path
           d="M79.653 5.729c-2.436 5.323-9.515 15.25-18.341 12.374m9.197 16.336c2.6-5.851 10.008-16.834 18.842-13.956m-9.738-15.07c-.374 3.787 1.076 12.078 9.869 14.943M70.61 34.6c.503-4.21-.69-13.346-9.49-16.214M14.922 65.967c1.338 5.677 6.372 16.756 15.808 15.659M18.21 95.832c-1.392-6.226-6.54-18.404-15.984-17.305m12.85-12.892c-.41 3.771-3.576 11.588-12.968 12.681M18.025 96c.367-4.21 3.453-12.905 12.854-14"
           stroke="#000"
           strokeWidth="2.548"
           strokeLinecap="round"
-        ></path>
+        />
       </svg>
-      <h1 className="relative inline-block w-full text-left text-4xl font-bold tracking-tighter sm:pt-20 sm:text-5xl md:text-center md:text-6xl lg:pt-5 lg:text-7xl">
+      <h1 className="relative inline-block w-full text-center text-5xl font-bold tracking-tighter sm:pt-20 sm:text-5xl lg:pt-5 lg:text-7xl">
         Repository to <br />
         diagram&nbsp;
       </h1>
@@ -38,13 +38,13 @@ const Hero = () => {
           stroke="#000"
           strokeWidth="2.868"
           className=""
-        ></path>
+        />
         <path
           d="M75.062 40.108c1.07 5.255 1.072 16.52-7.472 19.54m7.422-19.682c1.836 2.965 7.643 8.14 16.187 5.121-8.544 3.02-8.207 15.23-6.971 20.957-1.97-3.343-8.044-9.274-16.588-6.254M12.054 28.012c1.34-5.22 6.126-15.4 14.554-14.369M12.035 28.162c-.274-3.487-2.93-10.719-11.358-11.75C9.104 17.443 14.013 6.262 15.414.542c.226 3.888 2.784 11.92 11.212 12.95"
           stroke="#000"
           strokeWidth="2.319"
           strokeLinecap="round"
-        ></path>
+        />
       </svg>
     </div>
   );
