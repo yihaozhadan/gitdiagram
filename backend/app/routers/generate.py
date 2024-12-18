@@ -17,8 +17,7 @@ claude_service = ClaudeService()
 
 
 @router.get("")
-@limiter.limit("1/minute")
-@limiter.limit("5/day")
+@limiter.limit("1/minute;5/day")
 async def generate(request: Request, username: str, repo: str):
     try:
         # Get default branch first

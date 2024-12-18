@@ -29,6 +29,6 @@ app.include_router(generate.router)
 
 
 @app.get("/")
-@limiter.limit("100/minute")
+@limiter.limit("100/day")
 async def hello(request: Request):
     return {"message": "Welcome to the GitDiagram API!"}
