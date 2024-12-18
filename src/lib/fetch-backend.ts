@@ -10,7 +10,7 @@ export async function fetchDiagram(
     const baseUrl =
       process.env.NEXT_PUBLIC_API_DEV_URL ?? "https://api.gitdiagram.com";
     const response = await fetch(
-      `${baseUrl}/analyze?username=${username}&repo=${repo}`,
+      `${baseUrl}/generate?username=${username}&repo=${repo}`,
     );
     const data = (await response.json()) as DiagramResponse;
     console.log("diagram code from backend: ", data);

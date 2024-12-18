@@ -7,7 +7,7 @@ from app.prompts import FIRST_PROMPT, SECOND_PROMPT, THIRD_PROMPT
 
 load_dotenv()
 
-router = APIRouter(prefix="/analyze", tags=["Claude"])
+router = APIRouter(prefix="/generate", tags=["Claude"])
 
 client = anthropic.Anthropic()
 
@@ -38,8 +38,7 @@ def call_claude_api(prompt: str) -> str:
 
 
 @router.get("")
-@router.get("/")
-async def analyze(username: str, repo: str):
+async def generate(username: str, repo: str):
     try:
         # Get default branch first
         default_branch = github_service.get_default_branch(username, repo)

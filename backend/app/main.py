@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import analyze
+from app.routers import generate
 
 app = FastAPI()
 
@@ -14,11 +14,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET"],
     allow_headers=["*"],
 )
 
-app.include_router(analyze.router)
+app.include_router(generate.router)
 
 # Root route
 
