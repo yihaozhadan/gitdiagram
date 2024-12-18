@@ -23,15 +23,35 @@ class GitHubService:
 
     def get_github_file_paths_as_list(self, username, repo):
         """
-        Fetches the complete file tree of an open-source GitHub repository.
+        Fetches the file tree of an open-source GitHub repository,
+        excluding static files and generated code.
 
         Args:
             username (str): The GitHub username or organization name
             repo (str): The repository name
 
         Returns:
-            list: A list of file and directory paths in the repository.
+            str: A filtered and formatted string of file paths in the repository, one per line.
         """
+        def should_include_file(path):
+            # Patterns to exclude
+            excluded_patterns = [
+                # Dependencies
+                'node_modules/', 'vendor/', 'venv/',
+                # Compiled files
+                '.min.', '.pyc', '.pyo', '.pyd', '.so', '.dll', '.class',
+                # Asset files
+                '.jpg', '.jpeg', '.png', '.gif', '.ico', '.svg', '.ttf', '.woff', '.webp',
+                # Cache and temporary files
+                '__pycache__/', '.cache/', '.tmp/',
+                # Lock files and logs
+                'yarn.lock', 'poetry.lock', '*.log',
+                # Configuration files
+                '.vscode/', '.idea/'
+            ]
+
+            return not any(pattern in path.lower() for pattern in excluded_patterns)
+
         # Try to get the default branch first
         branch = self.get_default_branch(username, repo)
         if branch:
@@ -42,7 +62,10 @@ class GitHubService:
             if response.status_code == 200:
                 data = response.json()
                 if "tree" in data:
-                    return [item['path'] for item in data['tree']]
+                    # Filter the paths and join them with newlines
+                    paths = [item['path'] for item in data['tree']
+                             if should_include_file(item['path'])]
+                    return "\n".join(paths)
 
         # If default branch didn't work or wasn't found, try common branch names
         for branch in ['main', 'master']:
@@ -53,7 +76,10 @@ class GitHubService:
             if response.status_code == 200:
                 data = response.json()
                 if "tree" in data:
-                    return [item['path'] for item in data['tree']]
+                    # Filter the paths and join them with newlines
+                    paths = [item['path'] for item in data['tree']
+                             if should_include_file(item['path'])]
+                    return "\n".join(paths)
 
         raise ValueError(
             "Could not fetch repository file tree. Repository might be empty or private.")

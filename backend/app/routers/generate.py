@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-import anthropic
 from dotenv import load_dotenv
 from app.services.github_service import GitHubService
+from app.services.claude_service import ClaudeService
 import os
 from app.prompts import FIRST_PROMPT, SECOND_PROMPT, THIRD_PROMPT
 
@@ -9,32 +9,10 @@ load_dotenv()
 
 router = APIRouter(prefix="/generate", tags=["Claude"])
 
-client = anthropic.Anthropic()
-
-# Initialize GitHubService with your GitHub token
+# Initialize services
 github_token = os.getenv("github_pat")  # might hit rate limit on just my token
 github_service = GitHubService(github_token)
-
-
-def call_claude_api(prompt: str) -> str:
-    message = client.messages.create(
-        model="claude-3-5-sonnet-latest",
-        max_tokens=8192,
-        temperature=0,
-        system="",
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": prompt
-                    }
-                ]
-            }
-        ]
-    )
-    return message.content
+claude_service = ClaudeService()
 
 
 @router.get("")
@@ -54,14 +32,14 @@ async def generate(username: str, repo: str):
         prompt1 = FIRST_PROMPT.format(file_tree=file_tree, readme=readme)
 
         # get the explanation for sysdesign from claude
-        explanation = call_claude_api(prompt1)
+        explanation = claude_service.call_claude_api(prompt1)
         explanation_text = explanation[0].text
 
         # fill in placeholder into second prompt
         prompt2 = SECOND_PROMPT.format(
             explanation=explanation_text, file_tree=file_tree)
 
-        full_second_response = call_claude_api(prompt2)
+        full_second_response = claude_service.call_claude_api(prompt2)
         full_second_response_text = full_second_response[0].text
 
         # Extract component mapping from the response
@@ -77,7 +55,7 @@ async def generate(username: str, repo: str):
             explanation=explanation_text, component_mapping=component_mapping_text)
 
         # get mermaid.js code from claude
-        mermaid_code = call_claude_api(prompt3)
+        mermaid_code = claude_service.call_claude_api(prompt3)
         mermaid_code_text = mermaid_code[0].text
 
         # Process the diagram text before sending to client
