@@ -1,8 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from app.routers import generate
+from app.core.limiter import limiter
 
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Allow requests from your frontend (adjust frontend URL if needed)
 origins = [
@@ -24,5 +29,6 @@ app.include_router(generate.router)
 
 
 @app.get("/")
-async def hello():
+@limiter.limit("100/minute")
+async def hello(request: Request):
     return {"message": "Welcome to the GitDiagram API!"}

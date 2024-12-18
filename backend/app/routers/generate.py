@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from dotenv import load_dotenv
 from app.services.github_service import GitHubService
 from app.services.claude_service import ClaudeService
+from app.core.limiter import limiter
 import os
 from app.prompts import FIRST_PROMPT, SECOND_PROMPT, THIRD_PROMPT
 
@@ -16,7 +17,9 @@ claude_service = ClaudeService()
 
 
 @router.get("")
-async def generate(username: str, repo: str):
+@limiter.limit("1/minute")
+@limiter.limit("5/day")
+async def generate(request: Request, username: str, repo: str):
     try:
         # Get default branch first
         default_branch = github_service.get_default_branch(username, repo)
