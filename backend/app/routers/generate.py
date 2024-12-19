@@ -4,7 +4,7 @@ from app.services.github_service import GitHubService
 from app.services.claude_service import ClaudeService
 from app.core.limiter import limiter
 import os
-from app.prompts import FIRST_PROMPT, SECOND_PROMPT, THIRD_PROMPT
+from app.prompts import SYSTEM_FIRST_PROMPT, SYSTEM_SECOND_PROMPT, SYSTEM_THIRD_PROMPT
 from anthropic._exceptions import RateLimitError
 
 load_dotenv()
@@ -39,38 +39,42 @@ async def generate(request: Request, username: str, repo: str):
                 "error": f"File tree and README combined exceeds token limit (50,000). Current size: {token_count} tokens"
             }
 
-        # fill in placeholders for first prompt
-        prompt1 = FIRST_PROMPT.format(file_tree=file_tree, readme=readme)
-
         # get the explanation for sysdesign from claude
-        explanation = claude_service.call_claude_api(prompt1)
-        explanation_text = explanation[0].text
+        explanation = claude_service.call_claude_api(
+            system_prompt=SYSTEM_FIRST_PROMPT,
+            data={
+                "file_tree": file_tree,
+                "readme": readme
+            }
+        )
 
-        # fill in placeholder into second prompt
-        prompt2 = SECOND_PROMPT.format(
-            explanation=explanation_text, file_tree=file_tree)
-
-        full_second_response = claude_service.call_claude_api(prompt2)
-        full_second_response_text = full_second_response[0].text
+        full_second_response = claude_service.call_claude_api(
+            system_prompt=SYSTEM_SECOND_PROMPT,
+            data={
+                "explanation": explanation,
+                "file_tree": file_tree
+            }
+        )
 
         # Extract component mapping from the response
         start_tag = "<component_mapping>"
         end_tag = "</component_mapping>"
-        component_mapping_text = full_second_response_text[
-            full_second_response_text.find(start_tag):
-            full_second_response_text.find(end_tag)
+        component_mapping_text = full_second_response[
+            full_second_response.find(start_tag):
+            full_second_response.find(end_tag)
         ]
 
-        # fill in placeholder for third prompt
-        prompt3 = THIRD_PROMPT.format(
-            explanation=explanation_text, component_mapping=component_mapping_text)
-
         # get mermaid.js code from claude
-        mermaid_code = claude_service.call_claude_api(prompt3)
-        mermaid_code_text = mermaid_code[0].text
+        mermaid_code = claude_service.call_claude_api(
+            system_prompt=SYSTEM_THIRD_PROMPT,
+            data={
+                "explanation": explanation,
+                "component_mapping": component_mapping_text
+            }
+        )
 
         # Process the diagram text before sending to client
-        processed_diagram = mermaid_code_text\
+        processed_diagram = mermaid_code\
             .replace("[username]", username)\
             .replace("[repo]", repo)\
             .replace("[branch]", default_branch)

@@ -4,10 +4,14 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.routers import generate
 from app.core.limiter import limiter
+from typing import cast
+from starlette.responses import Response
+from starlette.exceptions import ExceptionMiddleware
 
 app = FastAPI()
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, cast(
+    ExceptionMiddleware, _rate_limit_exceeded_handler))
 
 # Allow requests from your frontend (adjust frontend URL if needed)
 origins = [

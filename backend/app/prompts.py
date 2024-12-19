@@ -13,18 +13,12 @@
 
 # This is my first take at prompt engineering so if you have any ideas on optimizations please make an issue on the GitHub!
 
-FIRST_PROMPT = """
+SYSTEM_FIRST_PROMPT = """
 You are tasked with explaining to a principal software engineer how to draw the best and most accurate system design diagram / architecture of a given project. This explanation should be tailored to the specific project's purpose and structure. To accomplish this, you will be provided with two key pieces of information:
 
-1. The complete and entire file tree of the project including all directory and file names, which will be enclosed in <file_tree> tags:
-<file_tree>
-{file_tree}
-</file_tree>
+1. The complete and entire file tree of the project including all directory and file names, which will be enclosed in <file_tree> tags in the users message.
 
-2. The README file of the project, which will be enclosed in <readme> tags:
-<readme>
-{readme}
-</readme>
+2. The README file of the project, which will be enclosed in <readme> tags in the users message.
 
 Analyze these components carefully, as they will provide crucial information about the project's structure and purpose. Follow these steps to create an explanation for the principal software engineer:
 
@@ -68,20 +62,12 @@ Present your explanation and instructions within <explanation> tags, ensuring th
 # ************************************************************
 # ************************************************************
 
-SECOND_PROMPT = """
+SYSTEM_SECOND_PROMPT = """
 You are tasked with mapping key components of a system design to their corresponding files and directories in a project's file structure. You will be provided with a detailed explanation of the system design/architecture and a file tree of the project.
 
-First, carefully read the system design explanation:
+First, carefully read the system design explanation which will be enclosed in <explanation> tags in the users message.
 
-<explanation>
-{explanation}
-</explanation>
-
-Now, examine the file tree of the project:
-
-<file_tree>
-{file_tree}
-</file_tree>
+Then, examine the file tree of the project which will be enclosed in <file_tree> tags in the users message.
 
 Your task is to analyze the system design explanation and identify key components, modules, or services mentioned. Then, try your best to map these components to what you believe could be their corresponding directories and files in the provided file tree.
 
@@ -115,21 +101,12 @@ Remember to be as specific as possible in your mappings, only use what is given 
 # ************************************************************
 # ************************************************************
 
-THIRD_PROMPT = """
+SYSTEM_THIRD_PROMPT = """
 You are a principal software engineer tasked with creating a system design diagram using Mermaid.js based on a detailed explanation. Your goal is to accurately represent the architecture and design of the project as described in the explanation.
 
-Here's the detailed explanation of the design:
+The detailed explanation of the design will be enclosed in <explanation> tags in the users message.
 
-<explanation>
-{explanation}
-</explanation>
-
-
-And from the explanation, as a bonus, a few of the identified components have been mapped to their paths in the project, whether it is a directory or file:
-
-<component_mapping>
-{component_mapping}
-</component_mapping>
+And from the explanation, as a bonus, a few of the identified components have been mapped to their paths in the project, whether it is a directory or file which will be enclosed in <component_mapping> tags in the users message.
 
 To create the Mermaid.js diagram:
 

@@ -47,11 +47,7 @@ export default function Repo() {
   return (
     <div className="flex min-h-screen flex-col items-center p-4">
       <div className="flex w-full justify-center pt-8">
-        <GHForm
-          showExamples={false}
-          username={params.username}
-          repo={params.repo}
-        />
+        <GHForm isHome={false} username={params.username} repo={params.repo} />
       </div>
       <div className="mt-8 flex w-full justify-center">
         {loading ? (
