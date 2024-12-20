@@ -11,7 +11,7 @@ const MermaidChart = ({ chart }: MermaidChartProps) => {
   useEffect(() => {
     mermaid.initialize({
       startOnLoad: true,
-      theme: "default",
+      theme: "neutral",
       htmlLabels: true,
     });
     mermaid.contentLoaded();
