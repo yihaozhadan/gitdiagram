@@ -18,7 +18,7 @@ const MermaidChart = ({ chart }: MermaidChartProps) => {
   }, []);
 
   return (
-    <div className="w-full max-w-[1000px] p-4">
+    <div className="w-full max-w-full p-4">
       <div className="mermaid">{chart}</div>
     </div>
   );

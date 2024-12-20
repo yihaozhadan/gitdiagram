@@ -23,6 +23,7 @@ export default function Repo() {
         const cached = await getCachedDiagram(params.username, params.repo);
 
         if (cached) {
+          console.log("Diagram code: ", cached);
           setDiagram(cached);
         } else {
           const result = await fetchDiagram(params.username, params.repo);
@@ -30,6 +31,7 @@ export default function Repo() {
             setError(result.error);
           } else if (result.response) {
             await cacheDiagram(params.username, params.repo, result.response);
+            console.log("Diagram code: ", result.response);
             setDiagram(result.response);
           }
         }
