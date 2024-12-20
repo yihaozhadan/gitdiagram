@@ -7,12 +7,18 @@ import { getCachedDiagram, cacheDiagram } from "~/app/_actions/cache";
 import GHForm from "~/components/gh-form";
 import Loading from "~/components/loading";
 import MermaidChart from "~/components/mermaid-diagram";
+import DiagramCard from "~/components/diagram-card";
 
 export default function Repo() {
   const params = useParams<{ username: string; repo: string }>();
   const [diagram, setDiagram] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+
+  const handleCopy = () => {
+    // Placeholder for copy functionality
+    console.log("Copy Mermaid.js code");
+  };
 
   useEffect(() => {
     async function getDiagram() {
@@ -51,7 +57,7 @@ export default function Repo() {
       <div className="flex w-full justify-center pt-8">
         <GHForm isHome={false} username={params.username} repo={params.repo} />
       </div>
-      <div className="mt-8 flex w-full justify-center">
+      <div className="mt-8 flex w-full flex-col items-center gap-8">
         {loading ? (
           <div className="mt-12">
             <Loading />
@@ -66,9 +72,21 @@ export default function Repo() {
             )}
           </div>
         ) : (
-          <div className="flex w-full justify-center px-4">
-            <MermaidChart chart={diagram} />
-          </div>
+          <>
+            <div className="flex w-full justify-center px-4">
+              <MermaidChart chart={diagram} />
+            </div>
+            <DiagramCard
+              onModify={(instructions) =>
+                console.log("Modify with:", instructions)
+              }
+              onRegenerate={(instructions) =>
+                console.log("Regenerate with:", instructions)
+              }
+              onCopy={handleCopy}
+              lastGenerated={new Date()}
+            />
+          </>
         )}
       </div>
     </div>

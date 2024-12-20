@@ -7,11 +7,13 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Sparkles } from "lucide-react";
 import React from "react";
-import { CopyButton } from "./copy-button";
 
 const exampleRepos = {
   FastAPI: "/fastapi/fastapi",
-  "ai-chatbot": "/vercel/ai-chatbot",
+  Streamlit: "/streamlit/streamlit",
+  Flask: "/pallets/flask",
+  "api-analytics": "/tom-draper/api-analytics",
+  Monkeytype: "/monkeytypegame/monkeytype",
 };
 
 interface GHFormProps {
@@ -59,11 +61,6 @@ export default function GHForm({ isHome = true, username, repo }: GHFormProps) {
     router.push(repoPath);
   };
 
-  const handleCopy = () => {
-    // Placeholder for copy functionality
-    console.log("Copy Mermaid.js code");
-  };
-
   return (
     <Card className="relative w-full max-w-3xl border-[3px] border-black bg-purple-200 p-4 shadow-[8px_8px_0_0_#000000] sm:p-8">
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -81,7 +78,6 @@ export default function GHForm({ isHome = true, username, repo }: GHFormProps) {
           >
             Diagram
           </Button>
-          {!isHome && <CopyButton onClick={handleCopy} />}
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
