@@ -7,7 +7,6 @@ import { getCachedDiagram, cacheDiagram } from "~/app/_actions/cache";
 import GHForm from "~/components/gh-form";
 import Loading from "~/components/loading";
 import MermaidChart from "~/components/mermaid-diagram";
-import DiagramCard from "~/components/diagram-card";
 
 export default function Repo() {
   const params = useParams<{ username: string; repo: string }>();
@@ -55,7 +54,18 @@ export default function Repo() {
   return (
     <div className="flex min-h-screen flex-col items-center p-4">
       <div className="flex w-full justify-center pt-8">
-        <GHForm isHome={false} username={params.username} repo={params.repo} />
+        <GHForm
+          isHome={false}
+          username={params.username}
+          repo={params.repo}
+          showCustomization={!loading && !error}
+          onModify={(instructions) => console.log("Modify with:", instructions)}
+          onRegenerate={(instructions) =>
+            console.log("Regenerate with:", instructions)
+          }
+          onCopy={handleCopy}
+          lastGenerated={new Date()}
+        />
       </div>
       <div className="mt-8 flex w-full flex-col items-center gap-8">
         {loading ? (
@@ -72,21 +82,9 @@ export default function Repo() {
             )}
           </div>
         ) : (
-          <>
-            <div className="flex w-full justify-center px-4">
-              <MermaidChart chart={diagram} />
-            </div>
-            <DiagramCard
-              onModify={(instructions) =>
-                console.log("Modify with:", instructions)
-              }
-              onRegenerate={(instructions) =>
-                console.log("Regenerate with:", instructions)
-              }
-              onCopy={handleCopy}
-              lastGenerated={new Date()}
-            />
-          </>
+          <div className="flex w-full justify-center px-4">
+            <MermaidChart chart={diagram} />
+          </div>
         )}
       </div>
     </div>

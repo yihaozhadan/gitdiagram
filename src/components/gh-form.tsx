@@ -7,6 +7,7 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Sparkles } from "lucide-react";
 import React from "react";
+import { CustomizationDropdown } from "./customization-dropdown";
 
 const exampleRepos = {
   FastAPI: "/fastapi/fastapi",
@@ -20,9 +21,23 @@ interface GHFormProps {
   isHome?: boolean;
   username?: string;
   repo?: string;
+  showCustomization?: boolean;
+  onModify?: (instructions: string) => void;
+  onRegenerate?: (instructions: string) => void;
+  onCopy?: () => void;
+  lastGenerated?: Date;
 }
 
-export default function GHForm({ isHome = true, username, repo }: GHFormProps) {
+export default function GHForm({
+  isHome = true,
+  username,
+  repo,
+  showCustomization,
+  onModify,
+  onRegenerate,
+  onCopy,
+  lastGenerated,
+}: GHFormProps) {
   const [repoUrl, setRepoUrl] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
@@ -81,6 +96,19 @@ export default function GHForm({ isHome = true, username, repo }: GHFormProps) {
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
+
+        {showCustomization &&
+          onModify &&
+          onRegenerate &&
+          onCopy &&
+          lastGenerated && (
+            <CustomizationDropdown
+              onModify={onModify}
+              onRegenerate={onRegenerate}
+              onCopy={onCopy}
+              lastGenerated={lastGenerated}
+            />
+          )}
 
         {/* Example Repositories */}
         {isHome && (
