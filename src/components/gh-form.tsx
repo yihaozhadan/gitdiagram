@@ -35,16 +35,23 @@ export default function GHForm({ isHome = true, username, repo }: GHFormProps) {
     e.preventDefault();
     setError("");
 
-    const githubUrlPattern = /github\.com\/([^\/]+)\/([^\/]+)/;
-    const match = githubUrlPattern.exec(repoUrl);
+    const githubUrlPattern =
+      /^https?:\/\/github\.com\/([a-zA-Z0-9-_]+)\/([a-zA-Z0-9-_\.]+)\/?$/;
+    const match = githubUrlPattern.exec(repoUrl.trim());
 
     if (!match) {
       setError("Please enter a valid GitHub repository URL");
       return;
     }
 
-    const [, username, repo] = match;
-    router.push(`/${username}/${repo}`);
+    const [, username, repo] = match || [];
+    if (!username || !repo) {
+      setError("Invalid repository URL format");
+      return;
+    }
+    const sanitizedUsername = encodeURIComponent(username);
+    const sanitizedRepo = encodeURIComponent(repo);
+    router.push(`/${sanitizedUsername}/${sanitizedRepo}`);
   };
 
   const handleExampleClick = (repoPath: string, e: React.MouseEvent) => {

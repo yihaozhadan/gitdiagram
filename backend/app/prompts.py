@@ -133,7 +133,6 @@ You must include click events for components of the diagram that have been speci
 - If it is a directory, it would be a click event to https://github.com/[username]/[repo]/tree/[branch]/<INSERT PATH HERE>
 and if it is a file it would be to https://github.com/[username]/[repo]/blob/[branch]/<INSERT PATH HERE>
 - Do this for as many components as specified in the component mapping, include directories and files.
-- Outline the clickable components in the diagram with a separate color.
 - It is very important that you do this for as many files as possible. The more the better.
 
 Your output should be valid Mermaid.js code that can be rendered into a diagram.
