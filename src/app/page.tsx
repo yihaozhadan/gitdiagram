@@ -1,4 +1,4 @@
-import GHForm from "~/components/gh-form";
+import MainCard from "~/components/main-card";
 import Hero from "~/components/hero";
 
 export default function HomePage() {
@@ -19,7 +19,7 @@ export default function HomePage() {
         </p>
       </div>
       <div className="mb-12 flex justify-center lg:mb-0">
-        <GHForm />
+        <MainCard />
       </div>
     </main>
   );

@@ -17,7 +17,7 @@ const exampleRepos = {
   Monkeytype: "/monkeytypegame/monkeytype",
 };
 
-interface GHFormProps {
+interface MainCardProps {
   isHome?: boolean;
   username?: string;
   repo?: string;
@@ -28,7 +28,7 @@ interface GHFormProps {
   lastGenerated?: Date;
 }
 
-export default function GHForm({
+export default function MainCard({
   isHome = true,
   username,
   repo,
@@ -37,7 +37,7 @@ export default function GHForm({
   onRegenerate,
   onCopy,
   lastGenerated,
-}: GHFormProps) {
+}: MainCardProps) {
   const [repoUrl, setRepoUrl] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Input } from "~/components/ui/input";
 import { CopyButton } from "./copy-button";
 import { Wand2, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { ActionButton } from "./action-button";

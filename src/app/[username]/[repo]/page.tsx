@@ -4,20 +4,22 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchDiagram } from "~/lib/fetch-backend";
 import { getCachedDiagram, cacheDiagram } from "~/app/_actions/cache";
-import GHForm from "~/components/gh-form";
+import MainCard from "~/components/main-card";
 import Loading from "~/components/loading";
 import MermaidChart from "~/components/mermaid-diagram";
+import {
+  handleModify,
+  handleRegenerate,
+  handleCopy,
+} from "~/lib/action-buttons";
+import { getLastGeneratedDate } from "~/app/_actions/repo";
 
 export default function Repo() {
   const params = useParams<{ username: string; repo: string }>();
   const [diagram, setDiagram] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
-
-  const handleCopy = () => {
-    // Placeholder for copy functionality
-    console.log("Copy Mermaid.js code");
-  };
+  const [lastGenerated, setLastGenerated] = useState<Date | undefined>();
 
   useEffect(() => {
     async function getDiagram() {
@@ -30,6 +32,9 @@ export default function Repo() {
         if (cached) {
           console.log("Diagram code: ", cached);
           setDiagram(cached);
+          // Fetch last generated date only after successful diagram retrieval
+          const date = await getLastGeneratedDate(params.username, params.repo);
+          setLastGenerated(date ?? undefined);
         } else {
           const result = await fetchDiagram(params.username, params.repo);
           if (result.error) {
@@ -38,6 +43,12 @@ export default function Repo() {
             await cacheDiagram(params.username, params.repo, result.response);
             console.log("Diagram code: ", result.response);
             setDiagram(result.response);
+            // Fetch last generated date only after successful diagram retrieval
+            const date = await getLastGeneratedDate(
+              params.username,
+              params.repo,
+            );
+            setLastGenerated(date ?? undefined);
           }
         }
       } catch (error) {
@@ -54,17 +65,15 @@ export default function Repo() {
   return (
     <div className="flex min-h-screen flex-col items-center p-4">
       <div className="flex w-full justify-center pt-8">
-        <GHForm
+        <MainCard
           isHome={false}
           username={params.username}
           repo={params.repo}
           showCustomization={!loading && !error}
-          onModify={(instructions) => console.log("Modify with:", instructions)}
-          onRegenerate={(instructions) =>
-            console.log("Regenerate with:", instructions)
-          }
+          onModify={handleModify}
+          onRegenerate={handleRegenerate}
           onCopy={handleCopy}
-          lastGenerated={new Date()}
+          lastGenerated={lastGenerated}
         />
       </div>
       <div className="mt-8 flex w-full flex-col items-center gap-8">
