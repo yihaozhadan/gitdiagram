@@ -97,6 +97,11 @@ export function useDiagram(username: string, repo: string) {
       return;
     }
 
+    if (!has1HourPassed(lastGenerated)) {
+      setError("Please wait 1 hour before regenerating the diagram.");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setCost("");
@@ -137,6 +142,14 @@ export function useDiagram(username: string, repo: string) {
     } catch (error) {
       console.error("Error copying to clipboard:", error);
     }
+  };
+
+  const has1HourPassed = (lastGenerated: Date | undefined): boolean => {
+    if (!lastGenerated) return true;
+    const now = new Date();
+    const diffInHours =
+      (now.getTime() - lastGenerated.getTime()) / (1000 * 60 * 60);
+    return diffInHours >= 1;
   };
 
   return {
