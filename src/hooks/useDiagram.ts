@@ -1,0 +1,123 @@
+import { useState, useEffect, useCallback } from "react";
+import { getCachedDiagram } from "~/app/_actions/cache";
+import { getLastGeneratedDate } from "~/app/_actions/repo";
+import {
+  generateAndCacheDiagram,
+  modifyAndCacheDiagram,
+} from "~/lib/fetch-backend";
+import { exampleRepos } from "~/lib/exampleRepos";
+
+export function useDiagram(username: string, repo: string) {
+  const [diagram, setDiagram] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [lastGenerated, setLastGenerated] = useState<Date | undefined>();
+
+  const getDiagram = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const cached = await getCachedDiagram(username, repo);
+
+      if (cached) {
+        setDiagram(cached);
+        const date = await getLastGeneratedDate(username, repo);
+        setLastGenerated(date ?? undefined);
+      } else {
+        const result = await generateAndCacheDiagram(username, repo);
+        if (result.error) {
+          setError(result.error);
+        } else if (result.response) {
+          setDiagram(result.response);
+          const date = await getLastGeneratedDate(username, repo);
+          setLastGenerated(date ?? undefined);
+        }
+      }
+    } catch (error) {
+      console.error("Error in getDiagram:", error);
+      setError("Something went wrong. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  }, [username, repo]);
+
+  useEffect(() => {
+    void getDiagram();
+  }, [getDiagram]);
+
+  const isExampleRepo = (repoName: string): boolean => {
+    return Object.values(exampleRepos).some((value) =>
+      value.includes(repoName),
+    );
+  };
+
+  const handleModify = async (instructions: string) => {
+    if (isExampleRepo(repo)) {
+      setError("Example repositories cannot be modified.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await modifyAndCacheDiagram(username, repo, instructions);
+      if (result.response) {
+        setDiagram(result.response);
+        const date = await getLastGeneratedDate(username, repo);
+        setLastGenerated(date ?? undefined);
+      } else if (result.error) {
+        setError(result.error);
+      }
+    } catch (error) {
+      console.error("Error modifying diagram:", error);
+      setError("Failed to modify diagram. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegenerate = async (instructions: string) => {
+    if (isExampleRepo(repo)) {
+      setError("Example repositories cannot be regenerated.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await generateAndCacheDiagram(
+        username,
+        repo,
+        instructions,
+      );
+      if (result.response) {
+        setDiagram(result.response);
+        const date = await getLastGeneratedDate(username, repo);
+        setLastGenerated(date ?? undefined);
+      } else if (result.error) {
+        setError(result.error);
+      }
+    } catch (error) {
+      console.error("Error regenerating diagram:", error);
+      setError("Failed to regenerate diagram. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(diagram);
+    } catch (error) {
+      console.error("Error copying to clipboard:", error);
+    }
+  };
+
+  return {
+    diagram,
+    error,
+    loading,
+    lastGenerated,
+    handleModify,
+    handleRegenerate,
+    handleCopy,
+  };
+}

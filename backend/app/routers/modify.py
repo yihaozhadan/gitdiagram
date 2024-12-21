@@ -22,7 +22,7 @@ class ModifyRequest(BaseModel):
 
 
 @router.post("")
-@limiter.limit("3/minute;15/day")
+@limiter.limit("2/minute;10/day")
 async def modify(request: Request, body: ModifyRequest):
     try:
         # Check instructions length

@@ -1,5 +1,3 @@
-"use server";
-
 import { cacheDiagram, getCachedDiagram } from "~/app/_actions/cache";
 
 interface ApiResponse {
@@ -33,6 +31,7 @@ export async function generateAndCacheDiagram(
       return { error: data.error };
     }
 
+    // Call the server action to cache the diagram
     await cacheDiagram(username, repo, data.response!);
     return { response: data.response };
   } catch (error) {
@@ -79,6 +78,7 @@ export async function modifyAndCacheDiagram(
       return { error: data.error };
     }
 
+    // Call the server action to cache the diagram
     await cacheDiagram(username, repo, data.response!);
     return { response: data.response };
   } catch (error) {

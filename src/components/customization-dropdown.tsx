@@ -67,7 +67,6 @@ export function CustomizationDropdown({
                 onClick={() => onRegenerate(instructions)}
                 icon={RefreshCw}
                 tooltipText="Regenerate with/without custom instructions"
-                disabled={!instructions.trim()}
               />
 
               <CopyButton onClick={onCopy} />
