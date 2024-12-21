@@ -7,6 +7,7 @@ import os
 from app.prompts import SYSTEM_FIRST_PROMPT, SYSTEM_SECOND_PROMPT, SYSTEM_THIRD_PROMPT, ADDITIONAL_SYSTEM_INSTRUCTIONS_PROMPT
 from anthropic._exceptions import RateLimitError
 from pydantic import BaseModel
+from functools import lru_cache
 
 load_dotenv()
 
@@ -18,35 +19,44 @@ github_service = GitHubService(github_token)
 claude_service = ClaudeService()
 
 
-class GenerateRequest(BaseModel):
+# cache github data for 5 minutes to avoid double API calls from cost and generate
+@lru_cache(maxsize=100)
+def get_cached_github_data(username: str, repo: str):
+    default_branch = github_service.get_default_branch(username, repo)
+    if not default_branch:
+        default_branch = "main"  # fallback value
+
+    file_tree = github_service.get_github_file_paths_as_list(username, repo)
+    readme = github_service.get_github_readme(username, repo)
+
+    return {
+        "default_branch": default_branch,
+        "file_tree": file_tree,
+        "readme": readme
+    }
+
+
+class ApiRequest(BaseModel):
     username: str
     repo: str
     instructions: str
 
 
-class CostRequest(BaseModel):
-    username: str
-    repo: str
-
-
 @router.post("")
 @limiter.limit("1/minute;5/day")
-async def generate(request: Request, body: GenerateRequest):
+async def generate(request: Request, body: ApiRequest):
     try:
         # Check instructions length
         if len(body.instructions) > 1000:
             return {"error": "Instructions exceed maximum length of 1000 characters"}
 
-        # Get default branch first
-        default_branch = github_service.get_default_branch(
-            body.username, body.repo)
-        if not default_branch:
-            default_branch = "main"  # fallback value
+        # Get cached github data
+        github_data = get_cached_github_data(body.username, body.repo)
 
-        # get file tree and README content
-        file_tree = github_service.get_github_file_paths_as_list(
-            body.username, body.repo)
-        readme = github_service.get_github_readme(body.username, body.repo)
+        # Get default branch first
+        default_branch = github_data["default_branch"]
+        file_tree = github_data["file_tree"]
+        readme = github_data["readme"]
 
         # Check combined token count
         combined_content = f"{file_tree}\n{readme}"
@@ -127,12 +137,12 @@ async def generate(request: Request, body: GenerateRequest):
 
 @router.post("/cost")
 @limiter.limit("5/minute")
-async def get_generation_cost(request: Request, body: CostRequest):
+async def get_generation_cost(request: Request, body: ApiRequest):
     try:
         # Get file tree and README content
-        file_tree = github_service.get_github_file_paths_as_list(
-            body.username, body.repo)
-        readme = github_service.get_github_readme(body.username, body.repo)
+        github_data = get_cached_github_data(body.username, body.repo)
+        file_tree = github_data["file_tree"]
+        readme = github_data["readme"]
 
         # Calculate combined token count
         file_tree_tokens = claude_service.count_tokens(file_tree)
@@ -143,12 +153,12 @@ async def get_generation_cost(request: Request, body: CostRequest):
         # Output cost: $15 per 1M tokens ($0.000015 per token)
         # Estimate output tokens as roughly equal to input tokens
         input_cost = ((file_tree_tokens * 2 + readme_tokens) + 3000) * \
-            0.000003  # 3 API calls
-        output_cost = 3500 * 0.000015  # Estimated output tokens
+            0.000003
+        output_cost = 3500 * 0.000015
         estimated_cost = input_cost + output_cost
 
         # Format as currency string
         cost_string = f"${estimated_cost:.2f} USD"
-        return {"cost": cost_string}
+        return {"response": cost_string}
     except Exception as e:
         return {"error": str(e)}

@@ -27,16 +27,17 @@ export function useDiagram(username: string, repo: string) {
         const date = await getLastGeneratedDate(username, repo);
         setLastGenerated(date ?? undefined);
       } else {
-        const costEstimate = await getCostOfGeneration(username, repo);
+        const costEstimate = await getCostOfGeneration(username, repo, ""); // empty instructions so lru cache is used
 
         if (costEstimate.error) {
           console.error("Cost estimation failed:", costEstimate.error);
           setError(costEstimate.error);
         }
 
-        setCost(costEstimate.cost ?? "");
+        setCost(costEstimate.response ?? "");
 
         const result = await generateAndCacheDiagram(username, repo);
+
         if (result.error) {
           console.error("Diagram generation failed:", result.error);
           setError(result.error);
@@ -71,6 +72,8 @@ export function useDiagram(username: string, repo: string) {
     }
 
     setLoading(true);
+    setError("");
+    setCost();
     try {
       const result = await modifyAndCacheDiagram(username, repo, instructions);
       if (result.response) {
@@ -95,15 +98,17 @@ export function useDiagram(username: string, repo: string) {
     }
 
     setLoading(true);
+    setError("");
+    setCost("");
     try {
-      const costEstimate = await getCostOfGeneration(username, repo);
+      const costEstimate = await getCostOfGeneration(username, repo, "");
 
       if (costEstimate.error) {
         console.error("Cost estimation failed:", costEstimate.error);
         setError(costEstimate.error);
       }
 
-      setCost(costEstimate.cost ?? "");
+      setCost(costEstimate.response ?? "");
 
       const result = await generateAndCacheDiagram(
         username,
