@@ -56,20 +56,22 @@ export function CustomizationDropdown({
                 rows={1}
               />
 
-              <ActionButton
-                onClick={() => onModify(instructions)}
-                icon={Wand2}
-                tooltipText="Modify existing diagram"
-                disabled={!instructions.trim()}
-              />
+              <div className="flex flex-row gap-3 sm:gap-4">
+                <ActionButton
+                  onClick={() => onModify(instructions)}
+                  icon={Wand2}
+                  tooltipText="Modify existing diagram"
+                  disabled={!instructions.trim()}
+                />
 
-              <ActionButton
-                onClick={() => onRegenerate(instructions)}
-                icon={RefreshCw}
-                tooltipText="Regenerate with/without custom instructions"
-              />
+                <ActionButton
+                  onClick={() => onRegenerate(instructions)}
+                  icon={RefreshCw}
+                  tooltipText="Regenerate with/without custom instructions"
+                />
 
-              <CopyButton onClick={onCopy} />
+                <CopyButton onClick={onCopy} />
+              </div>
             </div>
 
             <div className="flex items-center">

@@ -22,7 +22,11 @@ const messages = [
   "No internships found 💀",
 ];
 
-const Loading = () => {
+interface LoadingProps {
+  cost?: string;
+}
+
+const Loading = ({ cost }: LoadingProps) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 
   useEffect(() => {
@@ -39,6 +43,11 @@ const Loading = () => {
       <div className="mt-2 animate-fade-in-up text-lg">
         {messages[currentMessageIndex]}
       </div>
+      {cost && (
+        <div className="animate-fade-in mt-2 text-sm text-gray-400">
+          Estimated cost: {cost}
+        </div>
+      )}
     </div>
   );
 };

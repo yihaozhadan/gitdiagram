@@ -6,6 +6,7 @@ from app.core.limiter import limiter
 import os
 from app.prompts import SYSTEM_FIRST_PROMPT, SYSTEM_SECOND_PROMPT, SYSTEM_THIRD_PROMPT, ADDITIONAL_SYSTEM_INSTRUCTIONS_PROMPT
 from anthropic._exceptions import RateLimitError
+from pydantic import BaseModel
 
 load_dotenv()
 
@@ -17,23 +18,35 @@ github_service = GitHubService(github_token)
 claude_service = ClaudeService()
 
 
-@router.get("")
+class GenerateRequest(BaseModel):
+    username: str
+    repo: str
+    instructions: str
+
+
+class CostRequest(BaseModel):
+    username: str
+    repo: str
+
+
+@router.post("")
 @limiter.limit("1/minute;5/day")
-async def generate(request: Request, username: str, repo: str, instructions: str = ""):
+async def generate(request: Request, body: GenerateRequest):
     try:
         # Check instructions length
-        if len(instructions) > 1000:
+        if len(body.instructions) > 1000:
             return {"error": "Instructions exceed maximum length of 1000 characters"}
 
         # Get default branch first
-        default_branch = github_service.get_default_branch(username, repo)
+        default_branch = github_service.get_default_branch(
+            body.username, body.repo)
         if not default_branch:
             default_branch = "main"  # fallback value
 
         # get file tree and README content
         file_tree = github_service.get_github_file_paths_as_list(
-            username, repo)
-        readme = github_service.get_github_readme(username, repo)
+            body.username, body.repo)
+        readme = github_service.get_github_readme(body.username, body.repo)
 
         # Check combined token count
         combined_content = f"{file_tree}\n{readme}"
@@ -46,7 +59,7 @@ async def generate(request: Request, username: str, repo: str, instructions: str
         # Prepare system prompts with instructions if provided
         first_system_prompt = SYSTEM_FIRST_PROMPT
         third_system_prompt = SYSTEM_THIRD_PROMPT
-        if instructions:
+        if body.instructions:
             first_system_prompt = first_system_prompt + \
                 "\n" + ADDITIONAL_SYSTEM_INSTRUCTIONS_PROMPT
             third_system_prompt = third_system_prompt + \
@@ -58,7 +71,7 @@ async def generate(request: Request, username: str, repo: str, instructions: str
             data={
                 "file_tree": file_tree,
                 "readme": readme,
-                "instructions": instructions
+                "instructions": body.instructions
             }
         )
 
@@ -88,7 +101,7 @@ async def generate(request: Request, username: str, repo: str, instructions: str
             data={
                 "explanation": explanation,
                 "component_mapping": component_mapping_text,
-                "instructions": instructions
+                "instructions": body.instructions
             }
         )
 
@@ -98,8 +111,8 @@ async def generate(request: Request, username: str, repo: str, instructions: str
 
         # Process the diagram text before sending to client
         processed_diagram = mermaid_code\
-            .replace("[username]", username)\
-            .replace("[repo]", repo)\
+            .replace("[username]", body.username)\
+            .replace("[repo]", body.repo)\
             .replace("[branch]", default_branch)
 
         return {"response": processed_diagram}
@@ -108,5 +121,34 @@ async def generate(request: Request, username: str, repo: str, instructions: str
             status_code=429,
             detail="Service is currently experiencing high demand. Please try again in a few minutes."
         )
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@router.post("/cost")
+@limiter.limit("5/minute")
+async def get_generation_cost(request: Request, body: CostRequest):
+    try:
+        # Get file tree and README content
+        file_tree = github_service.get_github_file_paths_as_list(
+            body.username, body.repo)
+        readme = github_service.get_github_readme(body.username, body.repo)
+
+        # Calculate combined token count
+        file_tree_tokens = claude_service.count_tokens(file_tree)
+        readme_tokens = claude_service.count_tokens(readme)
+
+        # Calculate approximate cost
+        # Input cost: $3 per 1M tokens ($0.000003 per token)
+        # Output cost: $15 per 1M tokens ($0.000015 per token)
+        # Estimate output tokens as roughly equal to input tokens
+        input_cost = ((file_tree_tokens * 2 + readme_tokens) + 3000) * \
+            0.000003  # 3 API calls
+        output_cost = 3500 * 0.000015  # Estimated output tokens
+        estimated_cost = input_cost + output_cost
+
+        # Format as currency string
+        cost_string = f"${estimated_cost:.2f} USD"
+        return {"cost": cost_string}
     except Exception as e:
         return {"error": str(e)}

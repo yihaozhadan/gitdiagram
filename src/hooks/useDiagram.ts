@@ -4,6 +4,7 @@ import { getLastGeneratedDate } from "~/app/_actions/repo";
 import {
   generateAndCacheDiagram,
   modifyAndCacheDiagram,
+  getCostOfGeneration,
 } from "~/lib/fetch-backend";
 import { exampleRepos } from "~/lib/exampleRepos";
 
@@ -12,10 +13,12 @@ export function useDiagram(username: string, repo: string) {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [lastGenerated, setLastGenerated] = useState<Date | undefined>();
+  const [cost, setCost] = useState<string>("");
 
   const getDiagram = useCallback(async () => {
     setLoading(true);
     setError("");
+    setCost("");
     try {
       const cached = await getCachedDiagram(username, repo);
 
@@ -24,8 +27,18 @@ export function useDiagram(username: string, repo: string) {
         const date = await getLastGeneratedDate(username, repo);
         setLastGenerated(date ?? undefined);
       } else {
+        const costEstimate = await getCostOfGeneration(username, repo);
+
+        if (costEstimate.error) {
+          console.error("Cost estimation failed:", costEstimate.error);
+          setError(costEstimate.error);
+        }
+
+        setCost(costEstimate.cost ?? "");
+
         const result = await generateAndCacheDiagram(username, repo);
         if (result.error) {
+          console.error("Diagram generation failed:", result.error);
           setError(result.error);
         } else if (result.response) {
           setDiagram(result.response);
@@ -83,17 +96,27 @@ export function useDiagram(username: string, repo: string) {
 
     setLoading(true);
     try {
+      const costEstimate = await getCostOfGeneration(username, repo);
+
+      if (costEstimate.error) {
+        console.error("Cost estimation failed:", costEstimate.error);
+        setError(costEstimate.error);
+      }
+
+      setCost(costEstimate.cost ?? "");
+
       const result = await generateAndCacheDiagram(
         username,
         repo,
         instructions,
       );
-      if (result.response) {
+      if (result.error) {
+        console.error("Diagram generation failed:", result.error);
+        setError(result.error);
+      } else if (result.response) {
         setDiagram(result.response);
         const date = await getLastGeneratedDate(username, repo);
         setLastGenerated(date ?? undefined);
-      } else if (result.error) {
-        setError(result.error);
       }
     } catch (error) {
       console.error("Error regenerating diagram:", error);
@@ -116,6 +139,7 @@ export function useDiagram(username: string, repo: string) {
     error,
     loading,
     lastGenerated,
+    cost,
     handleModify,
     handleRegenerate,
     handleCopy,
