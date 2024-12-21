@@ -2,17 +2,16 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { fetchDiagram } from "~/lib/fetch-backend";
-import { getCachedDiagram, cacheDiagram } from "~/app/_actions/cache";
+import { getCachedDiagram } from "~/app/_actions/cache";
 import MainCard from "~/components/main-card";
 import Loading from "~/components/loading";
 import MermaidChart from "~/components/mermaid-diagram";
-import {
-  handleModify,
-  handleRegenerate,
-  handleCopy,
-} from "~/lib/action-buttons";
 import { getLastGeneratedDate } from "~/app/_actions/repo";
+import {
+  generateAndCacheDiagram,
+  modifyAndCacheDiagram,
+} from "~/app/_actions/generate";
+import { exampleRepos } from "~/lib/exampleRepos";
 
 export default function Repo() {
   const params = useParams<{ username: string; repo: string }>();
@@ -30,20 +29,20 @@ export default function Repo() {
         const cached = await getCachedDiagram(params.username, params.repo);
 
         if (cached) {
-          console.log("Diagram code: ", cached);
+          console.log("Cached diagram code: ", cached);
           setDiagram(cached);
-          // Fetch last generated date only after successful diagram retrieval
           const date = await getLastGeneratedDate(params.username, params.repo);
           setLastGenerated(date ?? undefined);
         } else {
-          const result = await fetchDiagram(params.username, params.repo);
+          const result = await generateAndCacheDiagram(
+            params.username,
+            params.repo,
+          );
           if (result.error) {
             setError(result.error);
           } else if (result.response) {
-            await cacheDiagram(params.username, params.repo, result.response);
-            console.log("Diagram code: ", result.response);
+            console.log("Generated diagram code: ", result.response);
             setDiagram(result.response);
-            // Fetch last generated date only after successful diagram retrieval
             const date = await getLastGeneratedDate(
               params.username,
               params.repo,
@@ -61,6 +60,80 @@ export default function Repo() {
 
     void getDiagram();
   }, [params.username, params.repo]);
+
+  const handleModify = async (instructions: string) => {
+    if (isExampleRepo(params.repo)) {
+      setError("Example repositories cannot be modified.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await modifyAndCacheDiagram(
+        params.username,
+        params.repo,
+        instructions,
+      );
+      if (result.response) {
+        setDiagram(result.response);
+        const date = await getLastGeneratedDate(params.username, params.repo);
+        setLastGenerated(date ?? undefined);
+      } else if (result.error) {
+        setError(result.error);
+      }
+    } catch (error) {
+      console.error("Error modifying diagram:", error);
+      setError("Failed to modify diagram. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isExampleRepo = (repoName: string): boolean => {
+    for (const value of Object.values(exampleRepos)) {
+      if (value.includes(repoName)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const handleRegenerate = async (instructions: string) => {
+    // Check if this is an example repo
+    if (isExampleRepo(params.repo)) {
+      setError("Example repositories cannot be regenerated.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await generateAndCacheDiagram(
+        params.username,
+        params.repo,
+        instructions,
+      );
+      if (result.response) {
+        setDiagram(result.response);
+        const date = await getLastGeneratedDate(params.username, params.repo);
+        setLastGenerated(date ?? undefined);
+      } else if (result.error) {
+        setError(result.error);
+      }
+    } catch (error) {
+      console.error("Error regenerating diagram:", error);
+      setError("Failed to regenerate diagram. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(diagram);
+    } catch (error) {
+      console.error("Error copying to clipboard:", error);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col items-center p-4">

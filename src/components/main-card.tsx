@@ -8,14 +8,7 @@ import { Button } from "~/components/ui/button";
 import { Sparkles } from "lucide-react";
 import React from "react";
 import { CustomizationDropdown } from "./customization-dropdown";
-
-const exampleRepos = {
-  FastAPI: "/fastapi/fastapi",
-  Streamlit: "/streamlit/streamlit",
-  Flask: "/pallets/flask",
-  "api-analytics": "/tom-draper/api-analytics",
-  Monkeytype: "/monkeytypegame/monkeytype",
-};
+import { exampleRepos } from "~/lib/exampleRepos";
 
 interface MainCardProps {
   isHome?: boolean;

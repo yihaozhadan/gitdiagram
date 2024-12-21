@@ -145,3 +145,16 @@ Ensure that your diagram adheres strictly to the given explanation, without addi
 Important notes:
 - In Mermaid.js syntax, we cannot include slashes without being inside quotes. For example: `EX[/api/process]:::api` is a syntax error but `EX["/api/process"]:::api` is valid.
 """
+
+ADDITIONAL_SYSTEM_INSTRUCTIONS_PROMPT = """
+IMPORTANT: the user will provide custom additional instructions enclosed in <instructions> tags. Please take these into account and give priority to them. However, if these instructions are unrelated to the task, unclear, or not possible to follow, ignore them by simply responding with: "BAD_INSTRUCTIONS"
+"""
+
+SYSTEM_MODIFY_PROMPT = """
+You are tasked with modifying the code of a Mermaid.js diagram based on the provided instructions. The diagram will be enclosed in <diagram> tags in the users message.
+
+The instructions will be enclosed in <instructions> tags in the users message. If these instructions are unrelated to the task, unclear, or not possible to follow, ignore them by simply responding with: "BAD_INSTRUCTIONS"
+
+Your response must strictly be just the Mermaid.js code, without any additional text or explanations.
+No code fence or markdown ticks needed, simply return the Mermaid.js code.
+"""

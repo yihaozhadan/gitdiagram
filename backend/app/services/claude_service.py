@@ -54,6 +54,10 @@ class ClaudeService:
                 parts.append(f"<explanation>\n{value}\n</explanation>")
             elif key == 'component_mapping':
                 parts.append(f"<component_mapping>\n{value}\n</component_mapping>")
+            elif key == 'instructions' and value != "":
+                parts.append(f"<instructions>\n{value}\n</instructions>")
+            elif key == 'diagram':
+                parts.append(f"<diagram>\n{value}\n</diagram>")
         return "\n\n".join(parts)
     # autopep8: on
 
