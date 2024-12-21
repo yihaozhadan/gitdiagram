@@ -73,7 +73,7 @@ export function useDiagram(username: string, repo: string) {
 
     setLoading(true);
     setError("");
-    setCost();
+    setCost("");
     try {
       const result = await modifyAndCacheDiagram(username, repo, instructions);
       if (result.response) {

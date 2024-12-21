@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { Progress } from "./ui/progress";
 
 // Move the trio import and registration to a client-side only component
 const LoadingAnimation = dynamic(() => import("./loading-animation"), {
@@ -24,10 +25,13 @@ const messages = [
 
 interface LoadingProps {
   cost?: string;
+  isModifying?: boolean;
 }
 
-const Loading = ({ cost }: LoadingProps) => {
+const Loading = ({ cost, isModifying }: LoadingProps) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const seconds = isModifying ? 5 : 40;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -37,14 +41,42 @@ const Loading = ({ cost }: LoadingProps) => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    // Start progress if we're modifying OR if we have a cost
+    if (!isModifying && !cost) return;
+
+    const startTime = Date.now();
+    const duration = seconds * 1000;
+
+    const easeOutCubic = (x: number): number => {
+      return 1 - Math.pow(1 - x, 3);
+    };
+
+    const updateProgress = () => {
+      const elapsed = Date.now() - startTime;
+      const rawProgress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutCubic(rawProgress) * 100;
+      setProgress(easedProgress);
+
+      if (elapsed < duration) {
+        requestAnimationFrame(updateProgress);
+      }
+    };
+
+    requestAnimationFrame(updateProgress);
+  }, [cost, seconds, isModifying]);
+
   return (
     <div className="flex h-full flex-col items-center justify-center">
       <LoadingAnimation />
-      <div className="mt-2 animate-fade-in-up text-lg">
+      {(cost ?? isModifying) && (
+        <Progress value={progress} className="mt-4 h-[7px] w-[300px]" />
+      )}
+      <div className="mt-4 animate-fade-in-up text-lg">
         {messages[currentMessageIndex]}
       </div>
       {cost && (
-        <div className="animate-fade-in mt-2 text-sm text-gray-400">
+        <div className="animate-fade-in mt-4 text-sm text-purple-500">
           Estimated cost: {cost}
         </div>
       )}

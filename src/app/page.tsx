@@ -6,6 +6,7 @@ export default function HomePage() {
     <main className="flex-grow p-4">
       <div className="mx-auto my-4 max-w-4xl lg:my-12">
         <Hero />
+        <div className="mt-12"></div>
         <p className="mx-auto mt-8 max-w-2xl text-center text-lg">
           Turn any GitHub repository into an interactive diagram for
           visualization.

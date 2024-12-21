@@ -36,7 +36,7 @@ export default function Repo() {
       <div className="mt-8 flex w-full flex-col items-center gap-8">
         {loading ? (
           <div className="mt-12">
-            <Loading cost={cost} />
+            <Loading cost={cost} isModifying={!!diagram} />
           </div>
         ) : error ? (
           <div className="mt-12 text-center">
