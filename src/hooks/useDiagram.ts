@@ -12,6 +12,7 @@ export function useDiagram(username: string, repo: string) {
   const [diagram, setDiagram] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [isRegenerating, setIsRegenerating] = useState<boolean>(false);
   const [lastGenerated, setLastGenerated] = useState<Date | undefined>();
   const [cost, setCost] = useState<string>("");
 
@@ -74,6 +75,7 @@ export function useDiagram(username: string, repo: string) {
     setLoading(true);
     setError("");
     setCost("");
+    setIsRegenerating(false);
     try {
       const result = await modifyAndCacheDiagram(username, repo, instructions);
       if (result.response) {
@@ -97,14 +99,10 @@ export function useDiagram(username: string, repo: string) {
       return;
     }
 
-    if (!has1HourPassed(lastGenerated)) {
-      setError("Please wait 1 hour before regenerating the diagram.");
-      return;
-    }
-
     setLoading(true);
     setError("");
     setCost("");
+    setIsRegenerating(true);
     try {
       const costEstimate = await getCostOfGeneration(username, repo, "");
 
@@ -144,20 +142,13 @@ export function useDiagram(username: string, repo: string) {
     }
   };
 
-  const has1HourPassed = (lastGenerated: Date | undefined): boolean => {
-    if (!lastGenerated) return true;
-    const now = new Date();
-    const diffInHours =
-      (now.getTime() - lastGenerated.getTime()) / (1000 * 60 * 60);
-    return diffInHours >= 1;
-  };
-
   return {
     diagram,
     error,
     loading,
     lastGenerated,
     cost,
+    isRegenerating,
     handleModify,
     handleRegenerate,
     handleCopy,

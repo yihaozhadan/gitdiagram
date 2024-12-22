@@ -31,7 +31,7 @@ interface LoadingProps {
 const Loading = ({ cost, isModifying }: LoadingProps) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-  const seconds = isModifying ? 5 : 40;
+  const seconds = isModifying ? 5 : 50;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -41,7 +41,15 @@ const Loading = ({ cost, isModifying }: LoadingProps) => {
     return () => clearInterval(interval);
   }, []);
 
+  // Reset progress when component mounts
   useEffect(() => {
+    setProgress(0);
+  }, []);
+
+  // Handle progress animation
+  useEffect(() => {
+    let animationFrameId: number;
+
     // Start progress if we're modifying OR if we have a cost
     if (!isModifying && !cost) return;
 
@@ -59,11 +67,19 @@ const Loading = ({ cost, isModifying }: LoadingProps) => {
       setProgress(easedProgress);
 
       if (elapsed < duration) {
-        requestAnimationFrame(updateProgress);
+        animationFrameId = requestAnimationFrame(updateProgress);
       }
     };
 
-    requestAnimationFrame(updateProgress);
+    animationFrameId = requestAnimationFrame(updateProgress);
+
+    // Cleanup function to cancel animation frame and reset progress
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      setProgress(0);
+    };
   }, [cost, seconds, isModifying]);
 
   return (
@@ -76,7 +92,7 @@ const Loading = ({ cost, isModifying }: LoadingProps) => {
         {messages[currentMessageIndex]}
       </div>
       {cost && (
-        <div className="animate-fade-in mt-4 text-sm text-purple-500">
+        <div className="mt-4 animate-fade-in text-sm text-purple-500">
           Estimated cost: {cost}
         </div>
       )}
