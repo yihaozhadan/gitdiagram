@@ -11,7 +11,7 @@ fi
 
 # Copy Nginx configuration
 echo "Copying Nginx configuration..."
-cp ./api.conf /etc/nginx/sites-available/api
+cp "$(dirname "$0")/api.conf" /etc/nginx/sites-available/api
 ln -sf /etc/nginx/sites-available/api /etc/nginx/sites-enabled/
 
 # Test Nginx configuration
