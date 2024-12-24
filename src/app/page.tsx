@@ -1,5 +1,6 @@
 import MainCard from "~/components/main-card";
 import Hero from "~/components/hero";
+import Loading from "~/components/loading";
 
 export default function HomePage() {
   return (
@@ -21,6 +22,9 @@ export default function HomePage() {
       </div>
       <div className="mb-12 flex justify-center lg:mb-0">
         <MainCard />
+      </div>
+      <div className="mb-12 flex justify-center lg:mb-0">
+        <Loading cost="$0.07 USD" isModifying={true} />
       </div>
     </main>
   );

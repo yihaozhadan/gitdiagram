@@ -31,7 +31,7 @@ interface LoadingProps {
 const Loading = ({ cost, isModifying }: LoadingProps) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-  const seconds = isModifying ? 5 : 50;
+  const seconds = isModifying ? 10 : 45;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -56,15 +56,10 @@ const Loading = ({ cost, isModifying }: LoadingProps) => {
     const startTime = Date.now();
     const duration = seconds * 1000;
 
-    const easeOutCubic = (x: number): number => {
-      return 1 - Math.pow(1 - x, 3);
-    };
-
     const updateProgress = () => {
       const elapsed = Date.now() - startTime;
       const rawProgress = Math.min(elapsed / duration, 1);
-      const easedProgress = easeOutCubic(rawProgress) * 100;
-      setProgress(easedProgress);
+      setProgress(rawProgress * 100);
 
       if (elapsed < duration) {
         animationFrameId = requestAnimationFrame(updateProgress);
@@ -73,7 +68,6 @@ const Loading = ({ cost, isModifying }: LoadingProps) => {
 
     animationFrameId = requestAnimationFrame(updateProgress);
 
-    // Cleanup function to cancel animation frame and reset progress
     return () => {
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
