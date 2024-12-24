@@ -10,11 +10,11 @@ cd ~/gitdiagram
 git pull origin main
 
 # Build and restart containers
-docker compose down
-docker compose up --build -d
+docker-compose down
+docker-compose up --build -d
 
 # Remove unused images
 docker image prune -f
 
 # Show logs
-docker compose logs -f
+docker-compose logs -f
