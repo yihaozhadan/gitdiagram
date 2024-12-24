@@ -1,10 +1,9 @@
 import MainCard from "~/components/main-card";
 import Hero from "~/components/hero";
-import Loading from "~/components/loading";
 
 export default function HomePage() {
   return (
-    <main className="flex-grow p-4">
+    <main className="flex-grow p-8">
       <div className="mx-auto my-4 max-w-4xl lg:my-12">
         <Hero />
         <div className="mt-12"></div>
