@@ -23,9 +23,6 @@ export default function HomePage() {
       <div className="mb-12 flex justify-center lg:mb-0">
         <MainCard />
       </div>
-      <div className="mb-12 flex justify-center lg:mb-0">
-        <Loading cost="$0.07 USD" isModifying={true} />
-      </div>
     </main>
   );
 }
