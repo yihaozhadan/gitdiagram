@@ -8,6 +8,7 @@ from app.prompts import SYSTEM_FIRST_PROMPT, SYSTEM_SECOND_PROMPT, SYSTEM_THIRD_
 from anthropic._exceptions import RateLimitError
 from pydantic import BaseModel
 from functools import lru_cache
+import re
 
 load_dotenv()
 
@@ -122,11 +123,13 @@ async def generate(request: Request, body: ApiRequest):
         if "BAD_INSTRUCTIONS" in mermaid_code:
             return {"error": "Invalid or unclear instructions provided"}
 
-        # Process the diagram text before sending to client
-        processed_diagram = mermaid_code\
-            .replace("[username]", body.username)\
-            .replace("[repo]", body.repo)\
-            .replace("[branch]", default_branch)
+        # Process click events to include full GitHub URLs
+        processed_diagram = process_click_events(
+            mermaid_code,
+            body.username,
+            body.repo,
+            default_branch
+        )
 
         print("component_mapping_text:", component_mapping_text)
 
@@ -167,3 +170,28 @@ async def get_generation_cost(request: Request, body: ApiRequest):
         return {"cost": cost_string}
     except Exception as e:
         return {"error": str(e)}
+
+
+def process_click_events(diagram: str, username: str, repo: str, branch: str) -> str:
+    """
+    Process click events in Mermaid diagram to include full GitHub URLs.
+    Detects if path is file or directory and uses appropriate URL format.
+    """
+    def replace_path(match):
+        # Extract the path from the click event
+        path = match.group(2).strip('"\'')
+
+        # Determine if path is likely a file (has extension) or directory
+        is_file = '.' in path.split('/')[-1]
+
+        # Construct GitHub URL
+        base_url = f"https://github.com/{username}/{repo}"
+        path_type = "blob" if is_file else "tree"
+        full_url = f"{base_url}/{path_type}/{branch}/{path}"
+
+        # Return the full click event with the new URL
+        return f'click {match.group(1)} "{full_url}"'
+
+    # Match click events: click ComponentName "path/to/something"
+    click_pattern = r'click ([^\s"]+)\s+"([^"]+)"'
+    return re.sub(click_pattern, replace_path, diagram)

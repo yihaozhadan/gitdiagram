@@ -11,7 +11,7 @@ git pull origin main
 
 # Build and restart containers
 docker-compose down
-docker-compose up --build -d
+ENVIRONMENT=production docker-compose up --build -d
 
 # Remove unused images
 docker image prune -f

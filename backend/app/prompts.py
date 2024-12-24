@@ -133,7 +133,7 @@ You must include click events for components of the diagram that have been speci
 - Do not try to include the full url. This will be processed by another program afterwards. All you need to do is include the path.
 - For example:
   - This is a correct click event: `click Example "app/example.js"`
-  - This is an incorrect click event: `click Example "https://github.com/username/repo/tree/main/app/example.js"`
+  - This is an incorrect click event: `click Example "https://github.com/username/repo/blob/main/app/example.js"`
 - Do this for as many components as specified in the component mapping, include directories and files.
   - If you believe the component contains files and is a directory, include the directory path.
   - If you believe the component references a specific file, include the file path.

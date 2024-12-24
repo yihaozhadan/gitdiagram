@@ -9,4 +9,6 @@ services:
       - ./backend:/app
     env_file:
       - .env
-    restart: unless-stopped # Automatically restarts if container crashes
+    environment:
+      - ENVIRONMENT=development
+    restart: unless-stopped
