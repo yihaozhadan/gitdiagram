@@ -1,22 +1,20 @@
 #!/bin/bash
 
+# Exit on any error
+set -e
+
+# Navigate to project directory
+cd ~/gitdiagram
+
 # Pull latest changes
 git pull origin main
 
-# Build new Docker image
-docker build -t gitdiagram-api .
+# Build and restart containers
+docker compose down
+docker compose up --build -d
 
-# Stop and remove old container
-docker stop gitdiagram-api || true
-docker rm gitdiagram-api || true
-
-# Run new container
-docker run -d \
-  --name gitdiagram-api \
-  --restart unless-stopped \
-  -p 8000:8000 \
-  --env-file .env \
-  gitdiagram-api
-
-# Cleanup old images
+# Remove unused images
 docker image prune -f
+
+# Show logs
+docker compose logs -f
