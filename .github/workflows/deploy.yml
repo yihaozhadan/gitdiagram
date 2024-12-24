@@ -29,5 +29,7 @@ jobs:
             cd ~/gitdiagram
             git fetch origin main
             git reset --hard origin/main  # Force local to match remote main
-            chmod +x ./backend/deploy.sh  # Make the script executable
+            sudo chmod +x ./backend/nginx/setup_nginx.sh
+            sudo ./backend/nginx/setup_nginx.sh
+            chmod +x ./backend/deploy.sh
             ./backend/deploy.sh
