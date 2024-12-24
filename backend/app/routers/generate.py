@@ -131,8 +131,6 @@ async def generate(request: Request, body: ApiRequest):
             default_branch
         )
 
-        print("component_mapping_text:", component_mapping_text)
-
         return {"diagram": processed_diagram,
                 "explanation": explanation}
     except RateLimitError as e:

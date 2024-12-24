@@ -9,6 +9,9 @@ from starlette.exceptions import ExceptionMiddleware
 from api_analytics.fastapi import Analytics
 import os
 
+from time import sleep
+
+
 app = FastAPI()
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, cast(
@@ -40,3 +43,9 @@ app.include_router(modify.router)
 @limiter.limit("100/day")
 async def root(request: Request):
     return {"message": "Hello from GitDiagram API!"}
+
+
+@app.get("/slow")
+async def slow(request: Request):
+    sleep(120)
+    return {"message": "slow"}
