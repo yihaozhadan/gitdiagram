@@ -20,6 +20,7 @@ export function useDiagram(username: string, repo: string) {
     setLoading(true);
     setError("");
     setCost("");
+    setIsRegenerating(true);
     try {
       const cached = await getCachedDiagram(username, repo);
 

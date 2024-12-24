@@ -10,17 +10,22 @@ const LoadingAnimation = dynamic(() => import("./loading-animation"), {
 });
 
 const messages = [
-  "Generating diagram...",
   "Checking if its cached...",
+  "Generating diagram...",
   "Analyzing repository...",
-  "Abusing Claude...",
-  "Losing my mind...",
-  "How long is this gonna take 💀",
-  "This is gonna use so many credits 😭",
-  "Prompt engineers needed -> Check out the GitHub repo",
+  "Prompting Claude...",
+  "Inspecting file paths...",
+  "Prompt engineers needed -> Check out the GitHub",
   "Shoutout to GitIngest for inspiration",
   "Looking for internships...",
   "No internships found 💀",
+  "How long is this gonna take???",
+  "This is gonna cost so much money 😭",
+  "Finding the meaning of life...",
+  "I'm tired...",
+  "Bro please just give me the diagram...",
+  "NOW!",
+  "guess not...",
 ];
 
 interface LoadingProps {
