@@ -21,6 +21,7 @@ class ModifyRequest(BaseModel):
     current_diagram: str
     repo: str
     username: str
+    explanation: str
 
 
 @router.post("")
@@ -40,6 +41,7 @@ async def modify(request: Request, body: ModifyRequest):
             system_prompt=SYSTEM_MODIFY_PROMPT,
             data={
                 "instructions": body.instructions,
+                "explanation": body.explanation,
                 "diagram": body.current_diagram
             }
         )
@@ -48,7 +50,7 @@ async def modify(request: Request, body: ModifyRequest):
         if "BAD_INSTRUCTIONS" in modified_mermaid_code:
             return {"error": "Invalid or unclear instructions provided"}
 
-        return {"response": modified_mermaid_code}
+        return {"diagram": modified_mermaid_code}
     except RateLimitError as e:
         raise HTTPException(
             status_code=429,

@@ -128,7 +128,10 @@ async def generate(request: Request, body: ApiRequest):
             .replace("[repo]", body.repo)\
             .replace("[branch]", default_branch)
 
-        return {"response": processed_diagram}
+        print("component_mapping_text:", component_mapping_text)
+
+        return {"diagram": processed_diagram,
+                "explanation": explanation}
     except RateLimitError as e:
         raise HTTPException(
             status_code=429,
@@ -155,13 +158,12 @@ async def get_generation_cost(request: Request, body: ApiRequest):
         # Input cost: $3 per 1M tokens ($0.000003 per token)
         # Output cost: $15 per 1M tokens ($0.000015 per token)
         # Estimate output tokens as roughly equal to input tokens
-        input_cost = ((file_tree_tokens * 2 + readme_tokens) + 3000) * \
-            0.000003
+        input_cost = ((file_tree_tokens * 2 + readme_tokens) + 3000) * 0.000003
         output_cost = 3500 * 0.000015
         estimated_cost = input_cost + output_cost
 
         # Format as currency string
         cost_string = f"${estimated_cost:.2f} USD"
-        return {"response": cost_string}
+        return {"cost": cost_string}
     except Exception as e:
         return {"error": str(e)}

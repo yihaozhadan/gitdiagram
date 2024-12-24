@@ -13,6 +13,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://gitdiagram.com"),
   keywords: [
     "github",
+    "git diagram",
+    "git diagram generator",
+    "git diagram tool",
+    "git diagram maker",
+    "git diagram creator",
+    "git diagram",
     "diagram",
     "repository",
     "visualization",

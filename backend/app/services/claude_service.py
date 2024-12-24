@@ -24,7 +24,7 @@ class ClaudeService:
 
         message = self.client.messages.create(
             model="claude-3-5-sonnet-latest",
-            max_tokens=8192,
+            max_tokens=4096,
             temperature=0,
             system=system_prompt,
             messages=[
@@ -58,6 +58,8 @@ class ClaudeService:
                 parts.append(f"<instructions>\n{value}\n</instructions>")
             elif key == 'diagram':
                 parts.append(f"<diagram>\n{value}\n</diagram>")
+            elif key == 'explanation':
+                parts.append(f"<explanation>\n{value}\n</explanation>")
         return "\n\n".join(parts)
     # autopep8: on
 

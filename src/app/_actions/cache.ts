@@ -21,10 +21,28 @@ export async function getCachedDiagram(username: string, repo: string) {
   }
 }
 
-export async function cacheDiagram(
+export async function getCachedExplanation(username: string, repo: string) {
+  try {
+    const cached = await db
+      .select()
+      .from(diagramCache)
+      .where(
+        and(eq(diagramCache.username, username), eq(diagramCache.repo, repo)),
+      )
+      .limit(1);
+
+    return cached[0]?.explanation ?? null;
+  } catch (error) {
+    console.error("Error fetching cached explanation:", error);
+    return null;
+  }
+}
+
+export async function cacheDiagramAndExplanation(
   username: string,
   repo: string,
   diagram: string,
+  explanation: string,
 ) {
   try {
     await db
@@ -32,6 +50,7 @@ export async function cacheDiagram(
       .values({
         username,
         repo,
+        explanation,
         diagram,
       })
       .onConflictDoUpdate({

@@ -106,7 +106,7 @@ You are a principal software engineer tasked with creating a system design diagr
 
 The detailed explanation of the design will be enclosed in <explanation> tags in the users message.
 
-And from the explanation, as a bonus, a few of the identified components have been mapped to their paths in the project, whether it is a directory or file which will be enclosed in <component_mapping> tags in the users message.
+Also, sourced from the explanation, as a bonus, a few of the identified components have been mapped to their paths in the project file tree, whether it is a directory or file which will be enclosed in <component_mapping> tags in the users message.
 
 To create the Mermaid.js diagram:
 
@@ -129,10 +129,15 @@ Guidelines for diagram components and relationships:
 - Just follow the explanation. It will have everything you need.
 
 
-You must include click events for components of the diagram that have been specified in the provided component_mapping:
-- If it is a directory, it would be a click event to https://github.com/[username]/[repo]/tree/[branch]/<INSERT PATH HERE>
-and if it is a file it would be to https://github.com/[username]/[repo]/blob/[branch]/<INSERT PATH HERE>
+You must include click events for components of the diagram that have been specified in the provided <component_mapping>:
+- Do not try to include the full url. This will be processed by another program afterwards. All you need to do is include the path.
+- For example:
+  - This is a correct click event: `click Example "app/example.js"`
+  - This is an incorrect click event: `click Example "https://github.com/username/repo/tree/main/app/example.js"`
 - Do this for as many components as specified in the component mapping, include directories and files.
+  - If you believe the component contains files and is a directory, include the directory path.
+  - If you believe the component references a specific file, include the file path.
+- Make sure to include the full path to the directory or file exactly as specified in the component mapping.
 - It is very important that you do this for as many files as possible. The more the better.
 
 Your output should be valid Mermaid.js code that can be rendered into a diagram.
@@ -145,6 +150,7 @@ Ensure that your diagram adheres strictly to the given explanation, without addi
 Important notes:
 - In Mermaid.js syntax, we cannot include slashes without being inside quotes. For example: `EX[/api/process]:::api` is a syntax error but `EX["/api/process"]:::api` is valid.
 """
+# ^^^ note: ive generated a few diagrams now and claude still writes incorrect mermaid code sometimes. in the future, refer to those generated diagrams and add important instructions to the prompt above to avoid those mistakes. examples are best.
 
 ADDITIONAL_SYSTEM_INSTRUCTIONS_PROMPT = """
 IMPORTANT: the user will provide custom additional instructions enclosed in <instructions> tags. Please take these into account and give priority to them. However, if these instructions are unrelated to the task, unclear, or not possible to follow, ignore them by simply responding with: "BAD_INSTRUCTIONS"
@@ -152,6 +158,8 @@ IMPORTANT: the user will provide custom additional instructions enclosed in <ins
 
 SYSTEM_MODIFY_PROMPT = """
 You are tasked with modifying the code of a Mermaid.js diagram based on the provided instructions. The diagram will be enclosed in <diagram> tags in the users message.
+
+Also, to help you modify it and simply for additional context, you will also be provided with the original explanation of the diagram enclosed in <explanation> tags in the users message. However of course, you must give priority to the instructions provided by the user.
 
 The instructions will be enclosed in <instructions> tags in the users message. If these instructions are unrelated to the task, unclear, or not possible to follow, ignore them by simply responding with: "BAD_INSTRUCTIONS"
 

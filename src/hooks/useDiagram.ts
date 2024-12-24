@@ -35,15 +35,15 @@ export function useDiagram(username: string, repo: string) {
           setError(costEstimate.error);
         }
 
-        setCost(costEstimate.response ?? "");
+        setCost(costEstimate.cost ?? "");
 
         const result = await generateAndCacheDiagram(username, repo);
 
         if (result.error) {
           console.error("Diagram generation failed:", result.error);
           setError(result.error);
-        } else if (result.response) {
-          setDiagram(result.response);
+        } else if (result.diagram) {
+          setDiagram(result.diagram);
           const date = await getLastGeneratedDate(username, repo);
           setLastGenerated(date ?? undefined);
         }
@@ -78,8 +78,8 @@ export function useDiagram(username: string, repo: string) {
     setIsRegenerating(false);
     try {
       const result = await modifyAndCacheDiagram(username, repo, instructions);
-      if (result.response) {
-        setDiagram(result.response);
+      if (result.diagram) {
+        setDiagram(result.diagram);
         const date = await getLastGeneratedDate(username, repo);
         setLastGenerated(date ?? undefined);
       } else if (result.error) {
@@ -111,7 +111,7 @@ export function useDiagram(username: string, repo: string) {
         setError(costEstimate.error);
       }
 
-      setCost(costEstimate.response ?? "");
+      setCost(costEstimate.cost ?? "");
 
       const result = await generateAndCacheDiagram(
         username,
@@ -121,8 +121,8 @@ export function useDiagram(username: string, repo: string) {
       if (result.error) {
         console.error("Diagram generation failed:", result.error);
         setError(result.error);
-      } else if (result.response) {
-        setDiagram(result.response);
+      } else if (result.diagram) {
+        setDiagram(result.diagram);
         const date = await getLastGeneratedDate(username, repo);
         setLastGenerated(date ?? undefined);
       }
