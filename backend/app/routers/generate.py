@@ -50,6 +50,9 @@ async def generate(request: Request, body: ApiRequest):
         if len(body.instructions) > 1000:
             return {"error": "Instructions exceed maximum length of 1000 characters"}
 
+        if body.repo in ["fastapi", "streamlit", "flask", "api-analytics", "monkeytype"]:
+            return {"error": "Example repos cannot be regenerated"}
+
         # Get cached github data
         github_data = get_cached_github_data(body.username, body.repo)
 

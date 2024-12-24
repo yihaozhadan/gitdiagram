@@ -69,6 +69,8 @@ export async function modifyAndCacheDiagram(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        username,
+        repo,
         instructions: instructions,
         current_diagram: currentDiagram,
       }),

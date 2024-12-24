@@ -19,6 +19,8 @@ claude_service = ClaudeService()
 class ModifyRequest(BaseModel):
     instructions: str
     current_diagram: str
+    repo: str
+    username: str
 
 
 @router.post("")
@@ -30,6 +32,9 @@ async def modify(request: Request, body: ModifyRequest):
             return {"error": "Instructions and/or current diagram are required"}
         elif len(body.instructions) > 1000 or len(body.current_diagram) > 100000:  # just being safe
             return {"error": "Instructions exceed maximum length of 1000 characters"}
+
+        if body.repo in ["fastapi", "streamlit", "flask", "api-analytics", "monkeytype"]:
+            return {"error": "Example repos cannot be modified"}
 
         modified_mermaid_code = claude_service.call_claude_api(
             system_prompt=SYSTEM_MODIFY_PROMPT,

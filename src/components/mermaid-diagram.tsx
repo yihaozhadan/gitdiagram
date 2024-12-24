@@ -13,6 +13,25 @@ const MermaidChart = ({ chart }: MermaidChartProps) => {
       startOnLoad: true,
       theme: "neutral",
       htmlLabels: true,
+      flowchart: {
+        htmlLabels: true,
+        curve: "basis",
+        nodeSpacing: 50,
+        rankSpacing: 50,
+        padding: 15,
+      },
+      themeCSS: `
+        .clickable {
+          transition: transform 0.2s ease;
+        }
+        .clickable:hover {
+          transform: scale(1.05);
+          cursor: pointer;
+        }
+        .clickable:hover > * {
+          filter: brightness(0.85);
+        }
+      `,
     });
     mermaid.contentLoaded();
   }, []);
