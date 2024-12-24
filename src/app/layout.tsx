@@ -7,9 +7,9 @@ import { Footer } from "~/components/footer";
 import { CSPostHogProvider } from "./providers";
 
 export const metadata: Metadata = {
-  title: "GitDiagram - Repository to Diagram in Seconds",
+  title: "GitDiagram",
   description:
-    "Turn any GitHub repository into an interactive diagram for visualization.",
+    "Turn any GitHub repository into an interactive diagram for visualization in seconds.",
   metadataBase: new URL("https://gitdiagram.com"),
   keywords: [
     "github",
