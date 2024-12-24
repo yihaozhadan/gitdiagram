@@ -1,21 +1,80 @@
 import requests
+import jwt
+import time
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
 
 class GitHubService:
-    def __init__(self, github_token):
-        self.github_token = github_token
-        self.headers = {
-            "Authorization": f"token {self.github_token}",
-            "Accept": "application/vnd.github+json"
+    def __init__(self):
+        # Try app authentication first
+        self.client_id = os.getenv("GITHUB_CLIENT_ID")
+        self.private_key = os.getenv("GITHUB_PRIVATE_KEY")
+        self.installation_id = os.getenv("GITHUB_INSTALLATION_ID")
+
+        # Fallback to PAT if app credentials not found
+        self.github_token = os.getenv("GITHUB_PAT")
+
+        if not all([self.client_id, self.private_key, self.installation_id]) and not self.github_token:
+            raise ValueError(
+                "Either GitHub App credentials or PAT must be provided")
+
+        self.access_token = None
+        self.token_expires_at = None
+
+    # autopep8: off
+    def _generate_jwt(self):
+        now = int(time.time())
+        payload = {
+            "iat": now,
+            "exp": now + (10 * 60),  # 10 minutes
+            "iss": self.client_id
+        }
+        # Convert PEM string format to proper newlines
+        return jwt.encode(payload, self.private_key, algorithm="RS256")  # type: ignore
+    # autopep8: on
+
+    def _get_installation_token(self):
+        if self.access_token and self.token_expires_at > datetime.now():  # type: ignore
+            return self.access_token
+
+        jwt_token = self._generate_jwt()
+        response = requests.post(
+            f"https://api.github.com/app/installations/{
+                self.installation_id}/access_tokens",
+            headers={
+                "Authorization": f"Bearer {jwt_token}",
+                "Accept": "application/vnd.github+json"
+            }
+        )
+        data = response.json()
+        self.access_token = data["token"]
+        self.token_expires_at = datetime.now() + timedelta(hours=1)
+        return self.access_token
+
+    def _get_headers(self):
+        # Use PAT if app credentials not available
+        if not all([self.client_id, self.private_key, self.installation_id]):
+            return {
+                "Authorization": f"token {self.github_token}",
+                "Accept": "application/vnd.github+json"
+            }
+
+        # Otherwise use app authentication
+        token = self._get_installation_token()
+        return {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28"
         }
 
     def get_default_branch(self, username, repo):
         """Get the default branch of the repository."""
         api_url = f"https://api.github.com/repos/{username}/{repo}"
-        response = requests.get(api_url, headers=self.headers)
+        response = requests.get(api_url, headers=self._get_headers())
 
         if response.status_code == 200:
             return response.json().get('default_branch')
@@ -57,7 +116,7 @@ class GitHubService:
         if branch:
             api_url = f"https://api.github.com/repos/{
                 username}/{repo}/git/trees/{branch}?recursive=1"
-            response = requests.get(api_url, headers=self.headers)
+            response = requests.get(api_url, headers=self._get_headers())
 
             if response.status_code == 200:
                 data = response.json()
@@ -71,7 +130,7 @@ class GitHubService:
         for branch in ['main', 'master']:
             api_url = f"https://api.github.com/repos/{
                 username}/{repo}/git/trees/{branch}?recursive=1"
-            response = requests.get(api_url, headers=self.headers)
+            response = requests.get(api_url, headers=self._get_headers())
 
             if response.status_code == 200:
                 data = response.json()
@@ -96,13 +155,7 @@ class GitHubService:
             str: The contents of the README file.
         """
         api_url = f"https://api.github.com/repos/{username}/{repo}/readme"
-
-        headers = {
-            "Authorization": f"token {self.github_token}",
-            "Accept": "application/vnd.github+json"
-        }
-
-        response = requests.get(api_url, headers=headers)
+        response = requests.get(api_url, headers=self._get_headers())
 
         if response.status_code == 404:
             raise ValueError("Repository not found.")
