@@ -5,11 +5,10 @@ from slowapi.errors import RateLimitExceeded
 from app.routers import generate, modify
 from app.core.limiter import limiter
 from typing import cast
-from starlette.responses import Response
 from starlette.exceptions import ExceptionMiddleware
 from api_analytics.fastapi import Analytics
 import os
-import uvicorn
+
 app = FastAPI()
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, cast(
@@ -29,7 +28,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-API_ANALYTICS_KEY = os.getenv("api-analytics-key")
+API_ANALYTICS_KEY = os.getenv("API_ANALYTICS_KEY")
 if API_ANALYTICS_KEY:
     app.add_middleware(Analytics, api_key=API_ANALYTICS_KEY)
 
