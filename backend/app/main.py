@@ -7,7 +7,9 @@ from app.core.limiter import limiter
 from typing import cast
 from starlette.responses import Response
 from starlette.exceptions import ExceptionMiddleware
-
+from api_analytics.fastapi import Analytics
+import os
+import uvicorn
 app = FastAPI()
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, cast(
@@ -27,13 +29,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+API_ANALYTICS_KEY = os.getenv("api-analytics-key")
+if API_ANALYTICS_KEY:
+    app.add_middleware(Analytics, api_key=API_ANALYTICS_KEY)
+
 app.include_router(generate.router)
 app.include_router(modify.router)
-
-# Root route
 
 
 @app.get("/")
 @limiter.limit("100/day")
-async def hello(request: Request):
+async def root(request: Request):
     return {"message": "Welcome to the GitDiagram API!"}

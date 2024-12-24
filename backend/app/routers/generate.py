@@ -14,7 +14,7 @@ load_dotenv()
 router = APIRouter(prefix="/generate", tags=["Claude"])
 
 # Initialize services
-github_token = os.getenv("github_pat")  # might hit rate limit on just my token
+github_token = os.getenv("GITHUB_PAT")  # might hit rate limit on just my token
 github_service = GitHubService(github_token)
 claude_service = ClaudeService()
 
