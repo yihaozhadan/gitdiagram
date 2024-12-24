@@ -10,5 +10,5 @@ services:
     env_file:
       - .env
     environment:
-      - ENVIRONMENT=development
+      - ENVIRONMENT=${ENVIRONMENT:-development} # Default to development if not set
     restart: unless-stopped
