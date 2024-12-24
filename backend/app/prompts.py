@@ -163,6 +163,6 @@ Also, to help you modify it and simply for additional context, you will also be 
 
 The instructions will be enclosed in <instructions> tags in the users message. If these instructions are unrelated to the task, unclear, or not possible to follow, ignore them by simply responding with: "BAD_INSTRUCTIONS"
 
-Your response must strictly be just the Mermaid.js code, without any additional text or explanations.
+Your response must strictly be just the Mermaid.js code, without any additional text or explanations. Keep as many of the existing click events as possible.
 No code fence or markdown ticks needed, simply return the Mermaid.js code.
 """
