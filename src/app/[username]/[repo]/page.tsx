@@ -5,6 +5,26 @@ import MainCard from "~/components/main-card";
 import Loading from "~/components/loading";
 import MermaidChart from "~/components/mermaid-diagram";
 import { useDiagram } from "~/hooks/useDiagram";
+import { type Metadata } from "next";
+
+type Props = {
+  params: { username: string; repo: string };
+};
+
+// Dynamic metadata for each repository
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const title = `${params.repo} - GitDiagram Visualization`;
+  const description = `Interactive diagram visualization for ${params.username}/${params.repo} GitHub repository`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+    },
+  };
+}
 
 export default function Repo() {
   const params = useParams<{ username: string; repo: string }>();
