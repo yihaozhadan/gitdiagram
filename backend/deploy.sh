@@ -16,5 +16,9 @@ docker-compose up --build -d
 # Remove unused images
 docker image prune -f
 
-# Show logs
-docker-compose logs -f
+# Show logs only if --logs flag is passed
+if [ "$1" == "--logs" ]; then
+    docker-compose logs -f
+else
+    echo "Deployment complete! Run 'docker-compose logs -f' to view logs"
+fi
