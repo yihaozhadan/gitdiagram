@@ -1,29 +1,97 @@
-# Create T3 App
+[![Image](./docs/readme_img.png "GitDiagram Front Page")](https:/gitdiagram.com/)
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-## What's next? How do I make an app with this?
+# GitDiagram
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+Turn any GitHub repository into an interactive diagram for visualization in seconds.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+You can also replace `hub` with `diagram` in any Github URL to access its diagram.
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## 🚀 Features
 
-## Learn More
+- 👀 **Instant Visualization**: Convert any GitHub repository structure into a system design / architecture diagram
+- 🎨 **Interactivity**: Click on components to navigate directly to source files and relevant directories
+- ⚡ **Fast Generation**: Powered by Claude 3.5 Sonnet for quick and accurate diagrams
+- 🔄 **Customization**: Modify and regenerate diagrams with custom instructions
+- 🌐 **API Access**: Public API available for integration (WIP)
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+## ⚙️ Tech Stack
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+- **Frontend**: Next.js, TypeScript, Tailwind CSS, ShadCN
+- **Backend**: FastAPI, Python, Server Actions
+- **Database**: PostgreSQL (with Drizzle ORM)
+- **AI**: Claude 3.5 Sonnet
+- **Deployment**: Vercel (Frontend), EC2 (Backend)
+- **CI/CD**: GitHub Actions
+- **Analytics**: PostHog, Api-Analytics
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+## 🛠️ Self-hosting / Local Development
 
-## How do I deploy this?
+1. Clone the repository
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+```bash
+git clone https://github.com/ahmedkhaleel2004/gitdiagram.git
+cd gitdiagram
+```
+
+2. Install dependencies
+
+```bash
+pnpm i
+```
+
+3. Set up environment variables (create .env)
+
+```bash
+cp .env.example .env
+```
+
+Then edit the `.env` file with your Anthropic API key and GitHub personal access token.
+
+4. Run backend
+
+```bash
+docker-compose up --build -d
+```
+
+Logs available at `docker-compose logs -f`
+
+5. Start local database
+
+```bash
+chmod +x start-database.sh
+./start-database.sh
+```
+
+6. Initialize the database schema
+
+```bash
+pnpm db:push
+```
+
+7. Run Frontend
+
+```bash
+pnpm dev
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📈 Rate Limits
+
+I am currently hosting it for free with the following rate limits. If you would like to bypass these, self-hosting instructions are provided.
+
+Diagram generation:
+
+- 1 request per minute
+- 5 requests per day
+
+## 🤔 Future Steps
+
+- Can use cheaper, larger context models like Gemini 1206
+- Allow user to enter Anthropic API Key for use at own cost
+- Implement RAG with Mermaid.js docs
+- Implement font-awesome icons in diagram

@@ -13,15 +13,6 @@ import os
 app = FastAPI()
 
 
-API_ANALYTICS_KEY = os.getenv("API_ANALYTICS_KEY")
-if API_ANALYTICS_KEY:
-    app.add_middleware(Analytics, api_key=API_ANALYTICS_KEY)
-
-
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, cast(
-    ExceptionMiddleware, _rate_limit_exceeded_handler))
-
 origins = [
     "http://localhost:3000",
     "https://gitdiagram.com"
@@ -34,6 +25,14 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+API_ANALYTICS_KEY = os.getenv("API_ANALYTICS_KEY")
+if API_ANALYTICS_KEY:
+    app.add_middleware(Analytics, api_key=API_ANALYTICS_KEY)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, cast(
+    ExceptionMiddleware, _rate_limit_exceeded_handler))
 
 app.include_router(generate.router)
 app.include_router(modify.router)
