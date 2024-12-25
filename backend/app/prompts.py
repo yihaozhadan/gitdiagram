@@ -53,7 +53,7 @@ Analyze these components carefully, as they will provide crucial information abo
    - Color coding or shapes to distinguish between different types of components
    - A legend explaining any symbols or abbreviations used
 
-7. Emphasize the importance of keeping the diagram at an appropriate level of abstraction, avoiding too much detail while still capturing the essential architectural elements.
+7. Emphasize the importance of keeping the diagram at an appropriate level of abstraction while still keeping a significant amount of detail and capturing the essential architectural elements.
 
 Present your explanation and instructions within <explanation> tags, ensuring that you tailor your advice to the specific project based on the provided file tree and README content.
 """
@@ -127,6 +127,7 @@ Guidelines for diagram components and relationships:
 - Group related components together if applicable
 - Include any important notes or annotations mentioned in the explanation
 - Just follow the explanation. It will have everything you need.
+- Please try to orient the diagram as vertically as possible. Try to avoid long horizontal lists of nodes and sections.
 
 
 You must include click events for components of the diagram that have been specified in the provided <component_mapping>:
