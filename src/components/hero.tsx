@@ -4,7 +4,7 @@ const Hero = () => {
   return (
     <div className="relative mx-auto flex w-full flex-col items-start justify-center sm:flex-row sm:items-center">
       <svg
-        className="left-0 h-auto w-16 flex-shrink-0 -translate-x-2 translate-y-8 p-2 sm:absolute sm:w-20 sm:-translate-y-16 md:relative md:w-24 md:-translate-y-0 md:translate-x-10 lg:absolute lg:ml-32 lg:-translate-x-full lg:-translate-y-10"
+        className="left-0 h-auto w-16 flex-shrink-0 -translate-x-2 translate-y-4 p-2 sm:absolute sm:w-20 sm:-translate-y-16 md:relative md:w-24 md:-translate-y-0 md:translate-x-10 lg:absolute lg:ml-32 lg:-translate-x-full lg:-translate-y-10"
         viewBox="0 0 91 98"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
