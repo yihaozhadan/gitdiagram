@@ -4,7 +4,7 @@ import Hero from "~/components/hero";
 export default function HomePage() {
   return (
     <main className="flex-grow p-8">
-      <div className="mx-auto my-4 max-w-4xl lg:my-12">
+      <div className="mx-auto my-4 max-w-4xl lg:my-8">
         <Hero />
         <div className="mt-12"></div>
         <p className="mx-auto mt-8 max-w-2xl text-center text-lg">

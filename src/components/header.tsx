@@ -1,8 +1,19 @@
 import React from "react";
 import Link from "next/link";
 import { FaGithub } from "react-icons/fa";
+import { getStarCount } from "~/app/_actions/github";
 
-export function Header() {
+export async function Header() {
+  const starCount = await getStarCount();
+
+  const formatStarCount = (count: number | null) => {
+    if (!count) return "0";
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k`;
+    }
+    return count.toString();
+  };
+
   return (
     <header className="border-b-[3px] border-black">
       <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-8">
@@ -32,7 +43,7 @@ export function Header() {
           </Link>
           <span className="flex items-center gap-1 text-sm font-medium text-black">
             <span className="text-amber-400">★</span>
-            1.3k
+            {formatStarCount(starCount)}
           </span>
         </nav>
       </div>
