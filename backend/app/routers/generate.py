@@ -43,7 +43,7 @@ class ApiRequest(BaseModel):
 
 
 @router.post("")
-@limiter.limit("1/minute;5/day")
+# @limiter.limit("1/minute;5/day") # TEMP: disable rate limit for growth??
 async def generate(request: Request, body: ApiRequest):
     try:
         # Check instructions length
