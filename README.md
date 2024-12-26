@@ -1,4 +1,4 @@
-[![Image](./docs/readme_img.png "GitDiagram Front Page")](https:/gitdiagram.com/)
+[![Image](./docs/readme_img.png "GitDiagram Front Page")](https://gitdiagram.com/)
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
@@ -47,7 +47,7 @@ pnpm i
 cp .env.example .env
 ```
 
-Then edit the `.env` file with your Anthropic API key and GitHub personal access token.
+Then edit the `.env` file with your Anthropic API key and optional GitHub personal access token.
 
 4. Run backend
 
@@ -56,6 +56,7 @@ docker-compose up --build -d
 ```
 
 Logs available at `docker-compose logs -f`
+The server will be available at `localhost:8000`
 
 5. Start local database
 
@@ -64,11 +65,15 @@ chmod +x start-database.sh
 ./start-database.sh
 ```
 
+The database will start in a container at `localhost:5432`
+
 6. Initialize the database schema
 
 ```bash
 pnpm db:push
 ```
+
+You can view and interact with the database using `pnpm db:studio`
 
 7. Run Frontend
 
@@ -82,7 +87,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📈 Rate Limits
 
-I am currently hosting it for free with the following rate limits. If you would like to bypass these, self-hosting instructions are provided.
+I am currently hosting it for free with the following rate limits. If you would like to bypass these, self-hosting instructions are provided. I also plan on adding an input for your own Anthropic API key.
 
 Diagram generation:
 

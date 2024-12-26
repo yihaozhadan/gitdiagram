@@ -18,9 +18,9 @@ class GitHubService:
         # Fallback to PAT if app credentials not found
         self.github_token = os.getenv("GITHUB_PAT")
 
+        # If no credentials are provided, warn about rate limits
         if not all([self.client_id, self.private_key, self.installation_id]) and not self.github_token:
-            raise ValueError(
-                "Either GitHub App credentials or PAT must be provided")
+            print("\033[93mWarning: No GitHub credentials provided. Using unauthenticated requests with rate limit of 60 requests/hour.\033[0m")
 
         self.access_token = None
         self.token_expires_at = None
@@ -56,8 +56,14 @@ class GitHubService:
         return self.access_token
 
     def _get_headers(self):
-        # Use PAT if app credentials not available
-        if not all([self.client_id, self.private_key, self.installation_id]):
+        # If no credentials are available, return basic headers
+        if not all([self.client_id, self.private_key, self.installation_id]) and not self.github_token:
+            return {
+                "Accept": "application/vnd.github+json"
+            }
+
+        # Use PAT if available
+        if self.github_token:
             return {
                 "Authorization": f"token {self.github_token}",
                 "Accept": "application/vnd.github+json"
