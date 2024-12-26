@@ -56,7 +56,7 @@ docker-compose up --build -d
 ```
 
 Logs available at `docker-compose logs -f`
-The server will be available at `localhost:8000`
+The FastAPI server will be available at `localhost:8000`
 
 5. Start local database
 
@@ -65,7 +65,8 @@ chmod +x start-database.sh
 ./start-database.sh
 ```
 
-The database will start in a container at `localhost:5432`
+When prompted to generate a random password, input yes.
+The Postgres database will start in a container at `localhost:5432`
 
 6. Initialize the database schema
 
@@ -80,6 +81,8 @@ You can view and interact with the database using `pnpm db:studio`
 ```bash
 pnpm dev
 ```
+
+You can now access the website at `localhost:3000` and edit the rate limits defined in `backend/app/routers/generate.py` in the generate function decorator.
 
 ## Contributing
 

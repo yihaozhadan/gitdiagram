@@ -19,7 +19,7 @@ export default function HomePage() {
           Github URL
         </p>
       </div>
-      <div className="mb-12 flex justify-center lg:mb-0">
+      <div className="mb-16 flex justify-center lg:mb-0">
         <MainCard />
       </div>
     </main>
