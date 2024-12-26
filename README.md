@@ -88,6 +88,10 @@ You can now access the website at `localhost:3000` and edit the rate limits defi
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## Acknowledgements
+
+Shoutout to [Romain Courtois](https://github.com/cyclotruc)'s [Gitingest](https://gitingest.com/) for inspiration and styling
+
 ## 📈 Rate Limits
 
 I am currently hosting it for free with the following rate limits. If you would like to bypass these, self-hosting instructions are provided. I also plan on adding an input for your own Anthropic API key.
