@@ -66,7 +66,7 @@ async def generate(request: Request, body: ApiRequest):
         token_count = claude_service.count_tokens(combined_content)
         if token_count > 50000:
             return {
-                "error": f"File tree and README combined exceeds token limit (50,000). Current size: {token_count} tokens"
+                "error": f"File tree and README combined exceeds token limit (50,000). Current size: {token_count} tokens. This GitHub repository is too large for my wallet, but if you still want the diagram and it's under 200k tokens, you can run GitDiagram locally with your own Anthropic API key."
             }
 
         # Prepare system prompts with instructions if provided
