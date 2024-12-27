@@ -143,6 +143,8 @@ You must include click events for components of the diagram that have been speci
 
 Your output should be valid Mermaid.js code that can be rendered into a diagram.
 
+Do not include an init declaration such as `%%{init: {'key':'etc'}}%%`. This is handled externally. Just return the diagram code.
+
 Your response must strictly be just the Mermaid.js code, without any additional text or explanations.
 No code fence or markdown ticks needed, simply return the Mermaid.js code.
 

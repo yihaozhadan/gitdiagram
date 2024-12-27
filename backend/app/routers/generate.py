@@ -142,7 +142,7 @@ async def generate(request: Request, body: ApiRequest):
 
 
 @router.post("/cost")
-@limiter.limit("5/minute")
+# @limiter.limit("5/minute") # TEMP: disable rate limit for growth??
 async def get_generation_cost(request: Request, body: ApiRequest):
     try:
         # Get file tree and README content
