@@ -15,6 +15,8 @@ export function useDiagram(username: string, repo: string) {
   const [isRegenerating, setIsRegenerating] = useState<boolean>(false);
   const [lastGenerated, setLastGenerated] = useState<Date | undefined>();
   const [cost, setCost] = useState<string>("");
+  const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
+  const [tokenCount, setTokenCount] = useState<number>(0);
 
   const getDiagram = useCallback(async () => {
     setLoading(true);
@@ -42,6 +44,9 @@ export function useDiagram(username: string, repo: string) {
 
         if (result.error) {
           console.error("Diagram generation failed:", result.error);
+          if (result.requires_api_key) {
+            setTokenCount(result.token_count ?? 0);
+          }
           setError(result.error);
         } else if (result.diagram) {
           setDiagram(result.diagram);
@@ -143,6 +148,36 @@ export function useDiagram(username: string, repo: string) {
     }
   };
 
+  const handleApiKeySubmit = async (apiKey: string) => {
+    setShowApiKeyDialog(false);
+    setLoading(true);
+    setError("");
+
+    try {
+      const result = await generateAndCacheDiagram(username, repo, "", apiKey);
+      if (result.error) {
+        setError(result.error);
+      } else if (result.diagram) {
+        setDiagram(result.diagram);
+        const date = await getLastGeneratedDate(username, repo);
+        setLastGenerated(date ?? undefined);
+      }
+    } catch (error) {
+      console.error("Error generating with API key:", error);
+      setError("Failed to generate diagram with provided API key.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCloseApiKeyDialog = () => {
+    setShowApiKeyDialog(false);
+  };
+
+  const handleOpenApiKeyDialog = () => {
+    setShowApiKeyDialog(true);
+  };
+
   return {
     diagram,
     error,
@@ -153,5 +188,10 @@ export function useDiagram(username: string, repo: string) {
     handleModify,
     handleRegenerate,
     handleCopy,
+    showApiKeyDialog,
+    tokenCount,
+    handleApiKeySubmit,
+    handleCloseApiKeyDialog,
+    handleOpenApiKeyDialog,
   };
 }

@@ -40,6 +40,7 @@ class ApiRequest(BaseModel):
     username: str
     repo: str
     instructions: str
+    api_key: str | None = None
 
 
 @router.post("")
@@ -64,9 +65,17 @@ async def generate(request: Request, body: ApiRequest):
         # Check combined token count
         combined_content = f"{file_tree}\n{readme}"
         token_count = claude_service.count_tokens(combined_content)
-        if token_count > 50000:
+
+        # Modified token limit check
+        if 50000 < token_count < 190000 and not body.api_key:
             return {
-                "error": f"File tree and README combined exceeds token limit (50,000). Current size: {token_count} tokens. This GitHub repository is too large for my wallet, but if you still want the diagram and it's under 200k tokens, you can run GitDiagram locally with your own Anthropic API key."
+                "error": f"File tree and README combined exceeds token limit (50,000). Current size: {token_count} tokens. This GitHub repository is too large for my wallet, but you can continue by providing your own Anthropic API key.",
+                "token_count": token_count,
+                "requires_api_key": True
+            }
+        elif token_count > 200000:
+            return {
+                "error": f"Repository is too large (>200k tokens) for analysis. Claude 3.5 Sonnet's max context length is 200k tokens. Current size: {token_count} tokens."
             }
 
         # Prepare system prompts with instructions if provided
@@ -85,7 +94,8 @@ async def generate(request: Request, body: ApiRequest):
                 "file_tree": file_tree,
                 "readme": readme,
                 "instructions": body.instructions
-            }
+            },
+            api_key=body.api_key
         )
 
         # Check for BAD_INSTRUCTIONS response

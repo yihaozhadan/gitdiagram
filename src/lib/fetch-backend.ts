@@ -8,6 +8,8 @@ interface GenerateApiResponse {
   error?: string;
   diagram?: string;
   explanation?: string;
+  token_count?: number;
+  requires_api_key?: boolean;
 }
 
 interface ModifyApiResponse {
@@ -24,6 +26,7 @@ export async function generateAndCacheDiagram(
   username: string,
   repo: string,
   instructions?: string,
+  api_key?: string,
 ): Promise<GenerateApiResponse> {
   try {
     const baseUrl =
@@ -39,6 +42,7 @@ export async function generateAndCacheDiagram(
         username,
         repo,
         instructions: instructions ?? "",
+        api_key: api_key,
       }),
     });
 
@@ -49,7 +53,7 @@ export async function generateAndCacheDiagram(
     const data = (await response.json()) as GenerateApiResponse;
 
     if (data.error) {
-      return { error: data.error };
+      return data; // pass the whole thing for multiple data fields
     }
 
     // Call the server action to cache the diagram

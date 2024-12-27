@@ -5,6 +5,9 @@ import MainCard from "~/components/main-card";
 import Loading from "~/components/loading";
 import MermaidChart from "~/components/mermaid-diagram";
 import { useDiagram } from "~/hooks/useDiagram";
+import { ApiKeyDialog } from "~/components/api-key-dialog";
+import { Button } from "~/components/ui/button";
+import { ApiKeyButton } from "~/components/api-key-button";
 
 export default function Repo() {
   const params = useParams<{ username: string; repo: string }>();
@@ -15,9 +18,14 @@ export default function Repo() {
     lastGenerated,
     cost,
     isRegenerating,
+    showApiKeyDialog,
+    tokenCount,
     handleModify,
     handleRegenerate,
     handleCopy,
+    handleApiKeySubmit,
+    handleCloseApiKeyDialog,
+    handleOpenApiKeyDialog,
   } = useDiagram(params.username, params.repo);
 
   return (
@@ -41,11 +49,19 @@ export default function Repo() {
           </div>
         ) : error ? (
           <div className="mt-12 text-center">
-            <p className="text-lg font-medium text-red-600">{error}</p>
+            <p className="max-w-4xl text-lg font-medium text-red-600">
+              {error}
+            </p>
             {error.includes("Rate limit") && (
               <p className="mt-2 text-sm text-gray-600">
                 Rate limits: 1 request per minute, 5 requests per day
               </p>
+            )}
+            {error.includes("token limit") && (
+              <div className="mt-8 flex flex-col items-center gap-2">
+                <ApiKeyButton onClick={handleOpenApiKeyDialog} />
+                <p className="mt-2 text-sm">Your key will not be stored</p>
+              </div>
             )}
           </div>
         ) : (
@@ -54,6 +70,13 @@ export default function Repo() {
           </div>
         )}
       </div>
+
+      <ApiKeyDialog
+        isOpen={showApiKeyDialog}
+        onClose={handleCloseApiKeyDialog}
+        onSubmit={handleApiKeySubmit}
+        tokenCount={tokenCount}
+      />
     </div>
   );
 }
