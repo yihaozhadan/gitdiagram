@@ -77,6 +77,18 @@ class GitHubService:
             "X-GitHub-Api-Version": "2022-11-28"
         }
 
+    def _check_repository_exists(self, username, repo):
+        """
+        Check if the repository exists using the GitHub API.
+        """
+        api_url = f"https://api.github.com/repos/{username}/{repo}"
+        response = requests.get(api_url, headers=self._get_headers())
+
+        if response.status_code == 404:
+            raise ValueError("Repository not found.")
+        elif response.status_code != 200:
+            raise Exception(f"Failed to check repository: {response.status_code}, {response.json()}")
+        
     def get_default_branch(self, username, repo):
         """Get the default branch of the repository."""
         api_url = f"https://api.github.com/repos/{username}/{repo}"
@@ -159,12 +171,20 @@ class GitHubService:
 
         Returns:
             str: The contents of the README file.
+
+        Raises:
+            ValueError: If repository does not exist or has no README.
+            Exception: For other unexpected API errors.
         """
+        # First check if the repository exists
+        self._check_repository_exists(username, repo)
+
+        # Then attempt to fetch the README
         api_url = f"https://api.github.com/repos/{username}/{repo}/readme"
         response = requests.get(api_url, headers=self._get_headers())
 
         if response.status_code == 404:
-            raise ValueError("Repository not found.")
+            raise ValueError("No README found for the specified repository.")
         elif response.status_code != 200:
             raise Exception(f"Failed to fetch README: {
                             response.status_code}, {response.json()}")
