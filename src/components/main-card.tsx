@@ -102,78 +102,83 @@ export default function MainCard({
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {/* Dropdowns Container */}
-        <div className="space-y-4">
-          {/* Buttons Container */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:gap-4">
-            {showCustomization && onModify && onRegenerate && lastGenerated && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleDropdownToggle("customize");
-                }}
-                className={`flex flex-1 items-center justify-between rounded-md border-[3px] border-black px-4 py-2 font-medium text-black transition-colors sm:max-w-[250px] ${
-                  activeDropdown === "customize"
-                    ? "bg-purple-400"
-                    : "bg-purple-300 hover:bg-purple-400"
-                }`}
-              >
-                <span>Customize Diagram</span>
-                {activeDropdown === "customize" ? (
-                  <ChevronUp size={20} />
-                ) : (
-                  <ChevronDown size={20} />
+        {!isHome && (
+          <div className="space-y-4">
+            {/* Buttons Container */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:gap-4">
+              {showCustomization &&
+                onModify &&
+                onRegenerate &&
+                lastGenerated && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDropdownToggle("customize");
+                    }}
+                    className={`flex flex-1 items-center justify-between rounded-md border-[3px] border-black px-4 py-2 font-medium text-black transition-colors sm:max-w-[250px] ${
+                      activeDropdown === "customize"
+                        ? "bg-purple-400"
+                        : "bg-purple-300 hover:bg-purple-400"
+                    }`}
+                  >
+                    <span>Customize Diagram</span>
+                    {activeDropdown === "customize" ? (
+                      <ChevronUp size={20} />
+                    ) : (
+                      <ChevronDown size={20} />
+                    )}
+                  </button>
                 )}
-              </button>
-            )}
 
-            {onCopy && lastGenerated && onExportImage && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleDropdownToggle("export");
-                }}
-                className={`flex flex-1 items-center justify-between rounded-md border-[3px] border-black px-4 py-2 font-medium text-black transition-colors sm:max-w-[250px] ${
-                  activeDropdown === "export"
-                    ? "bg-purple-400"
-                    : "bg-purple-300 hover:bg-purple-400"
-                }`}
-              >
-                <span>Export Diagram</span>
-                {activeDropdown === "export" ? (
-                  <ChevronUp size={20} />
-                ) : (
-                  <ChevronDown size={20} />
-                )}
-              </button>
-            )}
-          </div>
+              {onCopy && lastGenerated && onExportImage && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleDropdownToggle("export");
+                  }}
+                  className={`flex flex-1 items-center justify-between rounded-md border-[3px] border-black px-4 py-2 font-medium text-black transition-colors sm:max-w-[250px] ${
+                    activeDropdown === "export"
+                      ? "bg-purple-400"
+                      : "bg-purple-300 hover:bg-purple-400"
+                  }`}
+                >
+                  <span>Export Diagram</span>
+                  {activeDropdown === "export" ? (
+                    <ChevronUp size={20} />
+                  ) : (
+                    <ChevronDown size={20} />
+                  )}
+                </button>
+              )}
+            </div>
 
-          {/* Dropdown Content */}
-          <div
-            className={`transition-all duration-200 ${
-              activeDropdown
-                ? "pointer-events-auto max-h-[500px] opacity-100"
-                : "pointer-events-none max-h-0 opacity-0"
-            }`}
-          >
-            {activeDropdown === "customize" && (
-              <CustomizationDropdown
-                onModify={onModify!}
-                onRegenerate={onRegenerate!}
-                lastGenerated={lastGenerated!}
-                isOpen={true}
-              />
-            )}
-            {activeDropdown === "export" && (
-              <ExportDropdown
-                onCopy={onCopy!}
-                lastGenerated={lastGenerated!}
-                onExportImage={onExportImage!}
-                isOpen={true}
-              />
-            )}
+            {/* Dropdown Content */}
+            <div
+              className={`transition-all duration-200 ${
+                activeDropdown
+                  ? "pointer-events-auto max-h-[500px] opacity-100"
+                  : "pointer-events-none max-h-0 opacity-0"
+              }`}
+            >
+              {activeDropdown === "customize" && (
+                <CustomizationDropdown
+                  onModify={onModify!}
+                  onRegenerate={onRegenerate!}
+                  lastGenerated={lastGenerated!}
+                  isOpen={true}
+                />
+              )}
+              {activeDropdown === "export" && (
+                <ExportDropdown
+                  onCopy={onCopy!}
+                  lastGenerated={lastGenerated!}
+                  onExportImage={onExportImage!}
+                  isOpen={true}
+                />
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Example Repositories */}
         {isHome && (
