@@ -9,6 +9,7 @@ import { Sparkles } from "lucide-react";
 import React from "react";
 import { CustomizationDropdown } from "./customization-dropdown";
 import { exampleRepos } from "~/lib/exampleRepos";
+import { ExportDropdown } from "./export-dropdown";
 
 interface MainCardProps {
   isHome?: boolean;
@@ -19,6 +20,7 @@ interface MainCardProps {
   onRegenerate?: (instructions: string) => void;
   onCopy?: () => void;
   lastGenerated?: Date;
+  onExportImage?: () => void;
 }
 
 export default function MainCard({
@@ -30,6 +32,7 @@ export default function MainCard({
   onRegenerate,
   onCopy,
   lastGenerated,
+  onExportImage,
 }: MainCardProps) {
   const [repoUrl, setRepoUrl] = useState("");
   const [error, setError] = useState("");
@@ -90,18 +93,21 @@ export default function MainCard({
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        {showCustomization &&
-          onModify &&
-          onRegenerate &&
-          onCopy &&
-          lastGenerated && (
-            <CustomizationDropdown
-              onModify={onModify}
-              onRegenerate={onRegenerate}
-              onCopy={onCopy}
-              lastGenerated={lastGenerated}
-            />
-          )}
+        {showCustomization && onModify && onRegenerate && lastGenerated && (
+          <CustomizationDropdown
+            onModify={onModify}
+            onRegenerate={onRegenerate}
+            lastGenerated={lastGenerated}
+          />
+        )}
+
+        {onCopy && lastGenerated && onExportImage && (
+          <ExportDropdown
+            onCopy={onCopy}
+            lastGenerated={lastGenerated}
+            onExportImage={onExportImage}
+          />
+        )}
 
         {/* Example Repositories */}
         {isHome && (

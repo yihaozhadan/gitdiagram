@@ -25,6 +25,7 @@ export default function Repo() {
     handleApiKeySubmit,
     handleCloseApiKeyDialog,
     handleOpenApiKeyDialog,
+    handleExportImage,
   } = useDiagram(params.username, params.repo);
 
   return (
@@ -39,6 +40,7 @@ export default function Repo() {
           onRegenerate={handleRegenerate}
           onCopy={handleCopy}
           lastGenerated={lastGenerated}
+          onExportImage={handleExportImage}
         />
       </div>
       <div className="mt-8 flex w-full flex-col items-center gap-8">

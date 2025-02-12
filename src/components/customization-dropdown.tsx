@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { CopyButton } from "./copy-button";
 import { Wand2, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { ActionButton } from "./action-button";
 import { Textarea } from "./ui/textarea";
@@ -7,14 +6,12 @@ import { Textarea } from "./ui/textarea";
 interface CustomizationDropdownProps {
   onModify: (instructions: string) => void;
   onRegenerate: (instructions: string) => void;
-  onCopy: () => void;
   lastGenerated: Date;
 }
 
 export function CustomizationDropdown({
   onModify,
   onRegenerate,
-  onCopy,
   lastGenerated,
 }: CustomizationDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -71,8 +68,6 @@ export function CustomizationDropdown({
                   icon={RefreshCw}
                   tooltipText="Regenerate with/without custom instructions"
                 />
-
-                <CopyButton onClick={onCopy} />
               </div>
             </div>
 
