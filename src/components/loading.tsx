@@ -13,7 +13,7 @@ const messages = [
   "Checking if its cached...",
   "Generating diagram...",
   "Analyzing repository...",
-  "Prompting Claude...",
+  "Prompting o3-mini...",
   "Inspecting file paths...",
   "Finding component relationships...",
   "Linking components to code...",
@@ -36,7 +36,7 @@ interface LoadingProps {
 const Loading = ({ cost, isModifying }: LoadingProps) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-  const seconds = isModifying ? 10 : 45;
+  const seconds = isModifying ? 10 : 55;
 
   useEffect(() => {
     const interval = setInterval(() => {

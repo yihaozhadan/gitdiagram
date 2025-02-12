@@ -29,13 +29,13 @@ export function ApiKeyDialog({
       <DialogContent className="border-[3px] border-black bg-purple-200 p-6 shadow-[8px_8px_0_0_#000000] sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-black">
-            Enter Anthropic API Key
+            Enter OpenRouter API Key
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="text-sm">
             This repository requires {tokenCount.toLocaleString()} tokens to
-            analyze. Enter your Anthropic API key to continue. The key will not
+            analyze. Enter your OpenRouter API key to continue. The key will not
             be stored.
           </div>
           <Input

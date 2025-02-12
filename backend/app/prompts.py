@@ -127,8 +127,8 @@ Guidelines for diagram components and relationships:
 - Group related components together if applicable
 - Include any important notes or annotations mentioned in the explanation
 - Just follow the explanation. It will have everything you need.
-- Please try to orient the diagram as vertically as possible. Try to avoid long horizontal lists of nodes and sections.
 
+IMPORTANT!!: Please orient and draw the diagram as vertically as possible. You must avoid long horizontal lists of nodes and sections!
 
 You must include click events for components of the diagram that have been specified in the provided <component_mapping>:
 - Do not try to include the full url. This will be processed by another program afterwards. All you need to do is include the path.

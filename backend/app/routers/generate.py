@@ -89,9 +89,9 @@ async def generate(request: Request, body: ApiRequest):
         #     }
 
         # O3: Modified token limit check
-        if 100000 < token_count < 190000 and not body.api_key:
+        if 50000 < token_count < 195000 and not body.api_key:
             return {
-                "error": f"File tree and README combined exceeds token limit (100,000). Current size: {token_count} tokens. This GitHub repository is too large for my wallet, but you can continue by providing your own OpenRouter API key.",
+                "error": f"File tree and README combined exceeds token limit (50,000). Current size: {token_count} tokens. This GitHub repository is too large for my wallet, but you can continue by providing your own OpenRouter API key.",
                 "token_count": token_count,
                 "requires_api_key": True,
             }
