@@ -1,5 +1,6 @@
 from anthropic import Anthropic
 from dotenv import load_dotenv
+from app.utils.format_message import format_user_message
 
 load_dotenv()
 
@@ -23,7 +24,7 @@ class ClaudeService:
             str: Claude's response text
         """
         # Create the user message with the data
-        user_message = self._format_user_message(data)
+        user_message = format_user_message(data)
 
         # Use custom client if API key provided, otherwise use default
         client = Anthropic(api_key=api_key) if api_key else self.default_client
@@ -38,26 +39,6 @@ class ClaudeService:
             ],
         )
         return message.content[0].text  # type: ignore
-
-    def _format_user_message(self, data: dict[str, str]) -> str:
-        """Helper method to format the data into a user message"""
-        parts = []
-        for key, value in data.items():
-            if key == "file_tree":
-                parts.append(f"<file_tree>\n{value}\n</file_tree>")
-            elif key == "readme":
-                parts.append(f"<readme>\n{value}\n</readme>")
-            elif key == "explanation":
-                parts.append(f"<explanation>\n{value}\n</explanation>")
-            elif key == "component_mapping":
-                parts.append(f"<component_mapping>\n{value}\n</component_mapping>")
-            elif key == "instructions" and value != "":
-                parts.append(f"<instructions>\n{value}\n</instructions>")
-            elif key == "diagram":
-                parts.append(f"<diagram>\n{value}\n</diagram>")
-            elif key == "explanation":
-                parts.append(f"<explanation>\n{value}\n</explanation>")
-        return "\n\n".join(parts)
 
     def count_tokens(self, prompt: str) -> int:
         """

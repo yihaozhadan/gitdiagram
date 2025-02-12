@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Request, HTTPException
 from dotenv import load_dotenv
 from app.services.github_service import GitHubService
-from app.services.claude_service import ClaudeService
-from app.core.limiter import limiter
+from app.services.o3_mini_openrouter_service import OpenRouterO3Service
 from app.prompts import (
     SYSTEM_FIRST_PROMPT,
     SYSTEM_SECOND_PROMPT,
@@ -14,13 +13,17 @@ from pydantic import BaseModel
 from functools import lru_cache
 import re
 
+# from app.services.claude_service import ClaudeService
+# from app.core.limiter import limiter
+
 load_dotenv()
 
 router = APIRouter(prefix="/generate", tags=["Claude"])
 
 # Initialize services
 github_service = GitHubService()
-claude_service = ClaudeService()
+# claude_service = ClaudeService()
+o3_service = OpenRouterO3Service()
 
 
 # cache github data for 5 minutes to avoid double API calls from cost and generate
@@ -70,18 +73,31 @@ async def generate(request: Request, body: ApiRequest):
 
         # Check combined token count
         combined_content = f"{file_tree}\n{readme}"
-        token_count = claude_service.count_tokens(combined_content)
+        # token_count = claude_service.count_tokens(combined_content)
+        token_count = o3_service.count_tokens(combined_content)
 
-        # Modified token limit check
-        if 50000 < token_count < 190000 and not body.api_key:
+        # CLAUDE: Modified token limit check
+        # if 50000 < token_count < 190000 and not body.api_key:
+        #     return {
+        #         "error": f"File tree and README combined exceeds token limit (50,000). Current size: {token_count} tokens. This GitHub repository is too large for my wallet, but you can continue by providing your own Anthropic API key.",
+        #         "token_count": token_count,
+        #         "requires_api_key": True,
+        #     }
+        # elif token_count > 200000:
+        #     return {
+        #         "error": f"Repository is too large (>200k tokens) for analysis. Claude 3.5 Sonnet's max context length is 200k tokens. Current size: {token_count} tokens."
+        #     }
+
+        # O3: Modified token limit check
+        if 100000 < token_count < 190000 and not body.api_key:
             return {
-                "error": f"File tree and README combined exceeds token limit (50,000). Current size: {token_count} tokens. This GitHub repository is too large for my wallet, but you can continue by providing your own Anthropic API key.",
+                "error": f"File tree and README combined exceeds token limit (100,000). Current size: {token_count} tokens. This GitHub repository is too large for my wallet, but you can continue by providing your own OpenRouter API key.",
                 "token_count": token_count,
                 "requires_api_key": True,
             }
-        elif token_count > 200000:
+        elif token_count > 195000:
             return {
-                "error": f"Repository is too large (>200k tokens) for analysis. Claude 3.5 Sonnet's max context length is 200k tokens. Current size: {token_count} tokens."
+                "error": f"Repository is too large (>195k tokens) for analysis. OpenAI o3-mini's max context length is 200k tokens. Current size: {token_count} tokens."
             }
 
         # Prepare system prompts with instructions if provided
@@ -96,7 +112,18 @@ async def generate(request: Request, body: ApiRequest):
             )
 
         # get the explanation for sysdesign from claude
-        explanation = claude_service.call_claude_api(
+        # explanation = claude_service.call_claude_api(
+        #     system_prompt=first_system_prompt,
+        #     data={
+        #         "file_tree": file_tree,
+        #         "readme": readme,
+        #         "instructions": body.instructions,
+        #     },
+        #     api_key=body.api_key,
+        # )
+
+        # get the explanation for sysdesign from o3
+        explanation = o3_service.call_o3_api(
             system_prompt=first_system_prompt,
             data={
                 "file_tree": file_tree,
@@ -110,9 +137,16 @@ async def generate(request: Request, body: ApiRequest):
         if "BAD_INSTRUCTIONS" in explanation:
             return {"error": "Invalid or unclear instructions provided"}
 
-        full_second_response = claude_service.call_claude_api(
+        # full_second_response = claude_service.call_claude_api(
+        #     system_prompt=SYSTEM_SECOND_PROMPT,
+        #     data={"explanation": explanation, "file_tree": file_tree},
+        #     api_key=body.api_key,
+        # )
+
+        full_second_response = o3_service.call_o3_api(
             system_prompt=SYSTEM_SECOND_PROMPT,
             data={"explanation": explanation, "file_tree": file_tree},
+            api_key=body.api_key,
         )
 
         # Extract component mapping from the response
@@ -123,14 +157,29 @@ async def generate(request: Request, body: ApiRequest):
         ]
 
         # get mermaid.js code from claude
-        mermaid_code = claude_service.call_claude_api(
+        # mermaid_code = claude_service.call_claude_api(
+        #     system_prompt=third_system_prompt,
+        #     data={
+        #         "explanation": explanation,
+        #         "component_mapping": component_mapping_text,
+        #         "instructions": body.instructions,
+        #     },
+        #     api_key=body.api_key,
+        # )
+
+        # get mermaid.js code from o3
+        mermaid_code = o3_service.call_o3_api(
             system_prompt=third_system_prompt,
             data={
                 "explanation": explanation,
                 "component_mapping": component_mapping_text,
                 "instructions": body.instructions,
             },
+            api_key=body.api_key,
         )
+
+        # check for and remove code block tags
+        mermaid_code = mermaid_code.replace("```mermaid", "").replace("```", "")
 
         # Check for BAD_INSTRUCTIONS response
         if "BAD_INSTRUCTIONS" in mermaid_code:
@@ -161,15 +210,26 @@ async def get_generation_cost(request: Request, body: ApiRequest):
         readme = github_data["readme"]
 
         # Calculate combined token count
-        file_tree_tokens = claude_service.count_tokens(file_tree)
-        readme_tokens = claude_service.count_tokens(readme)
+        # file_tree_tokens = claude_service.count_tokens(file_tree)
+        # readme_tokens = claude_service.count_tokens(readme)
 
-        # Calculate approximate cost
+        file_tree_tokens = o3_service.count_tokens(file_tree)
+        readme_tokens = o3_service.count_tokens(readme)
+
+        # CLAUDE: Calculate approximate cost
         # Input cost: $3 per 1M tokens ($0.000003 per token)
         # Output cost: $15 per 1M tokens ($0.000015 per token)
-        # Estimate output tokens as roughly equal to input tokens
-        input_cost = ((file_tree_tokens * 2 + readme_tokens) + 3000) * 0.000003
-        output_cost = 3500 * 0.000015
+        # input_cost = ((file_tree_tokens * 2 + readme_tokens) + 3000) * 0.000003
+        # output_cost = 3500 * 0.000015
+        # estimated_cost = input_cost + output_cost
+
+        # O3: Calculate approximate cost
+        # Input cost: $1.1 per 1M tokens ($0.0000011 per token)
+        # Output cost: $4.4 per 1M tokens ($0.0000044 per token)
+        input_cost = ((file_tree_tokens * 2 + readme_tokens) + 3000) * 0.0000011
+        output_cost = (
+            8000 * 0.0000044
+        )  # 8k just based on what I've seen (reasoning is expensive)
         estimated_cost = input_cost + output_cost
 
         # Format as currency string

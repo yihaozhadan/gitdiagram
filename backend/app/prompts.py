@@ -150,8 +150,9 @@ No code fence or markdown ticks needed, simply return the Mermaid.js code.
 
 Ensure that your diagram adheres strictly to the given explanation, without adding or omitting any significant components or relationships. 
 
-Important notes on syntax:
-- In Mermaid.js syntax, we cannot include slashes without being inside quotes. For example: `EX[/api/process]:::api` is a syntax error but `EX["/api/process"]:::api` is valid.
+EXTREMELY Important notes on syntax!!! (PAY ATTENTION TO THIS):
+- Make sure to add colour to the diagram!!! This is extremely critical.
+- In Mermaid.js syntax, we cannot include special characters for nodes without being inside quotes! For example: `EX[/api/process (Backend)]:::api` is a syntax error but `EX["/api/process (Backend)"]:::api` is valid. This is extremely important.
 - In Mermaid.js syntax, you cannot apply a class style directly within a subgraph declaration. For example: `subgraph "Frontend Layer":::frontend` is a syntax error. However, you can apply them to nodes within the subgraph. For example: `Example["Example Node"]:::frontend` is valid, and `class Example1,Example2 frontend` is valid.
 """
 # ^^^ note: ive generated a few diagrams now and claude still writes incorrect mermaid code sometimes. in the future, refer to those generated diagrams and add important instructions to the prompt above to avoid those mistakes. examples are best.
