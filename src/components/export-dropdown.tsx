@@ -45,6 +45,7 @@ export function ExportDropdown({
                 onClick={onExportImage}
                 icon={Image}
                 tooltipText="Download diagram as PNG"
+                text="Download PNG"
               />
               <CopyButton onClick={onCopy} />
             </div>
