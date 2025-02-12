@@ -37,13 +37,17 @@ export function CopyButton({ onClick }: CopyButtonProps) {
             ) : (
               <>
                 <FileText className="h-6 w-6" />
-                <span className="text-sm">Copy Code</span>
+                <span className="text-sm">Copy Mermaid.js Code</span>
               </>
             )}
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{copied ? "Copied!" : "Copy Mermaid.js Code"}</p>
+          <p>
+            {copied
+              ? "Copied!"
+              : "Copy the internal Mermaid.js code needed to generate the diagram"}
+          </p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
