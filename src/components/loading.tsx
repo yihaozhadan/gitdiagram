@@ -18,6 +18,7 @@ const messages = [
   "Finding component relationships...",
   "Linking components to code...",
   "Extracting relevant directories...",
+  "Reasoning about the diagram...",
   "Prompt engineers needed -> Check out the GitHub",
   "Shoutout to GitIngest for inspiration",
   "I need to find a way to make this faster...",

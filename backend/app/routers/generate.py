@@ -179,6 +179,7 @@ async def generate(request: Request, body: ApiRequest):
                 "instructions": body.instructions,
             },
             api_key=body.api_key,
+            reasoning_effort="high",
         )
 
         # check for and remove code block tags

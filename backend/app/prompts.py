@@ -53,7 +53,7 @@ Analyze these components carefully, as they will provide crucial information abo
    - Color coding or shapes to distinguish between different types of components
    - A legend explaining any symbols or abbreviations used
 
-7. Emphasize the importance of keeping the diagram at an appropriate level of abstraction while still keeping a significant amount of detail and capturing the essential architectural elements.
+7. NOTE: Emphasize the importance of being very detailed and capturing the essential architectural elements. Don't overthink it too much, simply separating the project into as many components as possible is best.
 
 Present your explanation and instructions within <explanation> tags, ensuring that you tailor your advice to the specific project based on the provided file tree and README content.
 """
@@ -77,15 +77,6 @@ Guidelines:
 3. Include both directories and specific files when relevant.
 4. If a component doesn't have a clear corresponding file or directory, simply dont include it in the map.
 
-Before providing your final answer, use the <scratchpad> to think through your process:
-1. List the key components identified in the system design.
-2. For each component, brainstorm potential corresponding directories or files.
-3. Verify your mappings by double-checking the file tree.
-
-<scratchpad>
-[Your thought process here]
-</scratchpad>
-
 Now, provide your final answer in the following format:
 
 <component_mapping>
@@ -96,6 +87,16 @@ Now, provide your final answer in the following format:
 
 Remember to be as specific as possible in your mappings, only use what is given to you from the file tree, and to strictly follow the components mentioned in the explanation. 
 """
+
+# ❌ BELOW IS A REMOVED SECTION FROM THE ABOVE PROMPT USED FOR CLAUDE 3.5 SONNET
+# Before providing your final answer, use the <scratchpad> to think through your process:
+# 1. List the key components identified in the system design.
+# 2. For each component, brainstorm potential corresponding directories or files.
+# 3. Verify your mappings by double-checking the file tree.
+
+# <scratchpad>
+# [Your thought process here]
+# </scratchpad>
 
 # just adding some clear separation between the prompts
 # ************************************************************
@@ -140,6 +141,7 @@ You must include click events for components of the diagram that have been speci
   - If you believe the component references a specific file, include the file path.
 - Make sure to include the full path to the directory or file exactly as specified in the component mapping.
 - It is very important that you do this for as many files as possible. The more the better.
+- IMPORTANT: these are for click events only, these paths should not be included in the diagram's node's names.
 
 Your output should be valid Mermaid.js code that can be rendered into a diagram.
 
@@ -152,7 +154,7 @@ Ensure that your diagram adheres strictly to the given explanation, without addi
 
 EXTREMELY Important notes on syntax!!! (PAY ATTENTION TO THIS):
 - Make sure to add colour to the diagram!!! This is extremely critical.
-- In Mermaid.js syntax, we cannot include special characters for nodes without being inside quotes! For example: `EX[/api/process (Backend)]:::api` is a syntax error but `EX["/api/process (Backend)"]:::api` is valid. This is extremely important.
+- In Mermaid.js syntax, we cannot include special characters for nodes without being inside quotes! For example: `EX[/api/process (Backend)]:::api` and `API -->|calls Process()| Backend` are two examples of syntax errors. They should be `EX["/api/process (Backend)"]:::api` and `API -->|"calls Process()"| Backend` respectively. Notice the quotes. This is extremely important. Make sure to include quotes for any string that contains special characters.
 - In Mermaid.js syntax, you cannot apply a class style directly within a subgraph declaration. For example: `subgraph "Frontend Layer":::frontend` is a syntax error. However, you can apply them to nodes within the subgraph. For example: `Example["Example Node"]:::frontend` is valid, and `class Example1,Example2 frontend` is valid.
 """
 # ^^^ note: ive generated a few diagrams now and claude still writes incorrect mermaid code sometimes. in the future, refer to those generated diagrams and add important instructions to the prompt above to avoid those mistakes. examples are best.

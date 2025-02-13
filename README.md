@@ -1,6 +1,7 @@
 [![Image](./docs/readme_img.png "GitDiagram Front Page")](https://gitdiagram.com/)
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![Kofi](https://img.shields.io/badge/Kofi-F16061.svg?logo=ko-fi&logoColor=white)](https://ko-fi.com/ahmedkhaleel2004)
 
 # GitDiagram
 

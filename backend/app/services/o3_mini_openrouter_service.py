@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from app.utils.format_message import format_user_message
 import tiktoken
 import os
+from typing import Literal
 
 load_dotenv()
 
@@ -16,7 +17,11 @@ class OpenRouterO3Service:
         self.encoding = tiktoken.get_encoding("o200k_base")
 
     def call_o3_api(
-        self, system_prompt: str, data: dict, api_key: str | None = None
+        self,
+        system_prompt: str,
+        data: dict,
+        api_key: str | None = None,
+        reasoning_effort: Literal["low", "medium", "high"] = "medium",
     ) -> str:
         """
         Makes an API call to OpenRouter O3 and returns the response.
@@ -45,13 +50,13 @@ class OpenRouterO3Service:
                 "X-Title": "gitdiagram",  # Optional. Site title for rankings on openrouter.ai.
             },
             model="openai/o3-mini",  # Can be configured as needed
-            reasoning_effort="medium",  # Can be adjusted based on needs
+            reasoning_effort=reasoning_effort,  # Can be adjusted based on needs
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message},
             ],
-            max_completion_tokens=8192,  # Adjust as needed
-            temperature=0,
+            max_completion_tokens=12000,  # Adjust as needed
+            temperature=0.2,
         )
 
         if completion.choices[0].message.content is None:
