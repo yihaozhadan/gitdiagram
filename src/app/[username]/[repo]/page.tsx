@@ -28,15 +28,15 @@ export default function Repo() {
     handleCloseApiKeyDialog,
     handleOpenApiKeyDialog,
     handleExportImage,
-  } = useDiagram(params.username, params.repo);
+  } = useDiagram(params.username.toLowerCase(), params.repo.toLowerCase());
 
   return (
     <div className="flex min-h-screen flex-col items-center p-4">
       <div className="flex w-full justify-center pt-8">
         <MainCard
           isHome={false}
-          username={params.username}
-          repo={params.repo}
+          username={params.username.toLowerCase()}
+          repo={params.repo.toLowerCase()}
           showCustomization={!loading && !error}
           onModify={handleModify}
           onRegenerate={handleRegenerate}
