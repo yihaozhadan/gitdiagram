@@ -1,7 +1,9 @@
+"use client";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 interface PrivateReposDialogProps {
@@ -15,13 +17,14 @@ export function PrivateReposDialog({
   onClose,
   onSubmit,
 }: PrivateReposDialogProps) {
-  const [pat, setPat] = useState(() => {
-    // Initialize from localStorage if available
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("github_pat") ?? "";
+  const [pat, setPat] = useState<string>("");
+
+  useEffect(() => {
+    const storedPat = localStorage.getItem("github_pat");
+    if (storedPat) {
+      setPat(storedPat);
     }
-    return "";
-  });
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
