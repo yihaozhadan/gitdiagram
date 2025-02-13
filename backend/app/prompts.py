@@ -141,7 +141,8 @@ You must include click events for components of the diagram that have been speci
   - If you believe the component references a specific file, include the file path.
 - Make sure to include the full path to the directory or file exactly as specified in the component mapping.
 - It is very important that you do this for as many files as possible. The more the better.
-- IMPORTANT: these are for click events only, these paths should not be included in the diagram's node's names.
+
+- IMPORTANT: THESE PATHS ARE FOR CLICK EVENTS ONLY, these paths should not be included in the diagram's node's names. Only for the click events. Paths should not be seen by the user.
 
 Your output should be valid Mermaid.js code that can be rendered into a diagram.
 
@@ -152,10 +153,43 @@ No code fence or markdown ticks needed, simply return the Mermaid.js code.
 
 Ensure that your diagram adheres strictly to the given explanation, without adding or omitting any significant components or relationships. 
 
+As a very general direction, the provided example below is a good flow for your code:
+
+```mermaid
+flowchart TD 
+    %% or graph TD, your choice
+
+    %% Global entities
+    A("Entity A"):::external
+    %% more...
+
+    %% Subgraphs and modules
+    subgraph "Layer A"
+        A1("Module A"):::example
+        %% more modules...
+        %% inner subgraphs if needed...
+    end
+
+    %% more subgraphs, modules, etc...
+
+    %% Connections
+    A -->|"relationship"| B
+    %% and a lot more...
+
+    %% Click Events
+    click A1 "example/example.js"
+    %% and a lot more...
+
+    %% Styles
+    classDef frontend %%...
+    %% and a lot more...
+```
+
 EXTREMELY Important notes on syntax!!! (PAY ATTENTION TO THIS):
 - Make sure to add colour to the diagram!!! This is extremely critical.
 - In Mermaid.js syntax, we cannot include special characters for nodes without being inside quotes! For example: `EX[/api/process (Backend)]:::api` and `API -->|calls Process()| Backend` are two examples of syntax errors. They should be `EX["/api/process (Backend)"]:::api` and `API -->|"calls Process()"| Backend` respectively. Notice the quotes. This is extremely important. Make sure to include quotes for any string that contains special characters.
 - In Mermaid.js syntax, you cannot apply a class style directly within a subgraph declaration. For example: `subgraph "Frontend Layer":::frontend` is a syntax error. However, you can apply them to nodes within the subgraph. For example: `Example["Example Node"]:::frontend` is valid, and `class Example1,Example2 frontend` is valid.
+- In Mermaid.js syntax, there cannot be spaces in the relationship label names. For example: `A -->| "example relationship" | B` is a syntax error. It should be `A -->|"example relationship"| B` 
 """
 # ^^^ note: ive generated a few diagrams now and claude still writes incorrect mermaid code sometimes. in the future, refer to those generated diagrams and add important instructions to the prompt above to avoid those mistakes. examples are best.
 
