@@ -16,7 +16,7 @@ export function ExportDropdown({
 }: ExportDropdownProps) {
   return (
     <div className="space-y-4">
-      <div className="flex flex-row gap-3 sm:gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
         <ActionButton
           onClick={onExportImage}
           icon={Image}

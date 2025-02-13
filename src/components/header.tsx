@@ -42,13 +42,13 @@ export function Header() {
             </span>
           </span>
         </Link>
-        <nav className="flex items-center gap-6">
-          <Link
+        <nav className="flex items-center gap-2 sm:gap-6">
+          {/* <Link
             href="https://api.gitdiagram.com"
             className="text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
           >
             API
-          </Link>
+          </Link> */}
           <span
             onClick={() => setIsPrivateReposDialogOpen(true)}
             className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"

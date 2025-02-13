@@ -73,7 +73,7 @@ const MermaidChart = ({ chart, zoomingEnabled = true }: MermaidChartProps) => {
       if (svgElement) {
         try {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-          svgPanZoom(svgElement).destroy();
+          // svgPanZoom(svgElement).destroy();
         } catch (error) {
           console.error("Failed to destroy pan-zoom instance:", error);
         }
@@ -82,8 +82,18 @@ const MermaidChart = ({ chart, zoomingEnabled = true }: MermaidChartProps) => {
   }, [chart, zoomingEnabled]); // Added zoomingEnabled to dependencies
 
   return (
-    <div ref={containerRef} className="h-[600px] w-full max-w-full p-4">
-      <div className="mermaid h-full">{chart}</div>
+    <div
+      ref={containerRef}
+      className={`w-full max-w-full p-4 ${zoomingEnabled ? "h-[600px]" : ""}`}
+    >
+      <div
+        key={`${chart}-${zoomingEnabled}`}
+        className={`mermaid h-full ${
+          zoomingEnabled ? "rounded-lg border-2 border-black" : ""
+        }`}
+      >
+        {chart}
+      </div>
     </div>
   );
 };
