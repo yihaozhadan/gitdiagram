@@ -27,6 +27,22 @@ You can also replace `hub` with `diagram` in any Github URL to access its diagra
 - **CI/CD**: GitHub Actions
 - **Analytics**: PostHog, Api-Analytics
 
+## 🤔 About
+
+I created this because I wanted to contribute to open-source projects but quickly realized their codebases are too massive for me to dig through manually, so this helps me get started - but it's definitely got many more use cases!
+
+Given any public (or private!) GitHub repository it generates diagrams in Mermaid.js with OpenAI's o3-mini! (Previously Claude 3.5 Sonnet)
+
+I extract information from the file tree and README for details and interactivity (you can click components to be taken to relevant files and directories)
+
+Most of what you might call the "processing" of this app is done with prompt engineering - see `/backend/app/prompts.py`. This basically extracts and pipelines data and analysis for a larger action workflow, ending in the diagram code.
+
+## 🔒 How to diagram private repositories
+
+You can simply click on "Private Repos" in the header and follow the instructions by providing a GitHub personal access token with the `repo` scope.
+
+You can also self-host this app locally (backend separated as well!) with the steps below.
+
 ## 🛠️ Self-hosting / Local Development
 
 1. Clone the repository
@@ -95,16 +111,16 @@ Shoutout to [Romain Courtois](https://github.com/cyclotruc)'s [Gitingest](https:
 
 ## 📈 Rate Limits
 
-I am currently hosting it for free with the following rate limits. If you would like to bypass these, self-hosting instructions are provided. I also plan on adding an input for your own Anthropic API key.
+I am currently hosting it for free with no rate limits though this is somewhat likely to change in the future.
+
+<!-- If you would like to bypass these, self-hosting instructions are provided. I also plan on adding an input for your own Anthropic API key.
 
 Diagram generation:
 
 - 1 request per minute
-- 5 requests per day
+- 5 requests per day -->
 
 ## 🤔 Future Steps
 
-- Can use cheaper, larger context models like Gemini 1206
-- Allow user to enter Anthropic API Key for use at own cost
-- Implement RAG with Mermaid.js docs
 - Implement font-awesome icons in diagram
+- Implement an embedded feature like star-history.com but for diagrams. The diagram could also be updated progressively as commits are made.
