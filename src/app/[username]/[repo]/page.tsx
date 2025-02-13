@@ -45,6 +45,7 @@ export default function Repo() {
           onExportImage={handleExportImage}
           zoomingEnabled={zoomingEnabled}
           onZoomToggle={() => setZoomingEnabled(!zoomingEnabled)}
+          loading={loading}
         />
       </div>
       <div className="mt-8 flex w-full flex-col items-center gap-8">

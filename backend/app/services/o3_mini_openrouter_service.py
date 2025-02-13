@@ -21,7 +21,7 @@ class OpenRouterO3Service:
         system_prompt: str,
         data: dict,
         api_key: str | None = None,
-        reasoning_effort: Literal["low", "medium", "high"] = "medium",
+        reasoning_effort: Literal["low", "medium", "high"] = "low",
     ) -> str:
         """
         Makes an API call to OpenRouter O3 and returns the response.
