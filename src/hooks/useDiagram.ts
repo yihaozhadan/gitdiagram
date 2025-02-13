@@ -25,13 +25,19 @@ export function useDiagram(username: string, repo: string) {
     setIsRegenerating(true);
     try {
       const cached = await getCachedDiagram(username, repo);
+      const github_pat = localStorage.getItem("github_pat");
 
       if (cached) {
         setDiagram(cached);
         const date = await getLastGeneratedDate(username, repo);
         setLastGenerated(date ?? undefined);
       } else {
-        const costEstimate = await getCostOfGeneration(username, repo, ""); // empty instructions so lru cache is used
+        const costEstimate = await getCostOfGeneration(
+          username,
+          repo,
+          "",
+          github_pat ?? undefined,
+        ); // empty instructions so lru cache is used
 
         if (costEstimate.error) {
           console.error("Cost estimation failed:", costEstimate.error);
@@ -40,7 +46,11 @@ export function useDiagram(username: string, repo: string) {
 
         setCost(costEstimate.cost ?? "");
 
-        const result = await generateAndCacheDiagram(username, repo);
+        const result = await generateAndCacheDiagram(
+          username,
+          repo,
+          github_pat ?? undefined,
+        );
 
         if (result.error) {
           console.error("Diagram generation failed:", result.error);
@@ -110,6 +120,7 @@ export function useDiagram(username: string, repo: string) {
     setCost("");
     setIsRegenerating(true);
     try {
+      const github_pat = localStorage.getItem("github_pat");
       const costEstimate = await getCostOfGeneration(username, repo, "");
 
       if (costEstimate.error) {
@@ -122,6 +133,7 @@ export function useDiagram(username: string, repo: string) {
       const result = await generateAndCacheDiagram(
         username,
         repo,
+        github_pat ?? undefined,
         instructions,
       );
       if (result.error) {
@@ -198,9 +210,15 @@ export function useDiagram(username: string, repo: string) {
     setShowApiKeyDialog(false);
     setLoading(true);
     setError("");
-
+    const github_pat = localStorage.getItem("github_pat");
     try {
-      const result = await generateAndCacheDiagram(username, repo, "", apiKey);
+      const result = await generateAndCacheDiagram(
+        username,
+        repo,
+        github_pat ?? undefined,
+        "",
+        apiKey,
+      );
       if (result.error) {
         setError(result.error);
       } else if (result.diagram) {

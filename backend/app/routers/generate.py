@@ -21,20 +21,22 @@ load_dotenv()
 router = APIRouter(prefix="/generate", tags=["Claude"])
 
 # Initialize services
-github_service = GitHubService()
 # claude_service = ClaudeService()
 o3_service = OpenRouterO3Service()
 
 
-# cache github data for 5 minutes to avoid double API calls from cost and generate
+# cache github data to avoid double API calls from cost and generate
 @lru_cache(maxsize=100)
-def get_cached_github_data(username: str, repo: str):
-    default_branch = github_service.get_default_branch(username, repo)
+def get_cached_github_data(username: str, repo: str, github_pat: str | None = None):
+    # Create a new service instance for each call with the appropriate PAT
+    current_github_service = GitHubService(pat=github_pat)
+
+    default_branch = current_github_service.get_default_branch(username, repo)
     if not default_branch:
         default_branch = "main"  # fallback value
 
-    file_tree = github_service.get_github_file_paths_as_list(username, repo)
-    readme = github_service.get_github_readme(username, repo)
+    file_tree = current_github_service.get_github_file_paths_as_list(username, repo)
+    readme = current_github_service.get_github_readme(username, repo)
 
     return {"default_branch": default_branch, "file_tree": file_tree, "readme": readme}
 
@@ -42,8 +44,9 @@ def get_cached_github_data(username: str, repo: str):
 class ApiRequest(BaseModel):
     username: str
     repo: str
-    instructions: str
+    instructions: str = ""
     api_key: str | None = None
+    github_pat: str | None = None
 
 
 @router.post("")
@@ -63,8 +66,8 @@ async def generate(request: Request, body: ApiRequest):
         ]:
             return {"error": "Example repos cannot be regenerated"}
 
-        # Get cached github data
-        github_data = get_cached_github_data(body.username, body.repo)
+        # Get cached github data with PAT if provided
+        github_data = get_cached_github_data(body.username, body.repo, body.github_pat)
 
         # Get default branch first
         default_branch = github_data["default_branch"]
@@ -205,7 +208,7 @@ async def generate(request: Request, body: ApiRequest):
 async def get_generation_cost(request: Request, body: ApiRequest):
     try:
         # Get file tree and README content
-        github_data = get_cached_github_data(body.username, body.repo)
+        github_data = get_cached_github_data(body.username, body.repo, body.github_pat)
         file_tree = github_data["file_tree"]
         readme = github_data["readme"]
 

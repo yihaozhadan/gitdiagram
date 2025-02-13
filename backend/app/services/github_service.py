@@ -9,14 +9,14 @@ load_dotenv()
 
 
 class GitHubService:
-    def __init__(self):
+    def __init__(self, pat: str | None = None):
         # Try app authentication first
         self.client_id = os.getenv("GITHUB_CLIENT_ID")
         self.private_key = os.getenv("GITHUB_PRIVATE_KEY")
         self.installation_id = os.getenv("GITHUB_INSTALLATION_ID")
 
-        # Fallback to PAT if app credentials not found
-        self.github_token = os.getenv("GITHUB_PAT")
+        # Use provided PAT if available, otherwise fallback to env PAT
+        self.github_token = pat or os.getenv("GITHUB_PAT")
 
         # If no credentials are provided, warn about rate limits
         if (
