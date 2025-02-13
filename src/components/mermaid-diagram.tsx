@@ -55,7 +55,7 @@ const MermaidChart = ({ chart, zoomingEnabled = true }: MermaidChartProps) => {
             center: true,
             minZoom: 0.1,
             maxZoom: 10,
-            zoomScaleSensitivity: 0.1,
+            zoomScaleSensitivity: 0.3,
           });
         }
       }

@@ -42,7 +42,7 @@ export function Header() {
             </span>
           </span>
         </Link>
-        <nav className="flex items-center gap-2 sm:gap-6">
+        <nav className="flex items-center gap-5 sm:gap-6">
           {/* <Link
             href="https://api.gitdiagram.com"
             className="text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"

@@ -5,13 +5,17 @@ from app.core.limiter import limiter
 from anthropic._exceptions import RateLimitError
 from app.prompts import SYSTEM_MODIFY_PROMPT
 from pydantic import BaseModel
+from backend.app.services.o3_mini_openrouter_service import OpenRouterO3Service
+
 
 load_dotenv()
 
 router = APIRouter(prefix="/modify", tags=["Claude"])
 
 # Initialize services
-claude_service = ClaudeService()
+# claude_service = ClaudeService()
+o3_service = OpenRouterO3Service()
+
 
 # Define the request body model
 
@@ -45,7 +49,16 @@ async def modify(request: Request, body: ModifyRequest):
         ]:
             return {"error": "Example repos cannot be modified"}
 
-        modified_mermaid_code = claude_service.call_claude_api(
+        # modified_mermaid_code = claude_service.call_claude_api(
+        #     system_prompt=SYSTEM_MODIFY_PROMPT,
+        #     data={
+        #         "instructions": body.instructions,
+        #         "explanation": body.explanation,
+        #         "diagram": body.current_diagram,
+        #     },
+        # )
+
+        modified_mermaid_code = o3_service.call_o3_api(
             system_prompt=SYSTEM_MODIFY_PROMPT,
             data={
                 "instructions": body.instructions,
