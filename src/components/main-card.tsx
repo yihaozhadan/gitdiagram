@@ -11,6 +11,7 @@ import { CustomizationDropdown } from "./customization-dropdown";
 import { exampleRepos } from "~/lib/exampleRepos";
 import { ExportDropdown } from "./export-dropdown";
 import { ChevronUp, ChevronDown } from "lucide-react";
+import { Switch } from "~/components/ui/switch";
 
 interface MainCardProps {
   isHome?: boolean;
@@ -22,6 +23,8 @@ interface MainCardProps {
   onCopy?: () => void;
   lastGenerated?: Date;
   onExportImage?: () => void;
+  zoomingEnabled?: boolean;
+  onZoomToggle?: () => void;
 }
 
 export default function MainCard({
@@ -34,6 +37,8 @@ export default function MainCard({
   onCopy,
   lastGenerated,
   onExportImage,
+  zoomingEnabled,
+  onZoomToggle,
 }: MainCardProps) {
   const [repoUrl, setRepoUrl] = useState("");
   const [error, setError] = useState("");
@@ -105,7 +110,7 @@ export default function MainCard({
         {!isHome && (
           <div className="space-y-4">
             {/* Buttons Container */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:gap-4">
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-4">
               {showCustomization &&
                 onModify &&
                 onRegenerate &&
@@ -115,7 +120,7 @@ export default function MainCard({
                       e.preventDefault();
                       handleDropdownToggle("customize");
                     }}
-                    className={`flex flex-1 items-center justify-between rounded-md border-[3px] border-black px-4 py-2 font-medium text-black transition-colors sm:max-w-[250px] ${
+                    className={`flex items-center justify-between gap-2 rounded-md border-[3px] border-black px-4 py-2 font-medium text-black transition-colors sm:max-w-[250px] ${
                       activeDropdown === "customize"
                         ? "bg-purple-400"
                         : "bg-purple-300 hover:bg-purple-400"
@@ -131,24 +136,35 @@ export default function MainCard({
                 )}
 
               {onCopy && lastGenerated && onExportImage && (
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleDropdownToggle("export");
-                  }}
-                  className={`flex flex-1 items-center justify-between rounded-md border-[3px] border-black px-4 py-2 font-medium text-black transition-colors sm:max-w-[250px] ${
-                    activeDropdown === "export"
-                      ? "bg-purple-400"
-                      : "bg-purple-300 hover:bg-purple-400"
-                  }`}
-                >
-                  <span>Export Diagram</span>
-                  {activeDropdown === "export" ? (
-                    <ChevronUp size={20} />
-                  ) : (
-                    <ChevronDown size={20} />
-                  )}
-                </button>
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDropdownToggle("export");
+                    }}
+                    className={`flex items-center justify-between gap-2 rounded-md border-[3px] border-black px-4 py-2 font-medium text-black transition-colors sm:max-w-[250px] ${
+                      activeDropdown === "export"
+                        ? "bg-purple-400"
+                        : "bg-purple-300 hover:bg-purple-400"
+                    }`}
+                  >
+                    <span>Export Diagram</span>
+                    {activeDropdown === "export" ? (
+                      <ChevronUp size={20} />
+                    ) : (
+                      <ChevronDown size={20} />
+                    )}
+                  </button>
+                </div>
+              )}
+              {lastGenerated && (
+                <>
+                  <label className="font-medium text-black">Enable Zoom</label>
+                  <Switch
+                    checked={zoomingEnabled}
+                    onCheckedChange={onZoomToggle}
+                  />
+                </>
               )}
             </div>
 

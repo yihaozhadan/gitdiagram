@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import mermaid from "mermaid";
+import svgPanZoom from "svg-pan-zoom";
 
 interface MermaidChartProps {
   chart: string;
+  zoomingEnabled?: boolean;
 }
 
-const MermaidChart = ({ chart }: MermaidChartProps) => {
+const MermaidChart = ({ chart, zoomingEnabled = true }: MermaidChartProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     mermaid.initialize({
       startOnLoad: true,
@@ -33,12 +37,53 @@ const MermaidChart = ({ chart }: MermaidChartProps) => {
         }
       `,
     });
+
+    const initializePanZoom = () => {
+      const svgElement = containerRef.current?.querySelector("svg");
+      if (svgElement) {
+        // Remove any max-width constraints
+        svgElement.style.maxWidth = "none";
+        svgElement.style.width = "100%";
+        svgElement.style.height = "100%";
+
+        if (zoomingEnabled) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          svgPanZoom(svgElement, {
+            zoomEnabled: true,
+            controlIconsEnabled: true,
+            fit: true,
+            center: true,
+            minZoom: 0.1,
+            maxZoom: 10,
+            zoomScaleSensitivity: 0.1,
+          });
+        }
+      }
+    };
+
     mermaid.contentLoaded();
-  }, []);
+    // Wait for the SVG to be rendered
+    setTimeout(initializePanZoom, 100);
+
+    // Store ref value for cleanup
+    const currentRef = containerRef.current;
+
+    return () => {
+      const svgElement = currentRef?.querySelector("svg");
+      if (svgElement) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+          svgPanZoom(svgElement).destroy();
+        } catch (error) {
+          console.error("Failed to destroy pan-zoom instance:", error);
+        }
+      }
+    };
+  }, [chart, zoomingEnabled]); // Added zoomingEnabled to dependencies
 
   return (
-    <div className="w-full max-w-full p-4">
-      <div className="mermaid">{chart}</div>
+    <div ref={containerRef} className="h-[600px] w-full max-w-full p-4">
+      <div className="mermaid h-full">{chart}</div>
     </div>
   );
 };
