@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from anthropic._exceptions import RateLimitError
 from app.prompts import SYSTEM_MODIFY_PROMPT
 from pydantic import BaseModel
-from backend.app.services.o3_mini_openrouter_service import OpenRouterO3Service
+from app.services.o3_mini_openrouter_service import OpenRouterO3Service
 
 
 load_dotenv()
