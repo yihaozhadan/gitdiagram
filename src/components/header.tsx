@@ -53,7 +53,11 @@ export function Header() {
             onClick={() => setIsPrivateReposDialogOpen(true)}
             className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
           >
-            Private Repos
+            <span className="flex flex-col items-center sm:hidden">
+              <span>Private</span>
+              <span>Repos</span>
+            </span>
+            <span className="hidden sm:inline">Private Repos</span>
           </span>
           <Link
             href="https://github.com/ahmedkhaleel2004/gitdiagram"
