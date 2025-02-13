@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Request, HTTPException
 from dotenv import load_dotenv
-from app.services.claude_service import ClaudeService
-from app.core.limiter import limiter
+
+# from app.services.claude_service import ClaudeService
+# from app.core.limiter import limiter
 from anthropic._exceptions import RateLimitError
 from app.prompts import SYSTEM_MODIFY_PROMPT
 from pydantic import BaseModel
@@ -29,7 +30,7 @@ class ModifyRequest(BaseModel):
 
 
 @router.post("")
-@limiter.limit("2/minute;10/day")
+# @limiter.limit("2/minute;10/day")
 async def modify(request: Request, body: ModifyRequest):
     try:
         # Check instructions length
