@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request, HTTPException
+from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from app.services.github_service import GitHubService
 from app.services.o3_mini_openrouter_service import OpenRouterO3Service
@@ -12,6 +13,8 @@ from anthropic._exceptions import RateLimitError
 from pydantic import BaseModel
 from functools import lru_cache
 import re
+import json
+import asyncio
 
 # from app.services.claude_service import ClaudeService
 # from app.core.limiter import limiter
@@ -49,6 +52,7 @@ class ApiRequest(BaseModel):
     github_pat: str | None = None
 
 
+# OLD NON STREAMING VERSION
 @router.post("")
 # @limiter.limit("1/minute;5/day") # TEMP: disable rate limit for growth??
 async def generate(request: Request, body: ApiRequest):
@@ -268,3 +272,149 @@ def process_click_events(diagram: str, username: str, repo: str, branch: str) ->
     # Match click events: click ComponentName "path/to/something"
     click_pattern = r'click ([^\s"]+)\s+"([^"]+)"'
     return re.sub(click_pattern, replace_path, diagram)
+
+
+@router.post("/stream")
+async def generate_stream(request: Request, body: ApiRequest):
+    try:
+        # Initial validation checks
+        if len(body.instructions) > 1000:
+            return {"error": "Instructions exceed maximum length of 1000 characters"}
+
+        if body.repo in [
+            "fastapi",
+            "streamlit",
+            "flask",
+            "api-analytics",
+            "monkeytype",
+        ]:
+            return {"error": "Example repos cannot be regenerated"}
+
+        async def event_generator():
+            try:
+                # Get cached github data
+                github_data = get_cached_github_data(
+                    body.username, body.repo, body.github_pat
+                )
+                default_branch = github_data["default_branch"]
+                file_tree = github_data["file_tree"]
+                readme = github_data["readme"]
+
+                # Send initial status
+                yield f"data: {json.dumps({'status': 'started', 'message': 'Starting generation process...'})}\n\n"
+                await asyncio.sleep(0.1)
+
+                # Token count check
+                combined_content = f"{file_tree}\n{readme}"
+                token_count = o3_service.count_tokens(combined_content)
+
+                if 50000 < token_count < 195000 and not body.api_key:
+                    yield f"data: {json.dumps({'error': f'File tree and README combined exceeds token limit (50,000). Current size: {token_count} tokens. This GitHub repository is too large for my wallet, but you can continue by providing your own OpenRouter API key.'})}\n\n"
+                    return
+                elif token_count > 195000:
+                    yield f"data: {json.dumps({'error': f'Repository is too large (>195k tokens) for analysis. OpenAI o3-mini\'s max context length is 200k tokens. Current size: {token_count} tokens.'})}\n\n"
+                    return
+
+                # Prepare prompts
+                first_system_prompt = SYSTEM_FIRST_PROMPT
+                third_system_prompt = SYSTEM_THIRD_PROMPT
+                if body.instructions:
+                    first_system_prompt = (
+                        first_system_prompt
+                        + "\n"
+                        + ADDITIONAL_SYSTEM_INSTRUCTIONS_PROMPT
+                    )
+                    third_system_prompt = (
+                        third_system_prompt
+                        + "\n"
+                        + ADDITIONAL_SYSTEM_INSTRUCTIONS_PROMPT
+                    )
+
+                # Phase 1: Get explanation
+                yield f"data: {json.dumps({'status': 'explanation_sent', 'message': 'Sending explanation request to o3-mini...'})}\n\n"
+                await asyncio.sleep(0.1)
+                yield f"data: {json.dumps({'status': 'explanation', 'message': 'Analyzing repository structure...'})}\n\n"
+                explanation = ""
+                async for chunk in o3_service.call_o3_api_stream(
+                    system_prompt=first_system_prompt,
+                    data={
+                        "file_tree": file_tree,
+                        "readme": readme,
+                        "instructions": body.instructions,
+                    },
+                    api_key=body.api_key,
+                    reasoning_effort="medium",
+                ):
+                    explanation += chunk
+                    yield f"data: {json.dumps({'status': 'explanation_chunk', 'chunk': chunk})}\n\n"
+
+                if "BAD_INSTRUCTIONS" in explanation:
+                    yield f"data: {json.dumps({'error': 'Invalid or unclear instructions provided'})}\n\n"
+                    return
+
+                # Phase 2: Get component mapping
+                yield f"data: {json.dumps({'status': 'mapping_sent', 'message': 'Sending component mapping request to o3-mini...'})}\n\n"
+                await asyncio.sleep(0.1)
+                yield f"data: {json.dumps({'status': 'mapping', 'message': 'Creating component mapping...'})}\n\n"
+                full_second_response = ""
+                async for chunk in o3_service.call_o3_api_stream(
+                    system_prompt=SYSTEM_SECOND_PROMPT,
+                    data={"explanation": explanation, "file_tree": file_tree},
+                    api_key=body.api_key,
+                    reasoning_effort="medium",
+                ):
+                    full_second_response += chunk
+                    yield f"data: {json.dumps({'status': 'mapping_chunk', 'chunk': chunk})}\n\n"
+
+                # i dont think i need this anymore? but keep it here for now
+                # Extract component mapping
+                start_tag = "<component_mapping>"
+                end_tag = "</component_mapping>"
+                component_mapping_text = full_second_response[
+                    full_second_response.find(start_tag) : full_second_response.find(
+                        end_tag
+                    )
+                ]
+
+                # Phase 3: Generate Mermaid diagram
+                yield f"data: {json.dumps({'status': 'diagram_sent', 'message': 'Sending diagram generation request to o3-mini...'})}\n\n"
+                await asyncio.sleep(0.1)
+                yield f"data: {json.dumps({'status': 'diagram', 'message': 'Generating diagram...'})}\n\n"
+                mermaid_code = ""
+                async for chunk in o3_service.call_o3_api_stream(
+                    system_prompt=third_system_prompt,
+                    data={
+                        "explanation": explanation,
+                        "component_mapping": component_mapping_text,
+                        "instructions": body.instructions,
+                    },
+                    api_key=body.api_key,
+                    reasoning_effort="medium",
+                ):
+                    mermaid_code += chunk
+                    yield f"data: {json.dumps({'status': 'diagram_chunk', 'chunk': chunk})}\n\n"
+
+                # Process final diagram
+                mermaid_code = mermaid_code.replace("```mermaid", "").replace("```", "")
+                if "BAD_INSTRUCTIONS" in mermaid_code:
+                    yield f"data: {json.dumps({'error': 'Invalid or unclear instructions provided'})}\n\n"
+                    return
+
+                processed_diagram = process_click_events(
+                    mermaid_code, body.username, body.repo, default_branch
+                )
+
+                # Send final result
+                yield f"data: {json.dumps({
+                    'status': 'complete',
+                    'diagram': processed_diagram,
+                    'explanation': explanation,
+                    'mapping': component_mapping_text
+                })}\n\n"
+
+            except Exception as e:
+                yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+        return StreamingResponse(event_generator(), media_type="text/event-stream")
+    except Exception as e:
+        return {"error": str(e)}

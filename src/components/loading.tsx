@@ -31,13 +31,36 @@ const messages = [
 
 interface LoadingProps {
   cost?: string;
-  isModifying?: boolean;
+  status:
+    | "idle"
+    | "started"
+    | "explanation_sent"
+    | "explanation"
+    | "explanation_chunk"
+    | "mapping_sent"
+    | "mapping"
+    | "mapping_chunk"
+    | "diagram_sent"
+    | "diagram"
+    | "diagram_chunk"
+    | "complete"
+    | "error";
+  message?: string;
+  explanation?: string;
+  mapping?: string;
+  diagram?: string;
 }
 
-const Loading = ({ cost, isModifying }: LoadingProps) => {
+export default function Loading({
+  status = "idle",
+  message,
+  explanation,
+  mapping,
+  diagram,
+  cost,
+}: LoadingProps) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-  const seconds = isModifying ? 10 : 55;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -47,57 +70,95 @@ const Loading = ({ cost, isModifying }: LoadingProps) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Reset progress when component mounts
+  // Update progress based on status
   useEffect(() => {
-    setProgress(0);
-  }, []);
+    switch (status) {
+      case "started":
+        setProgress(5);
+        break;
+      case "explanation_sent":
+        setProgress(10);
+        break;
+      case "explanation":
+      case "explanation_chunk":
+        setProgress(30);
+        break;
+      case "mapping_sent":
+        setProgress(35);
+        break;
+      case "mapping":
+      case "mapping_chunk":
+        setProgress(60);
+        break;
+      case "diagram_sent":
+        setProgress(65);
+        break;
+      case "diagram":
+      case "diagram_chunk":
+        setProgress(90);
+        break;
+      default:
+        setProgress(0);
+    }
+  }, [status]);
 
-  // Handle progress animation
-  useEffect(() => {
-    let animationFrameId: number;
-
-    // Start progress if we're modifying OR if we have a cost
-    if (!isModifying && !cost) return;
-
-    const startTime = Date.now();
-    const duration = seconds * 1000;
-
-    const updateProgress = () => {
-      const elapsed = Date.now() - startTime;
-      const rawProgress = Math.min(elapsed / duration, 1);
-      setProgress(rawProgress * 100);
-
-      if (elapsed < duration) {
-        animationFrameId = requestAnimationFrame(updateProgress);
-      }
-    };
-
-    animationFrameId = requestAnimationFrame(updateProgress);
-
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-      setProgress(0);
-    };
-  }, [cost, seconds, isModifying]);
+  const getStatusDisplay = () => {
+    switch (status) {
+      case "explanation_sent":
+        return "Waiting for o3-mini to start analyzing repository...";
+      case "explanation":
+      case "explanation_chunk":
+        return "Analyzing repository structure...";
+      case "mapping_sent":
+        return "Waiting for o3-mini to start mapping components...";
+      case "mapping":
+      case "mapping_chunk":
+        return "Creating component mapping...";
+      case "diagram_sent":
+        return "Waiting for o3-mini to start generating diagram...";
+      case "diagram":
+      case "diagram_chunk":
+        return "Generating diagram...";
+      default:
+        return messages[currentMessageIndex];
+    }
+  };
 
   return (
-    <div className="flex h-full flex-col items-center justify-center">
+    <div className="flex flex-col items-center gap-8">
       <LoadingAnimation />
-      {(cost ?? isModifying) && (
-        <Progress value={progress} className="mt-4 h-[7px] w-[300px]" />
-      )}
-      <div className="mt-4 animate-fade-in-up text-lg">
+      {/* <div className="mt-4 animate-fade-in-up text-lg">
         {messages[currentMessageIndex]}
-      </div>
+      </div> */}
       {cost && (
         <div className="mt-4 animate-fade-in text-sm text-purple-500">
           Estimated cost: {cost}
         </div>
       )}
+      <div className="flex flex-col items-center gap-4">
+        {explanation && (
+          <div className="mt-4 max-w-2xl text-sm text-gray-600">
+            <p className="font-medium">Current explanation:</p>
+            <p className="mt-2">{explanation}</p>
+          </div>
+        )}
+        {mapping && (
+          <div className="mt-4 max-w-2xl text-sm text-gray-600">
+            <p className="font-medium">Current component mapping:</p>
+            <pre className="mt-2 overflow-x-auto whitespace-pre-wrap">
+              {mapping}
+            </pre>
+          </div>
+        )}
+        {diagram && (
+          <div className="mt-4 max-w-2xl text-sm text-gray-600">
+            <p className="font-medium">Current diagram:</p>
+            <pre className="mt-2 overflow-x-auto whitespace-pre-wrap">
+              {diagram}
+            </pre>
+          </div>
+        )}
+      </div>
     </div>
   );
-};
-
-export default Loading;
+}

@@ -1,29 +1,238 @@
 import { useState, useEffect, useCallback } from "react";
-import { getCachedDiagram } from "~/app/_actions/cache";
-import { getLastGeneratedDate } from "~/app/_actions/repo";
 import {
-  generateAndCacheDiagram,
-  modifyAndCacheDiagram,
-  getCostOfGeneration,
-} from "~/lib/fetch-backend";
+  cacheDiagramAndExplanation,
+  getCachedDiagram,
+} from "~/app/_actions/cache";
+import { getLastGeneratedDate } from "~/app/_actions/repo";
+import { getCostOfGeneration } from "~/lib/fetch-backend";
 import { exampleRepos } from "~/lib/exampleRepos";
+
+interface StreamState {
+  status:
+    | "idle"
+    | "started"
+    | "explanation_sent"
+    | "explanation"
+    | "explanation_chunk"
+    | "mapping_sent"
+    | "mapping"
+    | "mapping_chunk"
+    | "diagram_sent"
+    | "diagram"
+    | "diagram_chunk"
+    | "complete"
+    | "error";
+  message?: string;
+  explanation?: string;
+  mapping?: string;
+  diagram?: string;
+  error?: string;
+}
+
+interface StreamResponse {
+  status: StreamState["status"];
+  message?: string;
+  chunk?: string;
+  explanation?: string;
+  mapping?: string;
+  diagram?: string;
+  error?: string;
+}
 
 export function useDiagram(username: string, repo: string) {
   const [diagram, setDiagram] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
-  const [isRegenerating, setIsRegenerating] = useState<boolean>(false);
   const [lastGenerated, setLastGenerated] = useState<Date | undefined>();
   const [cost, setCost] = useState<string>("");
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
-  const [tokenCount, setTokenCount] = useState<number>(0);
+  // const [tokenCount, setTokenCount] = useState<number>(0);
+  const [state, setState] = useState<StreamState>({ status: "idle" });
+
+  const generateDiagram = useCallback(
+    async (instructions = "", apiKey?: string, githubPat?: string) => {
+      setState({
+        status: "started",
+        message: "Starting generation process...",
+      });
+
+      try {
+        const baseUrl =
+          process.env.NEXT_PUBLIC_API_DEV_URL ?? "https://api.gitdiagram.com"; // keeping this here since its easier for streaming
+        const response = await fetch(`${baseUrl}/generate/stream`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            repo,
+            instructions,
+            api_key: apiKey,
+            github_pat: githubPat,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to start streaming");
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error("No reader available");
+        }
+
+        let explanation = "";
+        let mapping = "";
+        let diagram = "";
+
+        // Process the stream
+        const processStream = async () => {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+
+              // Convert the chunk to text
+              const chunk = new TextDecoder().decode(value);
+              const lines = chunk.split("\n");
+
+              // Process each SSE message
+              for (const line of lines) {
+                if (line.startsWith("data: ")) {
+                  try {
+                    const data = JSON.parse(line.slice(6)) as StreamResponse;
+
+                    // Update state based on the message type
+                    switch (data.status) {
+                      case "started":
+                        setState((prev) => ({
+                          ...prev,
+                          status: "started",
+                          message: data.message,
+                        }));
+                        break;
+                      case "explanation_sent":
+                        setState((prev) => ({
+                          ...prev,
+                          status: "explanation_sent",
+                          message: data.message,
+                        }));
+                        break;
+                      case "explanation":
+                        setState((prev) => ({
+                          ...prev,
+                          status: "explanation",
+                          message: data.message,
+                        }));
+                        break;
+                      case "explanation_chunk":
+                        if (data.chunk) {
+                          explanation += data.chunk;
+                          setState((prev) => ({ ...prev, explanation }));
+                        }
+                        break;
+                      case "mapping_sent":
+                        setState((prev) => ({
+                          ...prev,
+                          status: "mapping_sent",
+                          message: data.message,
+                        }));
+                        break;
+                      case "mapping":
+                        setState((prev) => ({
+                          ...prev,
+                          status: "mapping",
+                          message: data.message,
+                        }));
+                        break;
+                      case "mapping_chunk":
+                        if (data.chunk) {
+                          mapping += data.chunk;
+                          setState((prev) => ({ ...prev, mapping }));
+                        }
+                        break;
+                      case "diagram_sent":
+                        setState((prev) => ({
+                          ...prev,
+                          status: "diagram_sent",
+                          message: data.message,
+                        }));
+                        break;
+                      case "diagram":
+                        setState((prev) => ({
+                          ...prev,
+                          status: "diagram",
+                          message: data.message,
+                        }));
+                        break;
+                      case "diagram_chunk":
+                        if (data.chunk) {
+                          diagram += data.chunk;
+                          setState((prev) => ({ ...prev, diagram }));
+                        }
+                        break;
+                      case "complete":
+                        setState({
+                          status: "complete",
+                          explanation: data.explanation,
+                          diagram: data.diagram,
+                        });
+                        const date = await getLastGeneratedDate(username, repo);
+                        setLastGenerated(date ?? undefined);
+                        break;
+                      case "error":
+                        setState({ status: "error", error: data.error });
+                        break;
+                    }
+                  } catch (e) {
+                    console.error("Error parsing SSE message:", e);
+                  }
+                }
+              }
+            }
+          } finally {
+            reader.releaseLock();
+          }
+        };
+
+        await processStream();
+      } catch (error) {
+        setState({
+          status: "error",
+          error:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        });
+      }
+    },
+    [username, repo],
+  );
+
+  useEffect(() => {
+    if (state.status === "complete" && state.diagram) {
+      // Cache the completed diagram
+      void cacheDiagramAndExplanation(
+        username,
+        repo,
+        state.diagram,
+        state.explanation ?? "No explanation provided",
+      );
+      setDiagram(state.diagram);
+      void getLastGeneratedDate(username, repo).then((date) =>
+        setLastGenerated(date ?? undefined),
+      );
+    }
+  }, [state.status, state.diagram, username, repo, state.explanation]);
 
   const getDiagram = useCallback(async () => {
     setLoading(true);
     setError("");
     setCost("");
-    setIsRegenerating(true);
+
     try {
+      // Check cache first
       const cached = await getCachedDiagram(username, repo);
       const github_pat = localStorage.getItem("github_pat");
 
@@ -31,46 +240,41 @@ export function useDiagram(username: string, repo: string) {
         setDiagram(cached);
         const date = await getLastGeneratedDate(username, repo);
         setLastGenerated(date ?? undefined);
-      } else {
-        const costEstimate = await getCostOfGeneration(
-          username,
-          repo,
-          "",
-          github_pat ?? undefined,
-        ); // empty instructions so lru cache is used
-
-        if (costEstimate.error) {
-          console.error("Cost estimation failed:", costEstimate.error);
-          setError(costEstimate.error);
-        }
-
-        setCost(costEstimate.cost ?? "");
-
-        const result = await generateAndCacheDiagram(
-          username,
-          repo,
-          github_pat ?? undefined,
-        );
-
-        if (result.error) {
-          console.error("Diagram generation failed:", result.error);
-          if (result.requires_api_key) {
-            setTokenCount(result.token_count ?? 0);
-          }
-          setError(result.error);
-        } else if (result.diagram) {
-          setDiagram(result.diagram);
-          const date = await getLastGeneratedDate(username, repo);
-          setLastGenerated(date ?? undefined);
-        }
+        return;
       }
+
+      // Get cost estimate
+      const costEstimate = await getCostOfGeneration(
+        username,
+        repo,
+        "",
+        github_pat ?? undefined,
+      );
+
+      if (costEstimate.error) {
+        console.error("Cost estimation failed:", costEstimate.error);
+        // if (costEstimate.requires_api_key) {
+        //   setTokenCount(costEstimate.token_count ?? 0);
+        // }
+        // TODO: come to think of it, why is requires api key based on tokens? this unimplemented option is smarter. Add API key dialog
+        setError(costEstimate.error);
+        return;
+      }
+
+      setCost(costEstimate.cost ?? "");
+
+      // Start streaming generation
+      await generateDiagram("", undefined, github_pat ?? undefined);
+
+      // Note: The diagram and lastGenerated will be set by the generateDiagram function
+      // through the state updates
     } catch (error) {
       console.error("Error in getDiagram:", error);
       setError("Something went wrong. Please try again later.");
     } finally {
       setLoading(false);
     }
-  }, [username, repo]);
+  }, [username, repo, generateDiagram]);
 
   useEffect(() => {
     void getDiagram();
@@ -91,16 +295,9 @@ export function useDiagram(username: string, repo: string) {
     setLoading(true);
     setError("");
     setCost("");
-    setIsRegenerating(false);
     try {
-      const result = await modifyAndCacheDiagram(username, repo, instructions);
-      if (result.diagram) {
-        setDiagram(result.diagram);
-        const date = await getLastGeneratedDate(username, repo);
-        setLastGenerated(date ?? undefined);
-      } else if (result.error) {
-        setError(result.error);
-      }
+      // Start streaming generation with instructions
+      await generateDiagram(instructions);
     } catch (error) {
       console.error("Error modifying diagram:", error);
       setError("Failed to modify diagram. Please try again later.");
@@ -118,7 +315,6 @@ export function useDiagram(username: string, repo: string) {
     setLoading(true);
     setError("");
     setCost("");
-    setIsRegenerating(true);
     try {
       const github_pat = localStorage.getItem("github_pat");
       const costEstimate = await getCostOfGeneration(username, repo, "");
@@ -126,24 +322,13 @@ export function useDiagram(username: string, repo: string) {
       if (costEstimate.error) {
         console.error("Cost estimation failed:", costEstimate.error);
         setError(costEstimate.error);
+        return;
       }
 
       setCost(costEstimate.cost ?? "");
 
-      const result = await generateAndCacheDiagram(
-        username,
-        repo,
-        github_pat ?? undefined,
-        instructions,
-      );
-      if (result.error) {
-        console.error("Diagram generation failed:", result.error);
-        setError(result.error);
-      } else if (result.diagram) {
-        setDiagram(result.diagram);
-        const date = await getLastGeneratedDate(username, repo);
-        setLastGenerated(date ?? undefined);
-      }
+      // Start streaming generation with instructions
+      await generateDiagram(instructions, undefined, github_pat ?? undefined);
     } catch (error) {
       console.error("Error regenerating diagram:", error);
       setError("Failed to regenerate diagram. Please try again later.");
@@ -212,20 +397,8 @@ export function useDiagram(username: string, repo: string) {
     setError("");
     const github_pat = localStorage.getItem("github_pat");
     try {
-      const result = await generateAndCacheDiagram(
-        username,
-        repo,
-        github_pat ?? undefined,
-        "",
-        apiKey,
-      );
-      if (result.error) {
-        setError(result.error);
-      } else if (result.diagram) {
-        setDiagram(result.diagram);
-        const date = await getLastGeneratedDate(username, repo);
-        setLastGenerated(date ?? undefined);
-      }
+      // Start streaming generation with API key
+      await generateDiagram("", apiKey, github_pat ?? undefined);
     } catch (error) {
       console.error("Error generating with API key:", error);
       setError("Failed to generate diagram with provided API key.");
@@ -248,15 +421,15 @@ export function useDiagram(username: string, repo: string) {
     loading,
     lastGenerated,
     cost,
-    isRegenerating,
     handleModify,
     handleRegenerate,
     handleCopy,
     showApiKeyDialog,
-    tokenCount,
+    // tokenCount,
     handleApiKeySubmit,
     handleCloseApiKeyDialog,
     handleOpenApiKeyDialog,
     handleExportImage,
+    state,
   };
 }

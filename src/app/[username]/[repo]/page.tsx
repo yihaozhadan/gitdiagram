@@ -5,7 +5,7 @@ import MainCard from "~/components/main-card";
 import Loading from "~/components/loading";
 import MermaidChart from "~/components/mermaid-diagram";
 import { useDiagram } from "~/hooks/useDiagram";
-import { ApiKeyDialog } from "~/components/api-key-dialog";
+// import { ApiKeyDialog } from "~/components/api-key-dialog";
 import { ApiKeyButton } from "~/components/api-key-button";
 import { useState } from "react";
 
@@ -18,16 +18,16 @@ export default function Repo() {
     loading,
     lastGenerated,
     cost,
-    isRegenerating,
-    showApiKeyDialog,
-    tokenCount,
+    // showApiKeyDialog,
+    // tokenCount,
     handleModify,
     handleRegenerate,
     handleCopy,
-    handleApiKeySubmit,
-    handleCloseApiKeyDialog,
+    // handleApiKeySubmit,
+    // handleCloseApiKeyDialog,
     handleOpenApiKeyDialog,
     handleExportImage,
+    state,
   } = useDiagram(params.username.toLowerCase(), params.repo.toLowerCase());
 
   return (
@@ -51,7 +51,14 @@ export default function Repo() {
       <div className="mt-8 flex w-full flex-col items-center gap-8">
         {loading ? (
           <div className="mt-12">
-            <Loading cost={cost} isModifying={!isRegenerating} />
+            <Loading
+              cost={cost}
+              status={state.status}
+              message={state.message}
+              explanation={state.explanation}
+              mapping={state.mapping}
+              diagram={state.diagram}
+            />
           </div>
         ) : error ? (
           <div className="mt-12 text-center">
@@ -77,12 +84,12 @@ export default function Repo() {
         )}
       </div>
 
-      <ApiKeyDialog
+      {/* <ApiKeyDialog
         isOpen={showApiKeyDialog}
         onClose={handleCloseApiKeyDialog}
         onSubmit={handleApiKeySubmit}
         tokenCount={tokenCount}
-      />
+      /> */}
     </div>
   );
 }
