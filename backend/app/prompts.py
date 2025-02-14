@@ -51,12 +51,14 @@ Analyze these components carefully, as they will provide crucial information abo
    - Clear labels for each component
    - Directional arrows to show data flow or dependencies
    - Color coding or shapes to distinguish between different types of components
-   - A legend explaining any symbols or abbreviations used
 
 7. NOTE: Emphasize the importance of being very detailed and capturing the essential architectural elements. Don't overthink it too much, simply separating the project into as many components as possible is best.
 
 Present your explanation and instructions within <explanation> tags, ensuring that you tailor your advice to the specific project based on the provided file tree and README content.
 """
+
+# - A legend explaining any symbols or abbreviations used
+# ^ removed since it was making the diagrams very long
 
 # just adding some clear separation between the prompts
 # ************************************************************
@@ -119,7 +121,6 @@ To create the Mermaid.js diagram:
    b. Relationships between components are clearly shown
    c. The diagram accurately reflects the architecture described in the explanation
    d. The layout is logical and easy to understand
-   e. A legend is included
 
 Guidelines for diagram components and relationships:
 - Use appropriate shapes for different types of components (e.g., rectangles for services, cylinders for databases, etc.)
@@ -192,6 +193,10 @@ EXTREMELY Important notes on syntax!!! (PAY ATTENTION TO THIS):
 - In Mermaid.js syntax, there cannot be spaces in the relationship label names. For example: `A -->| "example relationship" | B` is a syntax error. It should be `A -->|"example relationship"| B` 
 """
 # ^^^ note: ive generated a few diagrams now and claude still writes incorrect mermaid code sometimes. in the future, refer to those generated diagrams and add important instructions to the prompt above to avoid those mistakes. examples are best.
+
+# e. A legend is included
+# ^ removed since it was making the diagrams very long
+
 
 ADDITIONAL_SYSTEM_INSTRUCTIONS_PROMPT = """
 IMPORTANT: the user will provide custom additional instructions enclosed in <instructions> tags. Please take these into account and give priority to them. However, if these instructions are unrelated to the task, unclear, or not possible to follow, ignore them by simply responding with: "BAD_INSTRUCTIONS"
