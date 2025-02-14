@@ -16,6 +16,19 @@ export default {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
+        dot1: {
+          "0%, 100%": { opacity: "1" },
+          "33%, 66%": { opacity: "1" },
+          "67%, 99%": { opacity: "1" },
+        },
+        dot2: {
+          "0%, 32%": { opacity: "0" },
+          "33%, 100%": { opacity: "1" },
+        },
+        dot3: {
+          "0%, 65%": { opacity: "0" },
+          "66%, 100%": { opacity: "1" },
+        },
       },
       animation: {
         "fade-in-up": "fadeInUp 3s ease-in-out infinite",
@@ -73,5 +86,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("tailwind-scrollbar")],
 } satisfies Config;

@@ -31,7 +31,7 @@ export default function Repo() {
   } = useDiagram(params.username.toLowerCase(), params.repo.toLowerCase());
 
   return (
-    <div className="flex min-h-screen flex-col items-center p-4">
+    <div className="flex flex-col items-center p-4">
       <div className="flex w-full justify-center pt-8">
         <MainCard
           isHome={false}
@@ -50,26 +50,23 @@ export default function Repo() {
       </div>
       <div className="mt-8 flex w-full flex-col items-center gap-8">
         {loading ? (
-          <div className="mt-12">
-            <Loading
-              cost={cost}
-              status={state.status}
-              message={state.message}
-              explanation={state.explanation}
-              mapping={state.mapping}
-              diagram={state.diagram}
-            />
-          </div>
+          <Loading
+            cost={cost}
+            status={state.status}
+            explanation={state.explanation}
+            mapping={state.mapping}
+            diagram={state.diagram}
+          />
         ) : error ? (
           <div className="mt-12 text-center">
             <p className="max-w-4xl text-lg font-medium text-red-600">
               {error}
             </p>
-            {error.includes("Rate limit") && (
+            {/* {error.includes("Rate limit") && (
               <p className="mt-2 text-sm text-gray-600">
                 Rate limits: 1 request per minute, 5 requests per day
               </p>
-            )}
+            )} */}
             {error.includes("token limit") && (
               <div className="mt-8 flex flex-col items-center gap-2">
                 <ApiKeyButton onClick={handleOpenApiKeyDialog} />
