@@ -57,10 +57,10 @@ export default function Repo() {
             mapping={state.mapping}
             diagram={state.diagram}
           />
-        ) : error ? (
+        ) : error || state.error ? (
           <div className="mt-12 text-center">
             <p className="max-w-4xl text-lg font-medium text-red-600">
-              {error}
+              {error || state.error}
             </p>
             {/* {error.includes("Rate limit") && (
               <p className="mt-2 text-sm text-gray-600">

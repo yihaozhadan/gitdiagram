@@ -277,6 +277,7 @@ def process_click_events(diagram: str, username: str, repo: str, branch: str) ->
 @router.post("/stream")
 async def generate_stream(request: Request, body: ApiRequest):
     try:
+        print("generate_stream called!")
         # Initial validation checks
         if len(body.instructions) > 1000:
             return {"error": "Instructions exceed maximum length of 1000 characters"}
@@ -290,9 +291,12 @@ async def generate_stream(request: Request, body: ApiRequest):
         ]:
             return {"error": "Example repos cannot be regenerated"}
 
+        print("initial validation checks passed")
+
         async def event_generator():
             try:
                 # Get cached github data
+                print("backend should be processing if you see this")
                 github_data = get_cached_github_data(
                     body.username, body.repo, body.github_pat
                 )
@@ -415,6 +419,7 @@ async def generate_stream(request: Request, body: ApiRequest):
             except Exception as e:
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
+        print("returning streaming response")
         return StreamingResponse(event_generator(), media_type="text/event-stream")
     except Exception as e:
         return {"error": str(e)}
