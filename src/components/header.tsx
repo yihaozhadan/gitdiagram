@@ -38,9 +38,9 @@ export function Header() {
 
   return (
     <header className="border-b-[3px] border-black">
-      <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-8">
+      <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4 sm:px-8">
         <Link href="/" className="flex items-center">
-          <span className="text-xl font-semibold">
+          <span className="text-lg font-semibold sm:text-xl">
             <span className="text-black transition-colors duration-200 hover:text-gray-600">
               Git
             </span>
@@ -49,12 +49,12 @@ export function Header() {
             </span>
           </span>
         </Link>
-        <nav className="flex items-center gap-5 sm:gap-6">
+        <nav className="flex items-center gap-3 sm:gap-6">
           <span
             onClick={() => setIsApiKeyDialogOpen(true)}
             className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
           >
-            <span className="flex flex-col items-center sm:hidden">
+            <span className="flex items-center sm:hidden">
               <span>API Key</span>
             </span>
             <span className="hidden items-center gap-1 sm:flex">
@@ -65,18 +65,15 @@ export function Header() {
             onClick={() => setIsPrivateReposDialogOpen(true)}
             className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
           >
-            <span className="flex flex-col items-center sm:hidden">
-              <span>Private</span>
-              <span>Repos</span>
-            </span>
+            <span className="sm:hidden">Private Repos</span>
             <span className="hidden sm:inline">Private Repos</span>
           </span>
           <Link
             href="https://github.com/ahmedkhaleel2004/gitdiagram"
-            className="flex items-center gap-2 text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
+            className="flex items-center gap-1 text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600 sm:gap-2"
           >
             <FaGithub className="h-5 w-5" />
-            GitHub
+            <span className="hidden sm:inline">GitHub</span>
           </Link>
           <span className="flex items-center gap-1 text-sm font-medium text-black">
             <span className="text-amber-400">★</span>
