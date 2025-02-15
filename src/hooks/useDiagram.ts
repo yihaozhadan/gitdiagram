@@ -220,12 +220,14 @@ export function useDiagram(username: string, repo: string) {
 
   useEffect(() => {
     if (state.status === "complete" && state.diagram) {
-      // Cache the completed diagram
+      // Cache the completed diagram with the usedOwnKey flag
+      const hasApiKey = !!localStorage.getItem("openrouter_key");
       void cacheDiagramAndExplanation(
         username,
         repo,
         state.diagram,
         state.explanation ?? "No explanation provided",
+        hasApiKey,
       );
       setDiagram(state.diagram);
       void getLastGeneratedDate(username, repo).then((date) =>

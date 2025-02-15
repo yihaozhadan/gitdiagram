@@ -3,6 +3,7 @@
 import { db } from "~/server/db";
 import { eq, and } from "drizzle-orm";
 import { diagramCache } from "~/server/db/schema";
+import { sql } from "drizzle-orm";
 
 export async function getCachedDiagram(username: string, repo: string) {
   try {
@@ -43,6 +44,7 @@ export async function cacheDiagramAndExplanation(
   repo: string,
   diagram: string,
   explanation: string,
+  usedOwnKey = false,
 ) {
   try {
     await db
@@ -50,17 +52,37 @@ export async function cacheDiagramAndExplanation(
       .values({
         username,
         repo,
-        explanation,
         diagram,
+        explanation,
+        usedOwnKey,
       })
       .onConflictDoUpdate({
         target: [diagramCache.username, diagramCache.repo],
         set: {
           diagram,
+          explanation,
+          usedOwnKey,
           updatedAt: new Date(),
         },
       });
   } catch (error) {
     console.error("Error caching diagram:", error);
+  }
+}
+
+export async function getDiagramStats() {
+  try {
+    const stats = await db
+      .select({
+        totalDiagrams: sql`COUNT(*)`,
+        ownKeyUsers: sql`COUNT(CASE WHEN ${diagramCache.usedOwnKey} = true THEN 1 END)`,
+        freeUsers: sql`COUNT(CASE WHEN ${diagramCache.usedOwnKey} = false THEN 1 END)`,
+      })
+      .from(diagramCache);
+
+    return stats[0];
+  } catch (error) {
+    console.error("Error getting diagram stats:", error);
+    return null;
   }
 }

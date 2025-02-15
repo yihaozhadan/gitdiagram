@@ -7,6 +7,7 @@ import {
   timestamp,
   varchar,
   primaryKey,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -32,6 +33,7 @@ export const diagramCache = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
       () => new Date(),
     ),
+    usedOwnKey: boolean("used_own_key").default(false),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.username, table.repo] }),
