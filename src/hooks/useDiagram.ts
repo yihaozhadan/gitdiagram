@@ -340,7 +340,7 @@ export function useDiagram(username: string, repo: string) {
       // Check if user has used their free generation and doesn't have an API key
       if (hasFreeGeneration && !storedApiKey) {
         setError(
-          "You've used your one free diagram. Please enter your API key to continue. As a student, I can't afford to keep it totally free and I hope you understand.",
+          "You've used your one free diagram. Please enter your API key to continue. As a student, I can't afford to keep it totally free and I hope you understand :)",
         );
         setLoading(false);
         return;
