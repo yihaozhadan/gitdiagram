@@ -32,6 +32,11 @@ export function PrivateReposDialog({
     setPat("");
   };
 
+  const handleClear = () => {
+    localStorage.removeItem("github_pat");
+    setPat("");
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="border-[3px] border-black bg-purple-200 p-6 shadow-[8px_8px_0_0_#000000] sm:max-w-md">
@@ -80,21 +85,30 @@ export function PrivateReposDialog({
             className="flex-1 rounded-md border-[3px] border-black px-3 py-2 text-base font-bold shadow-[4px_4px_0_0_#000000] placeholder:text-base placeholder:font-normal placeholder:text-gray-700"
             required
           />
-          <div className="flex justify-end gap-3">
-            <Button
+          <div className="flex items-center justify-between">
+            <button
               type="button"
-              onClick={onClose}
-              className="border-[3px] border-black bg-gray-200 px-4 py-2 text-black shadow-[4px_4px_0_0_#000000] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gray-300"
+              onClick={handleClear}
+              className="text-sm text-purple-600 hover:text-purple-500"
             >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={!pat.startsWith("ghp_")}
-              className="border-[3px] border-black bg-purple-400 px-4 py-2 text-black shadow-[4px_4px_0_0_#000000] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-purple-300 disabled:opacity-50"
-            >
-              Save Token
-            </Button>
+              Clear
+            </button>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                onClick={onClose}
+                className="border-[3px] border-black bg-gray-200 px-4 py-2 text-black shadow-[4px_4px_0_0_#000000] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={!pat.startsWith("ghp_")}
+                className="border-[3px] border-black bg-purple-400 px-4 py-2 text-black shadow-[4px_4px_0_0_#000000] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-purple-300 disabled:opacity-50"
+              >
+                Save Token
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

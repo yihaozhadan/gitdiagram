@@ -5,10 +5,12 @@ import Link from "next/link";
 import { FaGithub } from "react-icons/fa";
 import { getStarCount } from "~/app/_actions/github";
 import { PrivateReposDialog } from "./private-repos-dialog";
+import { ApiKeyDialog } from "./api-key-dialog";
 
 export function Header() {
   const [isPrivateReposDialogOpen, setIsPrivateReposDialogOpen] =
     useState(false);
+  const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
   const [starCount, setStarCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -16,7 +18,7 @@ export function Header() {
   }, []);
 
   const formatStarCount = (count: number | null) => {
-    if (!count) return "2.0k"; // Default to 2.0k if count is null (it can only go up from here)
+    if (!count) return "2.3k"; // Default to 2.0k if count is null (it can only go up from here)
     if (count >= 1000) {
       return `${(count / 1000).toFixed(1)}k`;
     }
@@ -27,6 +29,11 @@ export function Header() {
     // Store the PAT in localStorage
     localStorage.setItem("github_pat", pat);
     setIsPrivateReposDialogOpen(false);
+  };
+
+  const handleApiKeySubmit = (apiKey: string) => {
+    localStorage.setItem("openrouter_key", apiKey);
+    setIsApiKeyDialogOpen(false);
   };
 
   return (
@@ -43,12 +50,17 @@ export function Header() {
           </span>
         </Link>
         <nav className="flex items-center gap-5 sm:gap-6">
-          {/* <Link
-            href="https://api.gitdiagram.com"
-            className="text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
+          <span
+            onClick={() => setIsApiKeyDialogOpen(true)}
+            className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
           >
-            API
-          </Link> */}
+            <span className="flex flex-col items-center sm:hidden">
+              <span>API Key</span>
+            </span>
+            <span className="hidden items-center gap-1 sm:flex">
+              <span>API Key</span>
+            </span>
+          </span>
           <span
             onClick={() => setIsPrivateReposDialogOpen(true)}
             className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
@@ -76,6 +88,11 @@ export function Header() {
           isOpen={isPrivateReposDialogOpen}
           onClose={() => setIsPrivateReposDialogOpen(false)}
           onSubmit={handlePrivateReposSubmit}
+        />
+        <ApiKeyDialog
+          isOpen={isApiKeyDialogOpen}
+          onClose={() => setIsApiKeyDialogOpen(false)}
+          onSubmit={handleApiKeySubmit}
         />
       </div>
     </header>

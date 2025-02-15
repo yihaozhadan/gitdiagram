@@ -48,9 +48,12 @@ export function useDiagram(username: string, repo: string) {
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
   // const [tokenCount, setTokenCount] = useState<number>(0);
   const [state, setState] = useState<StreamState>({ status: "idle" });
+  const [hasFreeGeneration, setHasFreeGeneration] = useState<boolean>(() => {
+    return localStorage.getItem("has_used_free_generation") === "true";
+  });
 
   const generateDiagram = useCallback(
-    async (instructions = "", apiKey?: string, githubPat?: string) => {
+    async (instructions = "", githubPat?: string) => {
       setState({
         status: "started",
         message: "Starting generation process...",
@@ -58,7 +61,7 @@ export function useDiagram(username: string, repo: string) {
 
       try {
         const baseUrl =
-          process.env.NEXT_PUBLIC_API_DEV_URL ?? "https://api.gitdiagram.com"; // keeping this here since its easier for streaming
+          process.env.NEXT_PUBLIC_API_DEV_URL ?? "https://api.gitdiagram.com";
         const response = await fetch(`${baseUrl}/generate/stream`, {
           method: "POST",
           headers: {
@@ -68,7 +71,7 @@ export function useDiagram(username: string, repo: string) {
             username,
             repo,
             instructions,
-            api_key: apiKey,
+            api_key: localStorage.getItem("openrouter_key") ?? undefined,
             github_pat: githubPat,
           }),
         });
@@ -178,6 +181,13 @@ export function useDiagram(username: string, repo: string) {
                         });
                         const date = await getLastGeneratedDate(username, repo);
                         setLastGenerated(date ?? undefined);
+                        if (!hasFreeGeneration) {
+                          localStorage.setItem(
+                            "has_used_free_generation",
+                            "true",
+                          );
+                          setHasFreeGeneration(true);
+                        }
                         break;
                       case "error":
                         setState({ status: "error", error: data.error });
@@ -205,7 +215,7 @@ export function useDiagram(username: string, repo: string) {
         });
       }
     },
-    [username, repo],
+    [username, repo, hasFreeGeneration],
   );
 
   useEffect(() => {
@@ -230,7 +240,7 @@ export function useDiagram(username: string, repo: string) {
     setCost("");
 
     try {
-      // Check cache first
+      // Check cache first - always allow access to cached diagrams
       const cached = await getCachedDiagram(username, repo);
       const github_pat = localStorage.getItem("github_pat");
 
@@ -238,6 +248,16 @@ export function useDiagram(username: string, repo: string) {
         setDiagram(cached);
         const date = await getLastGeneratedDate(username, repo);
         setLastGenerated(date ?? undefined);
+        return;
+      }
+
+      // Only check for API key if we need to generate a new diagram
+      const storedApiKey = localStorage.getItem("openrouter_key");
+      if (hasFreeGeneration && !storedApiKey) {
+        setError(
+          "You've used your one free diagram. Please enter your API key to continue. As a student, I can't afford to keep it totally free and I hope you understand :)",
+        );
+        setState({ status: "error", error: "API key required" });
         return;
       }
 
@@ -262,7 +282,7 @@ export function useDiagram(username: string, repo: string) {
       setCost(costEstimate.cost ?? "");
 
       // Start streaming generation
-      await generateDiagram("", undefined, github_pat ?? undefined);
+      await generateDiagram("", github_pat ?? undefined);
 
       // Note: The diagram and lastGenerated will be set by the generateDiagram function
       // through the state updates
@@ -272,7 +292,7 @@ export function useDiagram(username: string, repo: string) {
     } finally {
       setLoading(false);
     }
-  }, [username, repo, generateDiagram]);
+  }, [username, repo, generateDiagram, hasFreeGeneration]);
 
   useEffect(() => {
     void getDiagram();
@@ -315,6 +335,17 @@ export function useDiagram(username: string, repo: string) {
     setCost("");
     try {
       const github_pat = localStorage.getItem("github_pat");
+      const storedApiKey = localStorage.getItem("openrouter_key");
+
+      // Check if user has used their free generation and doesn't have an API key
+      if (hasFreeGeneration && !storedApiKey) {
+        setError(
+          "You've used your one free diagram. Please enter your API key to continue. As a student, I can't afford to keep it totally free and I hope you understand.",
+        );
+        setLoading(false);
+        return;
+      }
+
       const costEstimate = await getCostOfGeneration(username, repo, "");
 
       if (costEstimate.error) {
@@ -326,7 +357,7 @@ export function useDiagram(username: string, repo: string) {
       setCost(costEstimate.cost ?? "");
 
       // Start streaming generation with instructions
-      await generateDiagram(instructions, undefined, github_pat ?? undefined);
+      await generateDiagram(instructions, github_pat ?? undefined);
     } catch (error) {
       console.error("Error regenerating diagram:", error);
       setError("Failed to regenerate diagram. Please try again later.");
@@ -393,10 +424,14 @@ export function useDiagram(username: string, repo: string) {
     setShowApiKeyDialog(false);
     setLoading(true);
     setError("");
+
+    // Store the key first
+    localStorage.setItem("openrouter_key", apiKey);
+
+    // Then generate diagram using stored key
     const github_pat = localStorage.getItem("github_pat");
     try {
-      // Start streaming generation with API key
-      await generateDiagram("", apiKey, github_pat ?? undefined);
+      await generateDiagram("", github_pat ?? undefined);
     } catch (error) {
       console.error("Error generating with API key:", error);
       setError("Failed to generate diagram with provided API key.");

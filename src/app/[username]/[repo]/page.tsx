@@ -5,7 +5,7 @@ import MainCard from "~/components/main-card";
 import Loading from "~/components/loading";
 import MermaidChart from "~/components/mermaid-diagram";
 import { useDiagram } from "~/hooks/useDiagram";
-// import { ApiKeyDialog } from "~/components/api-key-dialog";
+import { ApiKeyDialog } from "~/components/api-key-dialog";
 import { ApiKeyButton } from "~/components/api-key-button";
 import { useState } from "react";
 
@@ -18,13 +18,12 @@ export default function Repo() {
     loading,
     lastGenerated,
     cost,
-    // showApiKeyDialog,
-    // tokenCount,
+    showApiKeyDialog,
     handleModify,
     handleRegenerate,
     handleCopy,
-    // handleApiKeySubmit,
-    // handleCloseApiKeyDialog,
+    handleApiKeySubmit,
+    handleCloseApiKeyDialog,
     handleOpenApiKeyDialog,
     handleExportImage,
     state,
@@ -59,18 +58,12 @@ export default function Repo() {
           />
         ) : error || state.error ? (
           <div className="mt-12 text-center">
-            <p className="max-w-4xl text-lg font-medium text-red-600">
+            <p className="max-w-4xl text-lg font-medium text-purple-600">
               {error || state.error}
             </p>
-            {/* {error.includes("Rate limit") && (
-              <p className="mt-2 text-sm text-gray-600">
-                Rate limits: 1 request per minute, 5 requests per day
-              </p>
-            )} */}
-            {error.includes("token limit") && (
+            {error?.includes("API key") && (
               <div className="mt-8 flex flex-col items-center gap-2">
                 <ApiKeyButton onClick={handleOpenApiKeyDialog} />
-                <p className="mt-2 text-sm">Your key will not be stored</p>
               </div>
             )}
           </div>
@@ -81,12 +74,11 @@ export default function Repo() {
         )}
       </div>
 
-      {/* <ApiKeyDialog
+      <ApiKeyDialog
         isOpen={showApiKeyDialog}
         onClose={handleCloseApiKeyDialog}
         onSubmit={handleApiKeySubmit}
-        tokenCount={tokenCount}
-      /> */}
+      />
     </div>
   );
 }
