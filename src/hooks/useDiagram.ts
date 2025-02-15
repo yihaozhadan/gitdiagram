@@ -51,15 +51,12 @@ export function useDiagram(username: string, repo: string) {
 
   const generateDiagram = useCallback(
     async (instructions = "", apiKey?: string, githubPat?: string) => {
-      console.log("generateDiagram called");
       setState({
         status: "started",
         message: "Starting generation process...",
       });
-      console.log("started state set");
 
       try {
-        console.log("fetching stream api");
         const baseUrl =
           process.env.NEXT_PUBLIC_API_DEV_URL ?? "https://api.gitdiagram.com"; // keeping this here since its easier for streaming
         const response = await fetch(`${baseUrl}/generate/stream`, {
@@ -75,13 +72,10 @@ export function useDiagram(username: string, repo: string) {
             github_pat: githubPat,
           }),
         });
-        console.log("response", response);
         if (!response.ok) {
           throw new Error("Failed to start streaming");
         }
-        console.log("accessing reader");
         const reader = response.body?.getReader();
-        console.log("accessed reader");
         if (!reader) {
           throw new Error("No reader available");
         }
@@ -131,6 +125,7 @@ export function useDiagram(username: string, repo: string) {
                         }));
                         break;
                       case "explanation_chunk":
+                        console.log("received explanation chunk:", data.chunk);
                         if (data.chunk) {
                           explanation += data.chunk;
                           setState((prev) => ({ ...prev, explanation }));
