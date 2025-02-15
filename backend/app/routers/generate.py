@@ -346,7 +346,6 @@ async def generate_stream(request: Request, body: ApiRequest):
                     reasoning_effort="medium",
                 ):
                     explanation += chunk
-                    print("sending explanation chunk", chunk)
                     yield f"data: {json.dumps({'status': 'explanation_chunk', 'chunk': chunk})}\n\n"
 
                 if "BAD_INSTRUCTIONS" in explanation:
@@ -416,6 +415,14 @@ async def generate_stream(request: Request, body: ApiRequest):
             except Exception as e:
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
-        return StreamingResponse(event_generator(), media_type="text/event-stream")
+        return StreamingResponse(
+            event_generator(),
+            media_type="text/event-stream",
+            headers={
+                "X-Accel-Buffering": "no",  # Hint to Nginx
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+            },
+        )
     except Exception as e:
         return {"error": str(e)}

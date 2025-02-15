@@ -125,7 +125,6 @@ export function useDiagram(username: string, repo: string) {
                         }));
                         break;
                       case "explanation_chunk":
-                        console.log("received explanation chunk:", data.chunk);
                         if (data.chunk) {
                           explanation += data.chunk;
                           setState((prev) => ({ ...prev, explanation }));
