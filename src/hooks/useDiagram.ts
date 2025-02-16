@@ -104,6 +104,13 @@ export function useDiagram(username: string, repo: string) {
                   try {
                     const data = JSON.parse(line.slice(6)) as StreamResponse;
 
+                    // If we receive an error, set loading to false immediately
+                    if (data.error) {
+                      setState({ status: "error", error: data.error });
+                      setLoading(false);
+                      return; // Add this to stop processing
+                    }
+
                     // Update state based on the message type
                     switch (data.status) {
                       case "started":
@@ -213,6 +220,7 @@ export function useDiagram(username: string, repo: string) {
               ? error.message
               : "An unknown error occurred",
         });
+        setLoading(false);
       }
     },
     [username, repo, hasFreeGeneration],
@@ -233,6 +241,8 @@ export function useDiagram(username: string, repo: string) {
       void getLastGeneratedDate(username, repo).then((date) =>
         setLastGenerated(date ?? undefined),
       );
+    } else if (state.status === "error") {
+      setLoading(false);
     }
   }, [state.status, state.diagram, username, repo, state.explanation]);
 

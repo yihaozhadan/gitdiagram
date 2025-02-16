@@ -61,7 +61,8 @@ export default function Repo() {
             <p className="max-w-4xl text-lg font-medium text-purple-600">
               {error || state.error}
             </p>
-            {error?.includes("API key") && (
+            {(error?.includes("API key") ||
+              state.error?.includes("API key")) && (
               <div className="mt-8 flex flex-col items-center gap-2">
                 <ApiKeyButton onClick={handleOpenApiKeyDialog} />
               </div>
