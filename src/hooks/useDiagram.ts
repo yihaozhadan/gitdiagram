@@ -48,9 +48,11 @@ export function useDiagram(username: string, repo: string) {
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
   // const [tokenCount, setTokenCount] = useState<number>(0);
   const [state, setState] = useState<StreamState>({ status: "idle" });
-  const [hasFreeGeneration, setHasFreeGeneration] = useState<boolean>(() => {
-    return localStorage.getItem("has_used_free_generation") === "true";
-  });
+  const [hasUsedFreeGeneration, setHasUsedFreeGeneration] = useState<boolean>(
+    () => {
+      return localStorage.getItem("has_used_free_generation") === "true";
+    },
+  );
 
   const generateDiagram = useCallback(
     async (instructions = "", githubPat?: string) => {
@@ -188,12 +190,12 @@ export function useDiagram(username: string, repo: string) {
                         });
                         const date = await getLastGeneratedDate(username, repo);
                         setLastGenerated(date ?? undefined);
-                        if (!hasFreeGeneration) {
+                        if (!hasUsedFreeGeneration) {
                           localStorage.setItem(
                             "has_used_free_generation",
                             "true",
                           );
-                          setHasFreeGeneration(true);
+                          setHasUsedFreeGeneration(true);
                         }
                         break;
                       case "error":
@@ -223,7 +225,7 @@ export function useDiagram(username: string, repo: string) {
         setLoading(false);
       }
     },
-    [username, repo, hasFreeGeneration],
+    [username, repo, hasUsedFreeGeneration],
   );
 
   useEffect(() => {
@@ -265,7 +267,7 @@ export function useDiagram(username: string, repo: string) {
 
       // Only check for API key if we need to generate a new diagram
       const storedApiKey = localStorage.getItem("openrouter_key");
-      if (hasFreeGeneration && !storedApiKey) {
+      if (hasUsedFreeGeneration && !storedApiKey) {
         setError(
           "You've used your one free diagram. Please enter your API key to continue. As a student, I can't afford to keep it totally free and I hope you understand :)",
         );
@@ -304,7 +306,7 @@ export function useDiagram(username: string, repo: string) {
     } finally {
       setLoading(false);
     }
-  }, [username, repo, generateDiagram, hasFreeGeneration]);
+  }, [username, repo, generateDiagram, hasUsedFreeGeneration]);
 
   useEffect(() => {
     void getDiagram();
@@ -350,7 +352,7 @@ export function useDiagram(username: string, repo: string) {
       const storedApiKey = localStorage.getItem("openrouter_key");
 
       // Check if user has used their free generation and doesn't have an API key
-      if (hasFreeGeneration && !storedApiKey) {
+      if (hasUsedFreeGeneration && !storedApiKey) {
         setError(
           "You've used your one free diagram. Please enter your API key to continue. As a student, I can't afford to keep it totally free and I hope you understand :)",
         );
