@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from anthropic._exceptions import RateLimitError
 from app.prompts import SYSTEM_MODIFY_PROMPT
 from pydantic import BaseModel
-from app.services.o3_mini_openrouter_service import OpenRouterO3Service
+from app.services.o1_mini_openai_service import OpenAIO1Service
 
 
 load_dotenv()
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/modify", tags=["Claude"])
 
 # Initialize services
 # claude_service = ClaudeService()
-o3_service = OpenRouterO3Service()
+o1_service = OpenAIO1Service()
 
 
 # Define the request body model
@@ -59,7 +59,7 @@ async def modify(request: Request, body: ModifyRequest):
         #     },
         # )
 
-        modified_mermaid_code = o3_service.call_o3_api(
+        modified_mermaid_code = o1_service.call_o1_api(
             system_prompt=SYSTEM_MODIFY_PROMPT,
             data={
                 "instructions": body.instructions,

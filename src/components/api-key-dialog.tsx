@@ -16,7 +16,7 @@ export function ApiKeyDialog({ isOpen, onClose, onSubmit }: ApiKeyDialogProps) {
   const [apiKey, setApiKey] = useState<string>("");
 
   useEffect(() => {
-    const storedKey = localStorage.getItem("openrouter_key");
+    const storedKey = localStorage.getItem("openai_key");
     if (storedKey) {
       setApiKey(storedKey);
     }
@@ -29,7 +29,7 @@ export function ApiKeyDialog({ isOpen, onClose, onSubmit }: ApiKeyDialogProps) {
   };
 
   const handleClear = () => {
-    localStorage.removeItem("openrouter_key");
+    localStorage.removeItem("openai_key");
     setApiKey("");
   };
 
@@ -38,19 +38,19 @@ export function ApiKeyDialog({ isOpen, onClose, onSubmit }: ApiKeyDialogProps) {
       <DialogContent className="border-[3px] border-black bg-purple-200 p-6 shadow-[8px_8px_0_0_#000000] sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-black">
-            Enter OpenRouter API Key
+            Enter OpenAI API Key
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="text-sm">
             GitDiagram offers one free diagram generation. For additional
-            diagrams, you&apos;ll need to provide an OpenRouter API key. The key
+            diagrams, you&apos;ll need to provide an OpenAI API key. The key
             will be stored locally in your browser.
             <br />
             <br />
-            <span className="font-medium">Get your key from OpenRouter </span>
+            <span className="font-medium">Get your OpenAI API key </span>
             <Link
-              href="https://openrouter.ai/keys"
+              href="https://platform.openai.com/api-keys"
               className="font-medium text-purple-600 transition-colors duration-200 hover:text-purple-500"
             >
               here
@@ -78,7 +78,7 @@ export function ApiKeyDialog({ isOpen, onClose, onSubmit }: ApiKeyDialogProps) {
           </details>
           <Input
             type="password"
-            placeholder="sk-or-v1-..."
+            placeholder="sk-..."
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             className="flex-1 rounded-md border-[3px] border-black px-3 py-2 text-base font-bold shadow-[4px_4px_0_0_#000000] placeholder:text-base placeholder:font-normal placeholder:text-gray-700"
@@ -102,7 +102,7 @@ export function ApiKeyDialog({ isOpen, onClose, onSubmit }: ApiKeyDialogProps) {
               </Button>
               <Button
                 type="submit"
-                disabled={!apiKey.startsWith("sk-or-v1-")}
+                disabled={!apiKey.startsWith("sk-")}
                 className="border-[3px] border-black bg-purple-400 px-4 py-2 text-black shadow-[4px_4px_0_0_#000000] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-purple-300 disabled:opacity-50"
               >
                 Save Key
