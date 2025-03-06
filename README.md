@@ -22,7 +22,7 @@ You can also replace `hub` with `diagram` in any Github URL to access its diagra
 - **Frontend**: Next.js, TypeScript, Tailwind CSS, ShadCN
 - **Backend**: FastAPI, Python, Server Actions
 - **Database**: PostgreSQL (with Drizzle ORM)
-- **AI**: Claude 3.5 Sonnet
+- **AI**: OpenAI o3-mini
 - **Deployment**: Vercel (Frontend), EC2 (Backend)
 - **CI/CD**: GitHub Actions
 - **Analytics**: PostHog, Api-Analytics
