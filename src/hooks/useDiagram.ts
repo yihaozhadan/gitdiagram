@@ -50,6 +50,7 @@ export function useDiagram(username: string, repo: string) {
   const [state, setState] = useState<StreamState>({ status: "idle" });
   const [hasUsedFreeGeneration, setHasUsedFreeGeneration] = useState<boolean>(
     () => {
+      if (typeof window === "undefined") return false;
       return localStorage.getItem("has_used_free_generation") === "true";
     },
   );
