@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import mermaid from "mermaid";
-import svgPanZoom from "svg-pan-zoom";
+// Remove the direct import
+// import svgPanZoom from "svg-pan-zoom";
 
 interface MermaidChartProps {
   chart: string;
@@ -38,46 +39,43 @@ const MermaidChart = ({ chart, zoomingEnabled = true }: MermaidChartProps) => {
       `,
     });
 
-    const initializePanZoom = () => {
+    const initializePanZoom = async () => {
       const svgElement = containerRef.current?.querySelector("svg");
-      if (svgElement) {
+      if (svgElement && zoomingEnabled) {
         // Remove any max-width constraints
         svgElement.style.maxWidth = "none";
         svgElement.style.width = "100%";
         svgElement.style.height = "100%";
 
         if (zoomingEnabled) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-          svgPanZoom(svgElement, {
-            zoomEnabled: true,
-            controlIconsEnabled: true,
-            fit: true,
-            center: true,
-            minZoom: 0.1,
-            maxZoom: 10,
-            zoomScaleSensitivity: 0.3,
-          });
+          try {
+            // Dynamically import svg-pan-zoom only when needed in the browser
+            const svgPanZoom = (await import("svg-pan-zoom")).default;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            svgPanZoom(svgElement, {
+              zoomEnabled: true,
+              controlIconsEnabled: true,
+              fit: true,
+              center: true,
+              minZoom: 0.1,
+              maxZoom: 10,
+              zoomScaleSensitivity: 0.3,
+            });
+          } catch (error) {
+            console.error("Failed to load svg-pan-zoom:", error);
+          }
         }
       }
     };
 
     mermaid.contentLoaded();
     // Wait for the SVG to be rendered
-    setTimeout(initializePanZoom, 100);
-
-    // Store ref value for cleanup
-    const currentRef = containerRef.current;
+    setTimeout(() => {
+      void initializePanZoom();
+    }, 100);
 
     return () => {
-      const svgElement = currentRef?.querySelector("svg");
-      if (svgElement) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-          // svgPanZoom(svgElement).destroy();
-        } catch (error) {
-          console.error("Failed to destroy pan-zoom instance:", error);
-        }
-      }
+      // Cleanup not needed with dynamic import approach
     };
   }, [chart, zoomingEnabled]); // Added zoomingEnabled to dependencies
 

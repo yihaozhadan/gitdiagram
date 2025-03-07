@@ -1,0 +1,69 @@
+---
+description: summary of project
+globs: 
+alwaysApply: true
+---
+# GitDiagram Project Summary
+
+## Project Overview
+This is GitDiagram, a web application that converts any GitHub repository structure into an interactive system design/architecture diagram for visualization. It allows users to quickly understand the architecture of any repository by generating visual diagrams, and provides interactivity by letting users click on components to navigate directly to source files and relevant directories.
+
+## Key Features
+- Instant conversion of GitHub repositories into system design diagrams
+- Interactive components that link to source files and directories
+- Support for both public and private repositories (with GitHub token)
+- Customizable diagrams through user instructions
+- URL shortcut: replace `hub` with `diagram` in any GitHub URL to access its diagram
+
+## Tech Stack
+- **Frontend**: Next.js 15, TypeScript, Tailwind CSS, ShadCN UI components
+- **Backend**: FastAPI (Python), Server Actions
+- **Database**: PostgreSQL with Drizzle ORM, Neon Database for serverless PostgreSQL
+- **AI**: Claude 3.5 Sonnet (previously) / OpenAI o3-mini (currently) for diagram generation
+- **Deployment**: Vercel (Frontend), EC2 (Backend)
+- **CI/CD**: GitHub Actions
+- **Analytics**: PostHog, Api-Analytics
+
+## Architecture
+The project follows a modern full-stack architecture:
+
+1. **Frontend (Next.js)**:
+   - Organized using the App Router pattern
+   - Uses server components and server actions
+   - Implements Mermaid.js for rendering diagrams
+   - Provides UI for repository input and diagram customization
+
+2. **Backend (FastAPI)**:
+   - Handles repository data extraction
+   - Implements complex prompt engineering through a pipeline:
+     - First prompt analyzes the repository and creates an explanation
+     - Second prompt maps relevant directories and files to diagram components
+     - Third prompt generates the final Mermaid.js code
+   - Manages API rate limiting and authentication
+
+3. **Database (PostgreSQL)**:
+   - Stores user data, repository information, and generated diagrams
+   - Uses Drizzle ORM for type-safe database operations
+
+4. **AI Integration**:
+   - Uses LLMs to analyze repository structure
+   - Generates detailed diagrams based on file trees and README content
+   - Implements sophisticated prompt engineering to extract accurate information
+
+## Project Structure
+- `/src`: Frontend source code (Next.js) and server actions for db calls with drizzle
+- `/backend`: Python FastAPI backend
+- `/public`: Static assets
+- `/docs`: Documentation and images
+
+## Development Setup
+The project supports both local development and self-hosting:
+- Dependencies managed with pnpm
+- Docker Compose for containerization
+- Environment configuration via .env files
+- Database initialization scripts
+
+## Future Development
+- Implementation of font-awesome icons in diagrams
+- Embedded feature for progressive diagram updates as commits are made
+- Expanded API access for third-party integration
