@@ -43,9 +43,12 @@ export function ApiKeyDialog({ isOpen, onClose, onSubmit }: ApiKeyDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="text-sm">
-            GitDiagram offers one free diagram generation. For additional
+            GitDiagram offers infinite free diagram generations! You can also
+            provide an OpenAI API key to generate diagrams at your own cost. The
+            key will be stored locally in your browser.
+            {/* GitDiagram offers one free diagram generation. For additional
             diagrams, you&apos;ll need to provide an OpenAI API key. The key
-            will be stored locally in your browser.
+            will be stored locally in your browser. */}
             <br />
             <br />
             <span className="font-medium">Get your OpenAI API key </span>
