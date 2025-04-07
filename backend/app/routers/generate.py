@@ -3,18 +3,22 @@ from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from app.services.github_service import GitHubService
 from app.services.o3_mini_openai_service import OpenAIo3Service
+from app.services.ollama_service import OllamaService
 from app.prompts import (
     SYSTEM_FIRST_PROMPT,
     SYSTEM_SECOND_PROMPT,
     SYSTEM_THIRD_PROMPT,
     ADDITIONAL_SYSTEM_INSTRUCTIONS_PROMPT,
 )
-from anthropic._exceptions import RateLimitError
 from pydantic import BaseModel
 from functools import lru_cache
-import re
 import json
 import asyncio
+import re
+import os
+
+# Get debug mode from environment variable
+DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
 
 # from app.services.claude_service import ClaudeService
 # from app.core.limiter import limiter
@@ -26,6 +30,7 @@ router = APIRouter(prefix="/generate", tags=["Claude"])
 # Initialize services
 # claude_service = ClaudeService()
 o3_service = OpenAIo3Service()
+ollama_service = OllamaService()
 
 
 # cache github data to avoid double API calls from cost and generate
@@ -50,6 +55,8 @@ class ApiRequest(BaseModel):
     instructions: str = ""
     api_key: str | None = None
     github_pat: str | None = None
+    use_ollama: bool = True  # Use Ollama by default
+    ollama_model: str = "mistral-nemo"  # Default to mistral model
 
 
 @router.post("/cost")
@@ -135,6 +142,9 @@ async def generate_stream(request: Request, body: ApiRequest):
         async def event_generator():
             try:
                 # Get cached github data
+                if DEBUG:
+                    print("\n[DEBUG] Phase 1: Fetching GitHub data...")
+
                 github_data = get_cached_github_data(
                     body.username, body.repo, body.github_pat
                 )
@@ -142,20 +152,27 @@ async def generate_stream(request: Request, body: ApiRequest):
                 file_tree = github_data["file_tree"]
                 readme = github_data["readme"]
 
+                if DEBUG:
+                    print(f"[DEBUG] Default branch: {default_branch}")
+                    print(f"[DEBUG] Number of files: {len(file_tree)}")
+                    print(f"[DEBUG] README length: {len(readme) if readme else 0} chars")
+
                 # Send initial status
                 yield f"data: {json.dumps({'status': 'started', 'message': 'Starting generation process...'})}\n\n"
                 await asyncio.sleep(0.1)
 
                 # Token count check
                 combined_content = f"{file_tree}\n{readme}"
-                token_count = o3_service.count_tokens(combined_content)
-
-                if 50000 < token_count < 195000 and not body.api_key:
-                    yield f"data: {json.dumps({'error': f'File tree and README combined exceeds token limit (50,000). Current size: {token_count} tokens. This GitHub repository is too large for my wallet, but you can continue by providing your own OpenAI API key.'})}\n\n"
-                    return
-                elif token_count > 195000:
-                    yield f"data: {json.dumps({'error': f'Repository is too large (>195k tokens) for analysis. OpenAI o3-mini\'s max context length is 200k tokens. Current size: {token_count} tokens.'})}\n\n"
-                    return
+                
+                # Only do token count checks for OpenAI, not for Ollama
+                if not body.use_ollama:
+                    token_count = o3_service.count_tokens(combined_content)
+                    if token_count > 195000:
+                        yield f"data: {json.dumps({'error': f'Repository is too large (>195k tokens) for analysis. OpenAI o3-mini\'s max context length is 200k tokens. Current size: {token_count} tokens.'})}\n\n"
+                        return
+                    elif token_count > 50000 and not body.api_key:
+                        yield f"data: {json.dumps({'error': f'File tree and README combined exceeds token limit (50,000). Current size: {token_count} tokens. This GitHub repository is too large for my wallet, but you can continue by providing your own OpenAI API key.'})}\n\n"
+                        return
 
                 # Prepare prompts
                 first_system_prompt = SYSTEM_FIRST_PROMPT
@@ -177,18 +194,30 @@ async def generate_stream(request: Request, body: ApiRequest):
                 await asyncio.sleep(0.1)
                 yield f"data: {json.dumps({'status': 'explanation', 'message': 'Analyzing repository structure...'})}\n\n"
                 explanation = ""
-                async for chunk in o3_service.call_o3_api_stream(
-                    system_prompt=first_system_prompt,
-                    data={
-                        "file_tree": file_tree,
-                        "readme": readme,
-                        "instructions": body.instructions,
-                    },
-                    api_key=body.api_key,
-                    reasoning_effort="medium",
-                ):
-                    explanation += chunk
-                    yield f"data: {json.dumps({'status': 'explanation_chunk', 'chunk': chunk})}\n\n"
+                if body.use_ollama:
+                    explanation = ollama_service.call_ollama_api(
+                        system_prompt=first_system_prompt,
+                        data={
+                            "file_tree": file_tree,
+                            "readme": readme,
+                            "instructions": body.instructions,
+                        },
+                        model=body.ollama_model
+                    )
+                    yield f"data: {json.dumps({'status': 'explanation_chunk', 'chunk': explanation})}\n\n"
+                else:
+                    async for chunk in o3_service.call_o3_api_stream(
+                        system_prompt=first_system_prompt,
+                        data={
+                            "file_tree": file_tree,
+                            "readme": readme,
+                            "instructions": body.instructions,
+                        },
+                        api_key=body.api_key,
+                        reasoning_effort="medium",
+                    ):
+                        explanation += chunk
+                        yield f"data: {json.dumps({'status': 'explanation_chunk', 'chunk': chunk})}\n\n"
 
                 if "BAD_INSTRUCTIONS" in explanation:
                     yield f"data: {json.dumps({'error': 'Invalid or unclear instructions provided'})}\n\n"
@@ -199,48 +228,129 @@ async def generate_stream(request: Request, body: ApiRequest):
                 await asyncio.sleep(0.1)
                 yield f"data: {json.dumps({'status': 'mapping', 'message': 'Creating component mapping...'})}\n\n"
                 full_second_response = ""
-                async for chunk in o3_service.call_o3_api_stream(
-                    system_prompt=SYSTEM_SECOND_PROMPT,
-                    data={"explanation": explanation, "file_tree": file_tree},
-                    api_key=body.api_key,
-                    reasoning_effort="low",
-                ):
-                    full_second_response += chunk
-                    yield f"data: {json.dumps({'status': 'mapping_chunk', 'chunk': chunk})}\n\n"
-
-                # i dont think i need this anymore? but keep it here for now
-                # Extract component mapping
-                start_tag = "<component_mapping>"
-                end_tag = "</component_mapping>"
-                component_mapping_text = full_second_response[
-                    full_second_response.find(start_tag) : full_second_response.find(
-                        end_tag
+                if body.use_ollama:
+                    full_second_response = ollama_service.call_ollama_api(
+                        system_prompt=SYSTEM_SECOND_PROMPT,
+                        data={"explanation": explanation, "file_tree": file_tree},
+                        model=body.ollama_model,
                     )
-                ]
+                    if DEBUG:
+                        print("[DEBUG] Ollama component mapping response:")
+                        print(full_second_response[:200] + "..." if len(full_second_response) > 200 else full_second_response)
+                    yield f"data: {json.dumps({'status': 'mapping_chunk', 'chunk': full_second_response})}\n\n"
+                else:
+                    async for chunk in o3_service.call_o3_api_stream(
+                        system_prompt=SYSTEM_SECOND_PROMPT,
+                        data={"explanation": explanation, "file_tree": file_tree},
+                        api_key=body.api_key,
+                        reasoning_effort="low",
+                    ):
+                        full_second_response += chunk
+                        yield f"data: {json.dumps({'status': 'mapping_chunk', 'chunk': chunk})}\n\n"
+
+                # Extract component mapping
+                try:
+                    # Use regex to find content between component_mapping tags, including the tags
+                    component_mapping_match = re.search(r'<component_mapping>(.*?)</component_mapping>', full_second_response, re.DOTALL)
+                    component_mapping_text = component_mapping_match.group(0) if component_mapping_match else full_second_response
+                except Exception as e:
+                    yield f"data: {json.dumps({'error': f'Error extracting component mapping: {str(e)}'})}\n\n"
+                    return
 
                 # Phase 3: Generate Mermaid diagram
                 yield f"data: {json.dumps({'status': 'diagram_sent', 'message': 'Sending diagram generation request to o3-mini...'})}\n\n"
                 await asyncio.sleep(0.1)
                 yield f"data: {json.dumps({'status': 'diagram', 'message': 'Generating diagram...'})}\n\n"
                 mermaid_code = ""
-                async for chunk in o3_service.call_o3_api_stream(
-                    system_prompt=third_system_prompt,
-                    data={
-                        "explanation": explanation,
-                        "component_mapping": component_mapping_text,
-                        "instructions": body.instructions,
-                    },
-                    api_key=body.api_key,
-                    reasoning_effort="medium",
-                ):
-                    mermaid_code += chunk
-                    yield f"data: {json.dumps({'status': 'diagram_chunk', 'chunk': chunk})}\n\n"
+                service_name = "Ollama" if body.use_ollama else "o3-mini"
+                yield f"data: {json.dumps({'status': 'diagram_sent', 'message': f'Sending diagram generation request to {service_name}...'})}\n\n"
+                await asyncio.sleep(0.1)
+                yield f"data: {json.dumps({'status': 'diagram', 'message': 'Generating diagram...'})}\n\n"
+
+                mermaid_code = ""
+                if body.use_ollama:
+                    if DEBUG:
+                        print("\n[DEBUG] Phase 3: Generating Mermaid diagram using Ollama...")
+
+                    try:
+                        mermaid_code = ollama_service.call_ollama_api(
+                            system_prompt=third_system_prompt,
+                            data={
+                                "explanation": explanation,
+                                "component_mapping": component_mapping_text,
+                                "instructions": body.instructions,
+                            },
+                            model=body.ollama_model,
+                        )
+                        if DEBUG:
+                            print("[DEBUG] Ollama diagram response:")
+                            print(mermaid_code)
+
+                        if not mermaid_code or not mermaid_code.strip():
+                            if DEBUG:
+                                print("[DEBUG] Error: Empty response from Ollama service")
+                            yield f"data: {json.dumps({'error': 'Empty response from Ollama service'})}\n\n"
+                            return
+                        yield f"data: {json.dumps({'status': 'diagram_chunk', 'chunk': mermaid_code})}\n\n"
+                    except Exception as e:
+                        yield f"data: {json.dumps({'error': f'Error calling Ollama service: {str(e)}'})}\n\n"
+                        return
+                else:
+                    async for chunk in o3_service.call_o3_api_stream(
+                        system_prompt=third_system_prompt,
+                        data={
+                            "explanation": explanation,
+                            "component_mapping": component_mapping_text,
+                            "instructions": body.instructions,
+                        },
+                        api_key=body.api_key,
+                        reasoning_effort="low",
+                    ):
+                        mermaid_code += chunk
+                        yield f"data: {json.dumps({'status': 'diagram_chunk', 'chunk': chunk})}\n\n"
 
                 # Process final diagram
+                if DEBUG:
+                    print("\n[DEBUG] Processing final Mermaid diagram...")
+                    print("[DEBUG] Raw Mermaid code:")
+                    print(mermaid_code)
+
+                # Clean up Mermaid code
                 mermaid_code = mermaid_code.replace("```mermaid", "").replace("```", "")
+                
+                # Fix subgraph syntax
+                def fix_subgraph_syntax(line):
+                    # Match subgraph with style class
+                    subgraph_match = re.match(r'\s*subgraph\s+"([^"]+)":::([^\s]+)', line)
+                    if subgraph_match:
+                        # Keep only the subgraph name without the style class
+                        return f'    subgraph "{subgraph_match.group(1)}"'
+                    return line
+
+                # Process each line
+                mermaid_lines = mermaid_code.split('\n')
+                mermaid_lines = [fix_subgraph_syntax(line) for line in mermaid_lines]
+                mermaid_code = '\n'.join(mermaid_lines)
+                
+                if DEBUG:
+                    print("\n[DEBUG] Processed Mermaid code:")
+                    print(mermaid_code)
                 if "BAD_INSTRUCTIONS" in mermaid_code:
                     yield f"data: {json.dumps({'error': 'Invalid or unclear instructions provided'})}\n\n"
                     return
+                
+                # Basic Mermaid syntax validation
+                if not mermaid_code.strip().startswith(('graph ', 'flowchart ', 'sequenceDiagram', 'classDiagram', 'stateDiagram-v2', 'erDiagram')):
+                    yield f"data: {json.dumps({'error': 'Invalid Mermaid diagram syntax - must start with a valid diagram type'})}\n\n"
+                    return
+                
+                # Check for common syntax errors
+                if '--->' in mermaid_code or '<---' in mermaid_code:  # Wrong arrow syntax
+                    mermaid_code = mermaid_code.replace('--->', '-->')
+                    mermaid_code = mermaid_code.replace('<---', '<--')
+                
+                # Ensure proper line endings
+                mermaid_code = '\n'.join(line.strip() for line in mermaid_code.splitlines() if line.strip())
 
                 processed_diagram = process_click_events(
                     mermaid_code, body.username, body.repo, default_branch

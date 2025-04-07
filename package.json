@@ -8,7 +8,7 @@
     "check": "next lint && tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
+    "db:push": "source .env && drizzle-kit push --dialect=postgresql --schema=public --url=\"$POSTGRES_URL\" --schema=./src/server/db/schema.ts",
     "db:studio": "drizzle-kit studio",
     "dev": "next dev --turbo",
     "lint": "next lint",
@@ -61,7 +61,7 @@
     "postcss": "^8.4.39",
     "prettier": "^3.3.2",
     "prettier-plugin-tailwindcss": "^0.6.5",
-    "tailwind-scrollbar": "^4.0.0",
+    "tailwind-scrollbar": "^3.0.0",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.5.3"
   },

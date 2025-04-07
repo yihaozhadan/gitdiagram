@@ -8,10 +8,10 @@ export function Footer() {
         <span className="text-sm font-medium text-black">
           Made by{" "}
           <Link
-            href="https://x.com/ahmedkhaleel04"
+            href="https://www.linkedin.com/in/huizhou1"
             className="text-purple-600 hover:underline"
           >
-            @ahmedkhaleel04
+            Hui Zhou
           </Link>
         </span>
       </div>
