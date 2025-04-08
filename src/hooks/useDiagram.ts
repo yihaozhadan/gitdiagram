@@ -4,7 +4,6 @@ import {
   getCachedDiagram,
 } from "~/app/_actions/cache";
 import { getLastGeneratedDate } from "~/app/_actions/repo";
-import { getCostOfGeneration } from "~/lib/fetch-backend";
 import { exampleRepos } from "~/lib/exampleRepos";
 
 interface StreamState {
@@ -44,7 +43,6 @@ export function useDiagram(username: string, repo: string) {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [lastGenerated, setLastGenerated] = useState<Date | undefined>();
-  const [cost, setCost] = useState<string>("");
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
   // const [tokenCount, setTokenCount] = useState<number>(0);
   const [state, setState] = useState<StreamState>({ status: "idle" });
@@ -252,8 +250,6 @@ export function useDiagram(username: string, repo: string) {
   const getDiagram = useCallback(async () => {
     setLoading(true);
     setError("");
-    setCost("");
-
     try {
       // Check cache first - always allow access to cached diagrams
       const cached = await getCachedDiagram(username, repo);
@@ -265,37 +261,6 @@ export function useDiagram(username: string, repo: string) {
         setLastGenerated(date ?? undefined);
         return;
       }
-
-      // TEMP: LET USERS HAVE INFINITE GENERATIONS
-      // Only check for API key if we need to generate a new diagram
-      // const storedApiKey = localStorage.getItem("openai_key");
-      // if (hasUsedFreeGeneration && !storedApiKey) {
-      //   setError(
-      //     "You've used your one free diagram. Please enter your API key to continue. As a student, I can't afford to keep it totally free and I hope you understand :)",
-      //   );
-      //   setState({ status: "error", error: "API key required" });
-      //   return;
-      // }
-
-      // Get cost estimate
-      const costEstimate = await getCostOfGeneration(
-        username,
-        repo,
-        "",
-        github_pat ?? undefined,
-      );
-
-      if (costEstimate.error) {
-        console.error("Cost estimation failed:", costEstimate.error);
-        // if (costEstimate.requires_api_key) {
-        //   setTokenCount(costEstimate.token_count ?? 0);
-        // }
-        // TODO: come to think of it, why is requires api key based on tokens? this unimplemented option is smarter. Add API key dialog
-        setError(costEstimate.error);
-        return;
-      }
-
-      setCost(costEstimate.cost ?? "");
 
       // Start streaming generation
       await generateDiagram("", github_pat ?? undefined);
@@ -328,7 +293,6 @@ export function useDiagram(username: string, repo: string) {
 
     setLoading(true);
     setError("");
-    setCost("");
     try {
       // Start streaming generation with instructions
       await generateDiagram(instructions);
@@ -348,31 +312,8 @@ export function useDiagram(username: string, repo: string) {
 
     setLoading(true);
     setError("");
-    setCost("");
     try {
       const github_pat = localStorage.getItem("github_pat");
-
-      // TEMP: LET USERS HAVE INFINITE GENERATIONS
-      // const storedApiKey = localStorage.getItem("openai_key");
-
-      // Check if user has used their free generation and doesn't have an API key
-      // if (hasUsedFreeGeneration && !storedApiKey) {
-      //   setError(
-      //     "You've used your one free diagram. Please enter your API key to continue. As a student, I can't afford to keep it totally free and I hope you understand :)",
-      //   );
-      //   setLoading(false);
-      //   return;
-      // }
-
-      const costEstimate = await getCostOfGeneration(username, repo, "");
-
-      if (costEstimate.error) {
-        console.error("Cost estimation failed:", costEstimate.error);
-        setError(costEstimate.error);
-        return;
-      }
-
-      setCost(costEstimate.cost ?? "");
 
       // Start streaming generation with instructions
       await generateDiagram(instructions, github_pat ?? undefined);
@@ -471,7 +412,6 @@ export function useDiagram(username: string, repo: string) {
     error,
     loading,
     lastGenerated,
-    cost,
     handleModify,
     handleRegenerate,
     handleCopy,

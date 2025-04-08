@@ -72,6 +72,12 @@ Then edit the `.env` file with your Anthropic API key and optional GitHub person
 docker-compose up --build -d
 ```
 
+or
+
+```bash
+cd /path/to/gitdiagram/backend && source venv/bin/activate && uvicorn app.main:app --reload
+```
+
 Logs available at `docker-compose logs -f`
 The FastAPI server will be available at `localhost:8000`
 
