@@ -23,7 +23,6 @@ const messages = [
 ];
 
 interface LoadingProps {
-  cost?: string;
   status:
     | "idle"
     | "started"
@@ -82,7 +81,6 @@ export default function Loading({
   explanation,
   mapping,
   diagram,
-  cost,
 }: LoadingProps) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -191,7 +189,6 @@ export default function Loading({
               {statusDisplay.isReasoning && <SequentialDots />}
             </div>
             <div className="flex items-center gap-3 text-xs font-medium text-purple-500">
-              {cost && <span>Estimated cost: {cost}</span>}
               <div className="flex items-center gap-2">
                 <span className="rounded-full bg-purple-100 px-2 py-0.5">
                   Step {getStepNumber(status)}/3

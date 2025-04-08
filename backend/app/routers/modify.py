@@ -1,21 +1,43 @@
 from fastapi import APIRouter, Request, HTTPException
 from dotenv import load_dotenv
-
-# from app.services.claude_service import ClaudeService
-# from app.core.limiter import limiter
 from anthropic._exceptions import RateLimitError
 from app.prompts import SYSTEM_MODIFY_PROMPT
 from pydantic import BaseModel
-from app.services.o1_mini_openai_service import OpenAIO1Service
 
+# Import all services
+from app.services.claude_service import ClaudeService
+from app.services.groq_service import GroqService
+from app.services.ollama_service import OllamaService
+from app.services.openai_service import OpenAIService
+from app.services.openrouter_service import OpenRouterService
 
 load_dotenv()
 
-router = APIRouter(prefix="/modify", tags=["Claude"])
+router = APIRouter(prefix="/modify", tags=["LLM"])
 
-# Initialize services
-# claude_service = ClaudeService()
-o1_service = OpenAIO1Service()
+# Initialize all available services
+SERVICES = {
+    "claude": ClaudeService(),
+    "ollama": OllamaService(),
+    "groq": GroqService(),
+    "openai": OpenAIService(),
+    "openrouter": OpenRouterService()
+}
+
+# Default models for each service
+DEFAULT_MODELS = {
+    "claude": "claude-3-opus",
+    "ollama": "mistral",
+    "groq": "mixtral-8x7b-32768",
+    "openai": "gpt-4",
+    "openrouter": "openrouter/quasar-alpha"
+}
+
+def get_service(service_name: str):
+    """Get the service instance by name"""
+    if service_name not in SERVICES:
+        raise ValueError(f"Service {service_name} not found. Available services: {list(SERVICES.keys())}")
+    return SERVICES[service_name]
 
 
 # Define the request body model
@@ -27,6 +49,8 @@ class ModifyRequest(BaseModel):
     repo: str
     username: str
     explanation: str
+    service: str = "openrouter"  # Default to OpenRouter
+    model: str | None = None  # If None, will use service's default model
 
 
 @router.post("")
@@ -59,13 +83,20 @@ async def modify(request: Request, body: ModifyRequest):
         #     },
         # )
 
-        modified_mermaid_code = o1_service.call_o1_api(
+        # Get the requested service
+        service = get_service(body.service)
+
+        # Use specified model or default for the service
+        model = body.model or DEFAULT_MODELS[body.service]
+
+        modified_mermaid_code = service.call_api(
             system_prompt=SYSTEM_MODIFY_PROMPT,
             data={
                 "instructions": body.instructions,
                 "explanation": body.explanation,
                 "diagram": body.current_diagram,
             },
+            model=model
         )
 
         # Check for BAD_INSTRUCTIONS response

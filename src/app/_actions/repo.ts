@@ -12,5 +12,9 @@ export async function getLastGeneratedDate(username: string, repo: string) {
       and(eq(diagramCache.username, username), eq(diagramCache.repo, repo)),
     );
 
-  return result[0]?.updatedAt;
+  if (!result || result.length === 0) {
+    return null;
+  }
+  // We know result[0] exists because we checked length above
+  return result[0]!.updatedAt;
 }

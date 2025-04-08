@@ -11,4 +11,5 @@ services:
       - .env
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-development} # Default to development if not set
+      - DEBUG=true # Enable debug logging
     restart: unless-stopped

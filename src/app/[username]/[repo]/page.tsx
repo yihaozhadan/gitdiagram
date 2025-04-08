@@ -17,7 +17,7 @@ export default function Repo() {
     error,
     loading,
     lastGenerated,
-    cost,
+
     showApiKeyDialog,
     handleModify,
     handleRegenerate,
@@ -50,7 +50,7 @@ export default function Repo() {
       <div className="mt-8 flex w-full flex-col items-center gap-8">
         {loading ? (
           <Loading
-            cost={cost}
+
             status={state.status}
             explanation={state.explanation}
             mapping={state.mapping}

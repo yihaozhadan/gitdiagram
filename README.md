@@ -72,6 +72,12 @@ Then edit the `.env` file with your Anthropic API key and optional GitHub person
 docker-compose up --build -d
 ```
 
+or
+
+```bash
+cd /path/to/gitdiagram/backend && source venv/bin/activate && uvicorn app.main:app --reload
+```
+
 Logs available at `docker-compose logs -f`
 The FastAPI server will be available at `localhost:8000`
 
@@ -88,7 +94,7 @@ The Postgres database will start in a container at `localhost:5432`
 6. Initialize the database schema
 
 ```bash
-pnpm db:push
+pnpm db:push --port 5433 --dialect=postgresql --schema=public
 ```
 
 You can view and interact with the database using `pnpm db:studio`
