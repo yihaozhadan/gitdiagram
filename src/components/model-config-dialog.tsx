@@ -62,7 +62,7 @@ export function ModelConfigDialog({
     // Load saved config from localStorage
     const savedConfig = localStorage.getItem("model_config");
     if (savedConfig) {
-      setConfig(JSON.parse(savedConfig));
+      setConfig(JSON.parse(savedConfig) as ModelConfig);
     }
   }, []);
 
@@ -70,7 +70,7 @@ export function ModelConfigDialog({
     setConfig((prev) => ({
       ...prev,
       provider,
-      model: PROVIDERS[provider as keyof typeof PROVIDERS].defaultModel,
+      model: PROVIDERS[provider].defaultModel,
     }));
   };
 

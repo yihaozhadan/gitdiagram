@@ -22,7 +22,7 @@ You can also replace `hub` with `diagram` in any Github URL to access its diagra
 - **Frontend**: Next.js, TypeScript, Tailwind CSS, ShadCN
 - **Backend**: FastAPI, Python, Server Actions
 - **Database**: PostgreSQL (with Drizzle ORM)
-- **AI**: OpenAI o3-mini
+- **AI**: Your own AI model
 - **Deployment**: Vercel (Frontend), EC2 (Backend)
 - **CI/CD**: GitHub Actions
 - **Analytics**: PostHog, Api-Analytics
@@ -31,7 +31,7 @@ You can also replace `hub` with `diagram` in any Github URL to access its diagra
 
 I created this because I wanted to contribute to open-source projects but quickly realized their codebases are too massive for me to dig through manually, so this helps me get started - but it's definitely got many more use cases!
 
-Given any public (or private!) GitHub repository it generates diagrams in Mermaid.js with OpenAI's o3-mini! (Previously Claude 3.5 Sonnet)
+Given any public (or private!) GitHub repository it generates diagrams in Mermaid.js with your own AI model
 
 I extract information from the file tree and README for details and interactivity (you can click components to be taken to relevant files and directories)
 
@@ -89,7 +89,7 @@ chmod +x start-database.sh
 ```
 
 When prompted to generate a random password, input yes.
-The Postgres database will start in a container at `localhost:5432`
+The Postgres database will start in a container at `localhost:5433`
 
 6. Initialize the database schema
 

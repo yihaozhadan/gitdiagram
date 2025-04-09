@@ -8,7 +8,7 @@
     "check": "next lint && tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "source .env && drizzle-kit push --dialect=postgresql --schema=public --url=\"$POSTGRES_URL\" --schema=./src/server/db/schema.ts",
+    "db:push": "source .env && drizzle-kit push --dialect=postgresql --schema=public --url=$POSTGRES_URL --schema=./src/server/db/schema.ts",
     "db:studio": "drizzle-kit studio",
     "dev": "next dev --turbo",
     "lint": "next lint",

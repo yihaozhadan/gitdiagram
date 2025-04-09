@@ -36,17 +36,20 @@ export const metadata: Metadata = {
     "open source software",
     "ahmedkhaleel2004",
     "ahmed khaleel",
+    "hui zhou",
     "gitdiagram",
     "gitdiagram.com",
+    "util-kit.com",
   ],
   authors: [
     { name: "Ahmed Khaleel", url: "https://github.com/ahmedkhaleel2004" },
+    { name: "Hui Zhou", url: "https://github.com/huizhou1" },
   ],
-  creator: "Ahmed Khaleel",
+  creator: "Ahmed Khaleel, Hui Zhou",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://gitdiagram.com",
+    url: "https://util-kit.com",
     title: "GitDiagram - Repository to Diagram in Seconds",
     description:
       "Turn any GitHub repository into an interactive diagram for visualization.",

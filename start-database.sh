@@ -56,5 +56,6 @@ docker run -d \
   -e POSTGRES_USER="postgres" \
   -e POSTGRES_PASSWORD="$DB_PASSWORD" \
   -e POSTGRES_DB=gitdiagram \
+  -e POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 \
   -p "$DB_PORT":5432 \
-  docker.io/postgres && echo "Database container '$DB_CONTAINER_NAME' was successfully created"
+  postgres:16 && echo "Database container '$DB_CONTAINER_NAME' was successfully created"
