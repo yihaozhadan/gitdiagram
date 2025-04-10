@@ -7,15 +7,13 @@
 
 Turn any GitHub repository into an interactive diagram for visualization in seconds.
 
-You can also replace `hub` with `diagram` in any Github URL to access its diagram.
-
 ## 🚀 Features
 
 - 👀 **Instant Visualization**: Convert any GitHub repository structure into a system design / architecture diagram
 - 🎨 **Interactivity**: Click on components to navigate directly to source files and relevant directories
-- ⚡ **Fast Generation**: Powered by Claude 3.5 Sonnet for quick and accurate diagrams
+- ⚡ **Fast Generation**: Powered by various AI models for quick and accurate diagrams
 - 🔄 **Customization**: Modify and regenerate diagrams with custom instructions
-- 🌐 **API Access**: Public API available for integration (WIP)
+- 🐛 **Debug Support**: View Mermaid diagram source code and syntax errors for easy debugging
 
 ## ⚙️ Tech Stack
 

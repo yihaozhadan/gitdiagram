@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import MermaidChart from "./mermaid-diagram";
 
 const messages = [
   "Checking if its cached...",
@@ -233,9 +234,31 @@ export default function Loading({
                 <p className="font-medium text-purple-500">
                   Mermaid.js diagram:
                 </p>
-                <pre className="mt-2 overflow-x-auto whitespace-pre-wrap leading-relaxed">
-                  {diagram}
-                </pre>
+                <div className="mt-2">
+                  <MermaidChart 
+                    chart={diagram}
+                    onError={(error) => {
+                      // Show the diagram text when there's a syntax error
+                      console.error('Mermaid syntax error:', error);
+                    }}
+                  />
+                </div>
+                {/* Always show the diagram text for debugging */}
+                <div className="mt-4 border-t border-purple-100 pt-4">
+                  <p className="flex items-center gap-2 font-medium text-purple-500 mb-2">
+                    <span>Diagram source code</span>
+                    {status === "error" && (
+                      <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">
+                        Syntax Error
+                      </span>
+                    )}
+                  </p>
+                  <pre className="overflow-x-auto whitespace-pre-wrap leading-relaxed bg-gray-50 p-2 rounded text-gray-800">
+                    <code>
+                    {diagram}
+                    </code>
+                  </pre>
+                </div>
               </div>
             )}
           </div>

@@ -4,7 +4,6 @@ import {
   getCachedDiagram,
 } from "~/app/_actions/cache";
 import { getLastGeneratedDate } from "~/app/_actions/repo";
-import { exampleRepos } from "~/lib/exampleRepos";
 
 interface StreamState {
   status:
@@ -62,7 +61,7 @@ export function useDiagram(username: string, repo: string) {
 
       try {
         const baseUrl =
-          process.env.NEXT_PUBLIC_API_DEV_URL ?? "https://api.gitdiagram.com";
+          process.env.NEXT_PUBLIC_API_DEV_URL ?? "http://localhost:3000";
         const response = await fetch(`${baseUrl}/generate/stream`, {
           method: "POST",
           headers: {
@@ -72,7 +71,7 @@ export function useDiagram(username: string, repo: string) {
             username,
             repo,
             instructions,
-            api_key: localStorage.getItem("openai_key") ?? undefined,
+            api_key: localStorage.getItem("api_key") ?? undefined,
             github_pat: githubPat,
           }),
         });
@@ -105,11 +104,17 @@ export function useDiagram(username: string, repo: string) {
                   try {
                     const data = JSON.parse(line.slice(6)) as StreamResponse;
 
-                    // If we receive an error, set loading to false immediately
+                    // If we receive an error, preserve any existing diagram text
                     if (data.error) {
-                      setState({ status: "error", error: data.error });
+                      setState((prev) => ({
+                        status: "error",
+                        error: data.error,
+                        diagram: data.diagram || prev.diagram, // Keep existing diagram if available
+                        explanation: prev.explanation,
+                        mapping: prev.mapping
+                      }));
                       setLoading(false);
-                      return; // Add this to stop processing
+                      return;
                     }
 
                     // Update state based on the message type
@@ -201,8 +206,20 @@ export function useDiagram(username: string, repo: string) {
                         setState({ status: "error", error: data.error });
                         break;
                     }
-                  } catch (e) {
-                    console.error("Error parsing SSE message:", e);
+                  } catch (error) {
+                    // If there's a JSON parse error, try to extract the raw diagram text
+                    console.error("Error parsing SSE message:", error);
+                    const rawData = line.slice(6);
+                    if (rawData.includes("```mermaid")) {
+                      // Extract content between ```mermaid and ``` tags
+                      const mermaidMatch = rawData.match(/```mermaid\s*([\s\S]*?)```/);
+                      if (mermaidMatch && mermaidMatch[1]) {
+                        setState({
+                          status: "diagram",
+                          diagram: mermaidMatch[1].trim(),
+                        });
+                      }
+                    }
                   }
                 }
               }
@@ -214,13 +231,13 @@ export function useDiagram(username: string, repo: string) {
 
         await processStream();
       } catch (error) {
-        setState({
+        setState((prev) => ({
           status: "error",
-          error:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-        });
+          error: error instanceof Error ? error.message : "An unknown error occurred",
+          diagram: prev.diagram, // Keep existing diagram
+          explanation: prev.explanation,
+          mapping: prev.mapping
+        }));
         setLoading(false);
       }
     },
@@ -230,7 +247,7 @@ export function useDiagram(username: string, repo: string) {
   useEffect(() => {
     if (state.status === "complete" && state.diagram) {
       // Cache the completed diagram with the usedOwnKey flag
-      const hasApiKey = !!localStorage.getItem("openai_key");
+      const hasApiKey = !!localStorage.getItem("api_key");
       void cacheDiagramAndExplanation(
         username,
         repo,
@@ -279,18 +296,7 @@ export function useDiagram(username: string, repo: string) {
     void getDiagram();
   }, [getDiagram]);
 
-  const isExampleRepo = (repoName: string): boolean => {
-    return Object.values(exampleRepos).some((value) =>
-      value.includes(repoName),
-    );
-  };
-
   const handleModify = async (instructions: string) => {
-    if (isExampleRepo(repo)) {
-      setError("Example repositories cannot be modified.");
-      return;
-    }
-
     setLoading(true);
     setError("");
     try {
@@ -305,11 +311,6 @@ export function useDiagram(username: string, repo: string) {
   };
 
   const handleRegenerate = async (instructions: string) => {
-    if (isExampleRepo(repo)) {
-      setError("Example repositories cannot be regenerated.");
-      return;
-    }
-
     setLoading(true);
     setError("");
     try {
@@ -385,7 +386,7 @@ export function useDiagram(username: string, repo: string) {
     setError("");
 
     // Store the key first
-    localStorage.setItem("openai_key", apiKey);
+    localStorage.setItem("api_key", apiKey);
 
     // Then generate diagram using stored key
     const github_pat = localStorage.getItem("github_pat");
@@ -403,7 +404,7 @@ export function useDiagram(username: string, repo: string) {
     setShowApiKeyDialog(false);
   };
 
-  const handleOpenApiKeyDialog = () => {
+  const handleApiKeyDialog = () => {
     setShowApiKeyDialog(true);
   };
 
@@ -419,7 +420,7 @@ export function useDiagram(username: string, repo: string) {
     // tokenCount,
     handleApiKeySubmit,
     handleCloseApiKeyDialog,
-    handleOpenApiKeyDialog,
+    handleApiKeyDialog,
     handleExportImage,
     state,
   };

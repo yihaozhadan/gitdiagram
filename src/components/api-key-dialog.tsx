@@ -16,7 +16,7 @@ export function ApiKeyDialog({ isOpen, onClose, onSubmit }: ApiKeyDialogProps) {
   const [apiKey, setApiKey] = useState<string>("");
 
   useEffect(() => {
-    const storedKey = localStorage.getItem("openai_key");
+    const storedKey = localStorage.getItem("api_key");
     if (storedKey) {
       setApiKey(storedKey);
     }
@@ -29,7 +29,7 @@ export function ApiKeyDialog({ isOpen, onClose, onSubmit }: ApiKeyDialogProps) {
   };
 
   const handleClear = () => {
-    localStorage.removeItem("openai_key");
+    localStorage.removeItem("api_key");
     setApiKey("");
   };
 

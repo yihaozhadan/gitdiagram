@@ -1,6 +1,5 @@
 # This is our processing. This is where GitDiagram makes the magic happen
 # There is a lot of DETAIL we need to extract from the repository to produce detailed and accurate diagrams
-# I will immediately put out there that I'm trying to reduce costs. Theoretically, I could, for like 5x better accuracy, include most file content as well which would make for perfect diagrams, but thats too many tokens for my wallet, and would probably greatly increase generation time. (maybe a paid feature?)
 
 # THE PROCESS:
 
@@ -9,9 +8,7 @@
 # def prompt2(explanation, file_tree) -> maps relevant directories and files to parts of diagram for interactivity
 # def prompt3(explanation, map) -> Mermaid.js code
 
-# Note: Originally prompt1 and prompt2 were combined - but I tested it, and turns out mapping relevant dirs and files in one prompt along with generating detailed and accurate diagrams was difficult for Claude 3.5 Sonnet. It lost detail in the explanation and dedicated more "effort" to the mappings, so this is now its own prompt.
-
-# This is my first take at prompt engineering so if you have any ideas on optimizations please make an issue on the GitHub!
+# Note: Originally prompt1 and prompt2 were combined - but it turns out mapping relevant dirs and files in one prompt along with generating detailed and accurate diagrams was difficult for Claude 3.5 Sonnet. It lost detail in the explanation and dedicated more "effort" to the mappings, so this is now its own prompt.
 
 SYSTEM_FIRST_PROMPT = """
 You are tasked with explaining to a principal software engineer how to draw the best and most accurate system design diagram / architecture of a given project. This explanation should be tailored to the specific project's purpose and structure. To accomplish this, you will be provided with two key pieces of information:

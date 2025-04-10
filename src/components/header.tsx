@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { FaGithub } from "react-icons/fa";
+import { FaGithub, FaCoffee } from "react-icons/fa";
 import { getStarCount } from "~/app/_actions/github";
 import { PrivateReposDialog } from "./private-repos-dialog";
 import { ApiKeyDialog } from "./api-key-dialog";
@@ -21,7 +21,7 @@ export function Header() {
   }, []);
 
   const formatStarCount = (count: number | null) => {
-    if (!count) return "3.0k"; // Default to 2.0k if count is null (it can only go up from here)
+    if (!count) return "0";
     if (count >= 1000) {
       return `${(count / 1000).toFixed(1)}k`;
     }
@@ -35,7 +35,7 @@ export function Header() {
   };
 
   const handleApiKeySubmit = (apiKey: string) => {
-    localStorage.setItem("openai_key", apiKey);
+    localStorage.setItem("api_key", apiKey);
     setIsApiKeyDialogOpen(false);
   };
 
@@ -91,6 +91,13 @@ export function Header() {
               <span className="hidden sm:inline">Private Repos</span>
             </span>
           </span>
+          <Link
+            href="https://buymeacoffee.com/hui.zhou"
+            className="flex items-center gap-1 text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600 sm:gap-2"
+          >
+            <FaCoffee className="h-5 w-5" />
+            <span className="hidden sm:inline">Sponsor</span>
+          </Link>
           <Link
             href="https://github.com/yihaozhadan/gitdiagram"
             className="flex items-center gap-1 text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600 sm:gap-2"

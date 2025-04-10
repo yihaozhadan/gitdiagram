@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
-// Remove the direct import
-// import svgPanZoom from "svg-pan-zoom";
 
 interface MermaidChartProps {
   chart: string;
   zoomingEnabled?: boolean;
+  onError?: (error: string) => void;
 }
 
-const MermaidChart = ({ chart, zoomingEnabled = true }: MermaidChartProps) => {
+const MermaidChart = ({ chart, zoomingEnabled = true, onError }: MermaidChartProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,7 +67,12 @@ const MermaidChart = ({ chart, zoomingEnabled = true }: MermaidChartProps) => {
       }
     };
 
-    mermaid.contentLoaded();
+    try {
+      mermaid.contentLoaded();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      onError?.(errorMessage);
+    }
     // Wait for the SVG to be rendered
     setTimeout(() => {
       void initializePanZoom();

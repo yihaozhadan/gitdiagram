@@ -24,7 +24,7 @@ export default function Repo() {
     handleCopy,
     handleApiKeySubmit,
     handleCloseApiKeyDialog,
-    handleOpenApiKeyDialog,
+    handleApiKeyDialog,
     handleExportImage,
     state,
   } = useDiagram(params.username.toLowerCase(), params.repo.toLowerCase());
@@ -50,27 +50,33 @@ export default function Repo() {
       <div className="mt-8 flex w-full flex-col items-center gap-8">
         {loading ? (
           <Loading
-
             status={state.status}
             explanation={state.explanation}
             mapping={state.mapping}
             diagram={state.diagram}
           />
-        ) : error || state.error ? (
-          <div className="mt-12 text-center">
-            <p className="max-w-4xl text-lg font-medium text-purple-600">
-              {error || state.error}
-            </p>
-            {(error?.includes("API key") ||
-              state.error?.includes("API key")) && (
-              <div className="mt-8 flex flex-col items-center gap-2">
-                <ApiKeyButton onClick={handleOpenApiKeyDialog} />
+        ) : (
+          <div className="flex w-full flex-col items-center gap-8">
+            {/* Show error message if present */}
+            {(error || state.error) && (
+              <div className="text-center">
+                <p className="max-w-4xl text-lg font-medium text-purple-600">
+                  {error || state.error}
+                </p>
+                {(error?.includes("API key") ||
+                  state.error?.includes("API key")) && (
+                  <div className="mt-8 flex flex-col items-center gap-2">
+                    <ApiKeyButton onClick={handleApiKeyDialog} />
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        ) : (
-          <div className="flex w-full justify-center px-4">
-            <MermaidChart chart={diagram} zoomingEnabled={zoomingEnabled} />
+            {/* Always show diagram if available */}
+            {diagram && (
+              <div className="flex w-full justify-center px-4">
+                <MermaidChart chart={diagram} zoomingEnabled={zoomingEnabled} />
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -112,15 +112,6 @@ async def generate_stream(request: Request, body: ApiRequest):
     if len(body.instructions) > 1000:
         return {"error": "Instructions exceed maximum length of 1000 characters"}
 
-    if body.repo in [
-        "fastapi",
-        "streamlit",
-        "flask",
-        "api-analytics",
-        "monkeytype",
-    ]:
-        return {"error": "Example repos cannot be regenerated"}
-
     try:
         async def event_generator():
             try:
@@ -154,13 +145,13 @@ async def generate_stream(request: Request, body: ApiRequest):
                     yield f"data: {json.dumps({'error': str(e)})}\n\n"
                     return
 
-                # Token count check for services that support it
-                combined_content = f"{file_tree}\n{readme}"
-                if hasattr(service, 'count_tokens'):
-                    token_count = service.count_tokens(combined_content)
-                    if token_count > 200000:  # Context limit
-                        yield f"data: {json.dumps({'error': f'Repository content exceeds maximum token limit of 200k tokens (got {token_count} tokens). Please try a smaller repository.'})}\n\n"
-                        return
+                # # Token count check for services that support it
+                # combined_content = f"{file_tree}\n{readme}"
+                # if hasattr(service, 'count_tokens'):
+                #     token_count = service.count_tokens(combined_content)
+                #     if token_count > 200000:  # Context limit
+                #         yield f"data: {json.dumps({'error': f'Repository content exceeds maximum token limit of 200k tokens (got {token_count} tokens). Please try a smaller repository.'})}\n\n"
+                #         return
 
                 # Phase 2: Generate initial explanation
                 if DEBUG:

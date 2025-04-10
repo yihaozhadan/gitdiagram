@@ -65,14 +65,14 @@ async def modify(request: Request, body: ModifyRequest):
         ):  # just being safe
             return {"error": "Instructions exceed maximum length of 1000 characters"}
 
-        if body.repo in [
-            "fastapi",
-            "streamlit",
-            "flask",
-            "api-analytics",
-            "monkeytype",
-        ]:
-            return {"error": "Example repos cannot be modified"}
+        # if body.repo in [
+        #     "fastapi",
+        #     "streamlit",
+        #     "flask",
+        #     "api-analytics",
+        #     "monkeytype",
+        # ]:
+        #     return {"error": "Example repos cannot be modified"}
 
         # modified_mermaid_code = claude_service.call_claude_api(
         #     system_prompt=SYSTEM_MODIFY_PROMPT,
