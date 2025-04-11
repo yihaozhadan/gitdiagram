@@ -15,6 +15,25 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 - 🔄 **Customization**: Modify and regenerate diagrams with custom instructions
 - 🐛 **Debug Support**: View Mermaid diagram source code and syntax errors for easy debugging
 
+## 🤖 AI Model Configuration
+
+- **Model Selection**: Choose from multiple LLM providers:
+  - OpenRouter (default): quasar-alpha (400k tokens), o3-mini (200k tokens)
+  - OpenAI: GPT-4, GPT-3.5-turbo
+  - Groq: mixtral-8x7b-32768
+  - Ollama: mistral, llama2, codellama
+- **API Key Configuration**: Configure your own API keys for each provider through the UI
+- **Context Size**: Different models have varying context windows, affecting their ability to analyze larger repositories
+- **Output Variation**: The same model may generate slightly different diagrams for the same repository due to the nature of LLMs
+
+## 💾 Caching System
+
+- **Token Efficiency**: Generated diagrams are cached in the database to save API tokens
+- **Up-to-date Results**: Cache typically reflects the latest repository state
+- **Private Repositories**: Cache is stored server-side
+  - For sensitive data, consider self-hosting the application
+  - Self-hosting instructions provided below
+
 ## ⚙️ Tech Stack
 
 - **Frontend**: Next.js, TypeScript, Tailwind CSS, ShadCN
@@ -115,7 +134,7 @@ Shoutout to [Romain Courtois](https://github.com/cyclotruc)'s [Gitingest](https:
 
 ## 📈 Rate Limits
 
-I am currently hosting it for free with no rate limits though this is somewhat likely to change in the future.
+Hui Zhou is currently hosting it for free with no rate limits though this is somewhat likely to change in the future.
 
 <!-- If you would like to bypass these, self-hosting instructions are provided. I also plan on adding an input for your own Anthropic API key.
 
@@ -128,3 +147,4 @@ Diagram generation:
 
 - Implement font-awesome icons in diagram
 - Implement an embedded feature like star-history.com but for diagrams. The diagram could also be updated progressively as commits are made.
+- Feel free to suggest more features or improvements
