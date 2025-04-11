@@ -4,6 +4,7 @@ import {
   getCachedDiagram,
 } from "~/app/_actions/cache";
 import { getLastGeneratedDate } from "~/app/_actions/repo";
+import { getLatestCommitDate } from "~/app/_actions/github";
 
 interface StreamState {
   status:
@@ -268,15 +269,47 @@ export function useDiagram(username: string, repo: string) {
     setLoading(true);
     setError("");
     try {
-      // Check cache first - always allow access to cached diagrams
+      // Check cache first and compare with latest commit date
       const cached = await getCachedDiagram(username, repo);
+      const lastGenerated = await getLastGeneratedDate(username, repo);
       const github_pat = localStorage.getItem("github_pat");
+      const latestCommitDate = await getLatestCommitDate(username, repo);
 
-      if (cached) {
-        setDiagram(cached);
-        const date = await getLastGeneratedDate(username, repo);
-        setLastGenerated(date ?? undefined);
-        return;
+      // Debug logging
+      console.debug('[Cache Debug] Latest commit date:', latestCommitDate?.toISOString());
+      console.debug('[Cache Debug] Last generated date:', lastGenerated?.toISOString());
+      console.debug('[Cache Debug] Cache exists:', !!cached);
+
+      if (cached && lastGenerated && latestCommitDate) {
+        // Check if cache is newer than or within 24 hours of the latest commit
+        const ONE_DAY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        
+        // Ensure we're working with Date objects
+        const commitDate = new Date(latestCommitDate);
+        const cacheDate = new Date(lastGenerated);
+        const cacheAge = cacheDate.getTime() - commitDate.getTime();
+        
+        console.debug('[Cache Debug] Commit date:', commitDate.toISOString());
+        console.debug('[Cache Debug] Cache date:', cacheDate.toISOString());
+        console.debug('[Cache Debug] Cache age (ms):', cacheAge);
+        console.debug('[Cache Debug] Cache age (hours):', cacheAge / (60 * 60 * 1000));
+        console.debug('[Cache Debug] Is cache valid?', cacheAge >= -ONE_DAY);
+        
+        // Use cache if it's newer than commit or less than 24 hours older than commit
+        if (cacheAge >= -ONE_DAY) {
+          console.debug('[Cache Debug] Using cached diagram (within 24h of commit)');
+          setDiagram(cached);
+          setLastGenerated(cacheDate);
+          setLoading(false);
+          return;
+        }
+        console.debug('[Cache Debug] Cache too old, regenerating diagram');
+        // Cache is too old (more than 24 hours older than latest commit)
+      } else {
+        console.debug('[Cache Debug] Missing required data for cache validation');
+        if (!cached) console.debug('[Cache Debug] No cached diagram found');
+        if (!lastGenerated) console.debug('[Cache Debug] No last generated date found');
+        if (!latestCommitDate) console.debug('[Cache Debug] No latest commit date found');
       }
 
       // Start streaming generation
