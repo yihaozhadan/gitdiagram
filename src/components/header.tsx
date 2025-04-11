@@ -92,6 +92,17 @@ export function Header() {
             </span>
           </span>
           <Link
+            href="/contact"
+            className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
+          >
+            <span className="flex items-center sm:hidden">
+              <span>Contact</span>
+            </span>
+            <span className="hidden items-center gap-1 sm:flex">
+              <span>Contact</span>
+            </span>
+          </Link>
+          <Link
             href="https://buymeacoffee.com/hui.zhou"
             className="flex items-center gap-1 text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600 sm:gap-2"
           >
