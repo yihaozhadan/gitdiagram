@@ -169,15 +169,20 @@ export default function MainCard({
                     </div>
                   )}
                   {lastGenerated && (
-                    <>
-                      <label className="font-medium text-black">
-                        Enable Zoom
-                      </label>
-                      <Switch
-                        checked={zoomingEnabled}
-                        onCheckedChange={onZoomToggle}
-                      />
-                    </>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <label className="font-medium text-black">
+                          Enable Zoom
+                        </label>
+                        <Switch
+                          checked={zoomingEnabled}
+                          onCheckedChange={onZoomToggle}
+                        />
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Last updated: {lastGenerated.toLocaleString()}
+                      </div>
+                    </div>
                   )}
                 </div>
 

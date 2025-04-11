@@ -8,7 +8,6 @@ from app.prompts import (
     SYSTEM_FIRST_PROMPT,
     SYSTEM_SECOND_PROMPT,
     SYSTEM_THIRD_PROMPT,
-    ADDITIONAL_SYSTEM_INSTRUCTIONS_PROMPT,
 )
 from pydantic import BaseModel
 from functools import lru_cache

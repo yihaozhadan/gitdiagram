@@ -70,6 +70,25 @@ export async function cacheDiagramAndExplanation(
   }
 }
 
+export async function getLastGeneratedDate(username: string, repo: string): Promise<Date | null> {
+  try {
+    const cached = await db
+      .select({
+        updatedAt: diagramCache.updatedAt,
+      })
+      .from(diagramCache)
+      .where(
+        and(eq(diagramCache.username, username), eq(diagramCache.repo, repo)),
+      )
+      .limit(1);
+
+    return cached[0]?.updatedAt ?? null;
+  } catch (error) {
+    console.error("Error fetching last generated date:", error);
+    return null;
+  }
+}
+
 export async function getDiagramStats() {
   try {
     const stats = await db
