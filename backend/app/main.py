@@ -19,6 +19,7 @@ origins = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
     "https://gitdiagram.com",
+    "https://gitdiagram.util-kit.com",
     "http://frontend:3000",
     "http://api:8000"
 ]

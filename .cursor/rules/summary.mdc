@@ -22,7 +22,6 @@ This is GitDiagram, a web application that converts any GitHub repository struct
 - **AI**: Your own AI model
 - **Deployment**: Vercel (Frontend), EC2 (Backend)
 - **CI/CD**: GitHub Actions
-- **Analytics**: PostHog, Api-Analytics
 
 ## Architecture
 The project follows a modern full-stack architecture:

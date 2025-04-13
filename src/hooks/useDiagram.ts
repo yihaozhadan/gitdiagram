@@ -63,7 +63,7 @@ export function useDiagram(username: string, repo: string) {
       try {
         const baseUrl =
           process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_DEV_URL ?? "http://localhost:3000";
-        console.log('Using API URL:', baseUrl);
+
         const response = await fetch(`${baseUrl}/generate/stream`, {
           method: "POST",
           headers: {

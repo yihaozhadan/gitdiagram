@@ -42,7 +42,6 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 - **AI**: Your own AI model
 - **Deployment**: Vercel (Frontend), EC2 (Backend)
 - **CI/CD**: GitHub Actions
-- **Analytics**: PostHog, Api-Analytics
 
 ## 🤔 About
 

@@ -4,7 +4,6 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import { Header } from "~/components/header";
 import { Footer } from "~/components/footer";
-import { CSPostHogProvider } from "./providers";
 
 export const metadata: Metadata = {
   title: "GitDiagram",
@@ -79,13 +78,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
-      <CSPostHogProvider>
-        <body className="flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-        </body>
-      </CSPostHogProvider>
+      <body className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-grow">{children}</main>
+        <Footer />
+      </body>
     </html>
   );
 }
