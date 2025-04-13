@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Next.js build output
+.next
+out
+
+# Environment files
+.env*
+!.env.example
+
+# Git
+.git
+.gitignore
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Cache
+.cache
+.eslintcache
+
+# IDE
+.vscode
+.idea
+
+# System files
+.DS_Store
+*.pem
+
+# Test coverage
+coverage
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml

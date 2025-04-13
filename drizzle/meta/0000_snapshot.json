@@ -1,0 +1,80 @@
+{
+  "id": "ee127ae1-52da-4fd0-9d86-38d80a279bf2",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.gitdiagram_diagram_cache": {
+      "name": "gitdiagram_diagram_cache",
+      "schema": "",
+      "columns": {
+        "username": {
+          "name": "username",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "repo": {
+          "name": "repo",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "diagram": {
+          "name": "diagram",
+          "type": "varchar(10000)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "explanation": {
+          "name": "explanation",
+          "type": "varchar(10000)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'No explanation provided'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "used_own_key": {
+          "name": "used_own_key",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "gitdiagram_diagram_cache_username_repo_pk": {
+          "name": "gitdiagram_diagram_cache_username_repo_pk",
+          "columns": [
+            "username",
+            "repo"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

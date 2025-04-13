@@ -15,7 +15,7 @@ export default function HomePage() {
           This is useful for quickly visualizing projects.
         </p>
         <p className="mx-auto mt-2 max-w-2xl text-center text-lg">
-          You can use your own AI model to generate diagrams or use my generous AI service without context or token limits.
+          You can use your own AI model to generate diagrams or use my AI service.
         </p>
       </div>
       <div className="mb-16 flex justify-center lg:mb-0">

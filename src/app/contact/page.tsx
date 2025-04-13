@@ -54,8 +54,8 @@ export default function ContactPage() {
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-8">
       <h1 className="mb-8 text-3xl font-bold text-black">Contact Me</h1>
       <p className="mb-8 text-gray-600">
-        Have questions or feedback about GitDiagram? I'd love to hear from you!
-        Fill out the form below and I'll get back to you as soon as possible.
+        Have questions or feedback about GitDiagram? I&apos;d love to hear from you!
+        Fill out the form below and I&apos;ll get back to you as soon as possible.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -115,7 +115,7 @@ export default function ContactPage() {
         {submitStatus === "success" && (
           <div className="rounded-md bg-green-50 p-4">
             <p className="text-sm text-green-800">
-              Thank you for your message! I'll get back to you soon.
+              Thank you for your message! I&apos;ll get back to you soon.
             </p>
           </div>
         )}

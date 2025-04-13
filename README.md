@@ -1,7 +1,7 @@
 [![Image](./docs/readme_img.png "GitDiagram Front Page")](https://gitdiagram.com/)
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-[![Kofi](https://img.shields.io/badge/Kofi-F16061.svg?logo=ko-fi&logoColor=white)](https://ko-fi.com/ahmedkhaleel2004)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-F16061.svg?logo=buymeacoffee&logoColor=white)](https://buymeacoffee.com/hui.zhou)
 
 # GitDiagram
 
@@ -18,7 +18,7 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 ## 🤖 AI Model Configuration
 
 - **Model Selection**: Choose from multiple LLM providers:
-  - OpenRouter (default): quasar-alpha (400k tokens), o3-mini (200k tokens)
+  - OpenRouter (default): optimus-alpha, o3-mini
   - OpenAI: GPT-4, GPT-3.5-turbo
   - Groq: mixtral-8x7b-32768
   - Ollama: mistral, llama2, codellama
@@ -65,7 +65,7 @@ You can also self-host this app locally (backend separated as well!) with the st
 1. Clone the repository
 
 ```bash
-git clone https://github.com/ahmedkhaleel2004/gitdiagram.git
+git clone https://github.com/yihaozhadan/gitdiagram.git
 cd gitdiagram
 ```
 

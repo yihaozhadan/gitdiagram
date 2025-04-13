@@ -1,4 +1,23 @@
 services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - POSTGRES_URL=postgresql://postgres:postgres@db:5432/gitdiagram
+        - NODE_ENV=${NODE_ENV:-production}
+        - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    environment:
+      - POSTGRES_URL=postgresql://postgres:postgres@db:5432/gitdiagram
+      - NODE_ENV=${NODE_ENV:-production}
+      - NEXT_PUBLIC_API_URL=http://api:8000
+    depends_on:
+      - api
+      - db
+    restart: unless-stopped
+
   api:
     build: 
       context: ./backend
@@ -10,6 +29,24 @@ services:
     env_file:
       - .env
     environment:
-      - ENVIRONMENT=${ENVIRONMENT:-development} # Default to development if not set
-      - DEBUG=true # Enable debug logging
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - DEBUG=true
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/gitdiagram
+    depends_on:
+      - db
     restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=gitdiagram
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

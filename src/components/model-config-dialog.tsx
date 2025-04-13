@@ -27,8 +27,8 @@ export interface ModelConfig {
 const PROVIDERS = {
   openrouter: {
     name: "OpenRouter",
-    defaultModel: "openrouter/quasar-alpha",
-    models: ["openrouter/quasar-alpha", "openrouter/o3-mini"],
+    defaultModel: "openrouter/optimus-alpha",
+    models: ["openrouter/o3-mini", "openrouter/optimus-alpha"],
   },
   openai: {
     name: "OpenAI",

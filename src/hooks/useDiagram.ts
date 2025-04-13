@@ -62,7 +62,8 @@ export function useDiagram(username: string, repo: string) {
 
       try {
         const baseUrl =
-          process.env.NEXT_PUBLIC_API_DEV_URL ?? "http://localhost:3000";
+          process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_DEV_URL ?? "http://localhost:3000";
+        console.log('Using API URL:', baseUrl);
         const response = await fetch(`${baseUrl}/generate/stream`, {
           method: "POST",
           headers: {
@@ -110,7 +111,7 @@ export function useDiagram(username: string, repo: string) {
                       setState((prev) => ({
                         status: "error",
                         error: data.error,
-                        diagram: data.diagram || prev.diagram, // Keep existing diagram if available
+                        diagram: data.diagram ?? prev.diagram, // Keep existing diagram if available
                         explanation: prev.explanation,
                         mapping: prev.mapping
                       }));
@@ -196,7 +197,7 @@ export function useDiagram(username: string, repo: string) {
                         const date = await getLastGeneratedDate(username, repo);
                         setLastGenerated(date ?? undefined);
                         if (!hasUsedFreeGeneration) {
-                          localStorage.setItem(
+                          localStorage?.setItem(
                             "has_used_free_generation",
                             "true",
                           );
@@ -213,8 +214,9 @@ export function useDiagram(username: string, repo: string) {
                     const rawData = line.slice(6);
                     if (rawData.includes("```mermaid")) {
                       // Extract content between ```mermaid and ``` tags
-                      const mermaidMatch = rawData.match(/```mermaid\s*([\s\S]*?)```/);
-                      if (mermaidMatch && mermaidMatch[1]) {
+                      const mermaidRegex = /```mermaid\s*([\s\S]*?)```/;
+                      const mermaidMatch = mermaidRegex.exec(rawData);
+                      if (mermaidMatch?.[1]) {
                         setState({
                           status: "diagram",
                           diagram: mermaidMatch[1].trim(),

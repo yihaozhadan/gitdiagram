@@ -57,7 +57,7 @@ export async function getLatestCommitDate(username: string, repo: string): Promi
       if (!masterResponse.ok) {
         throw new Error(`Failed to fetch commit date: ${masterResponse.statusText}`);
       }
-      const data = await masterResponse.json();
+      const data = await masterResponse.json() as { commit: { commit: { committer: { date: string } } } };
       return new Date(data.commit.commit.committer.date);
     }
 
@@ -65,7 +65,7 @@ export async function getLatestCommitDate(username: string, repo: string): Promi
       throw new Error(`Failed to fetch commit date: ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as { commit: { commit: { committer: { date: string } } } };
     return new Date(data.commit.commit.committer.date);
   } catch (error) {
     console.error("Error fetching latest commit date:", error);
