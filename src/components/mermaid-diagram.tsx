@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import mermaid from "mermaid";
 
 interface MermaidChartProps {
@@ -11,6 +11,13 @@ interface MermaidChartProps {
 
 const MermaidChart = ({ chart, zoomingEnabled = true, onError }: MermaidChartProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const stableOnError = useCallback(
+    (error: string) => {
+      onError?.(error);
+    },
+    [onError]
+  );
 
   useEffect(() => {
     mermaid.initialize({
@@ -71,7 +78,7 @@ const MermaidChart = ({ chart, zoomingEnabled = true, onError }: MermaidChartPro
       mermaid.contentLoaded();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      onError?.(errorMessage);
+      stableOnError(errorMessage);
     }
     // Wait for the SVG to be rendered
     setTimeout(() => {
@@ -81,7 +88,7 @@ const MermaidChart = ({ chart, zoomingEnabled = true, onError }: MermaidChartPro
     return () => {
       // Cleanup not needed with dynamic import approach
     };
-  }, [chart, zoomingEnabled]); // Added zoomingEnabled to dependencies
+  }, [chart, zoomingEnabled, stableOnError]);
 
   return (
     <div

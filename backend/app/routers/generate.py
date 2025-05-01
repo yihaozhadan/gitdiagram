@@ -44,7 +44,7 @@ DEFAULT_MODELS = {
     "ollama": "mistral",
     "groq": "mixtral-8x7b-32768",
     "openai": "gpt-4",
-    "openrouter": "openrouter/optimus-alpha"
+    "openrouter": "microsoft/mai-ds-r1:free"
 }
 
 def get_service(service_name: str):
@@ -236,11 +236,11 @@ async def generate_stream(request: Request, body: ApiRequest):
 
                 yield f"data: {json.dumps({'status': 'diagram_sent', 'message': f'Sending diagram request to {body.service}...'})}\n\n"
                 await asyncio.sleep(0.1)
-                yield f"data: {json.dumps({'status': 'diagram', 'message': 'Generating Mermaid diagram...'})}\n\n"
+                yield f"data: {json.dumps({'status': 'diagram', 'message': 'Starting diagram generation...'})}\n\n"
 
                 try:
+                    diagram_chunks = []
                     if hasattr(service, 'call_api_stream'):
-                        diagram = ""
                         async for chunk in service.call_api_stream(
                             system_prompt=SYSTEM_THIRD_PROMPT,
                             data={
@@ -250,7 +250,7 @@ async def generate_stream(request: Request, body: ApiRequest):
                             },
                             api_key=body.api_key,
                         ):
-                            diagram += chunk
+                            diagram_chunks.append(chunk)
                             yield f"data: {json.dumps({'status': 'diagram_chunk', 'chunk': chunk})}\n\n"
                     else:
                         # Fallback to non-streaming API
@@ -263,9 +263,7 @@ async def generate_stream(request: Request, body: ApiRequest):
                             },
                             api_key=body.api_key,
                         )
-                        if DEBUG:
-                            print("\n[DEBUG] Phase 3 Response:")
-                            print(diagram[:200] + "..." if len(diagram) > 200 else diagram)
+                        diagram_chunks.append(diagram)
                         yield f"data: {json.dumps({'status': 'diagram_chunk', 'chunk': diagram})}\n\n"
                 except Exception as e:
                     yield f"data: {json.dumps({'error': f'Error calling {body.service} service: {str(e)}'})}\n\n"
@@ -275,38 +273,39 @@ async def generate_stream(request: Request, body: ApiRequest):
                 if DEBUG:
                     print("\n[DEBUG] Final processing...")
                     print("[DEBUG] Raw Mermaid code:")
-                    print(diagram)
+                    print(diagram_chunks[0])
 
                 # Clean up Mermaid code
-                diagram = diagram.replace("```mermaid", "").replace("```", "")
-                diagram = re.sub(r"^\s*graph\s+[A-Za-z]+\s*$", "graph TD", diagram, flags=re.MULTILINE)
+                full_diagram = ''.join(diagram_chunks)
+                full_diagram = full_diagram.replace("```mermaid", "").replace("```", "")
+                full_diagram = re.sub(r"^\s*graph\s+[A-Za-z]+\s*$", "graph TD", full_diagram, flags=re.MULTILINE)
 
                 # Process click events to add GitHub URLs
-                diagram = process_click_events(
-                    diagram, body.username, body.repo, default_branch
+                full_diagram = process_click_events(
+                    full_diagram, body.username, body.repo, default_branch
                 )
 
-                if "BAD_INSTRUCTIONS" in diagram:
+                if "BAD_INSTRUCTIONS" in full_diagram:
                     yield f"data: {json.dumps({'error': 'Invalid or unclear instructions provided'})}\n\n"
                     return
                 
                 # Basic Mermaid syntax validation
-                if not diagram.strip().startswith(('graph ', 'flowchart ', 'sequenceDiagram', 'classDiagram', 'stateDiagram-v2', 'erDiagram')):
+                if not full_diagram.strip().startswith(('graph ', 'flowchart ', 'sequenceDiagram', 'classDiagram', 'stateDiagram-v2', 'erDiagram')):
                     yield f"data: {json.dumps({'error': 'Invalid Mermaid diagram syntax - must start with a valid diagram type'})}\n\n"
                     return
                 
                 # Check for common syntax errors
-                if '--->' in diagram or '<---' in diagram:  # Wrong arrow syntax
-                    diagram = diagram.replace('--->', '-->')
-                    diagram = diagram.replace('<---', '<--')
+                if '--->' in full_diagram or '<---' in full_diagram:  # Wrong arrow syntax
+                    full_diagram = full_diagram.replace('--->', '-->')
+                    full_diagram = full_diagram.replace('<---', '<--')
                 
                 # Ensure proper line endings
-                diagram = '\n'.join(line.strip() for line in diagram.splitlines() if line.strip())
+                full_diagram = '\n'.join(line.strip() for line in full_diagram.splitlines() if line.strip())
 
                 # Send final result
                 yield f"data: {json.dumps({
                     'status': 'complete',
-                    'diagram': diagram,
+                    'diagram': full_diagram,
                     'explanation': explanation,
                     'mapping': component_mapping_text
                 })}\n\n"

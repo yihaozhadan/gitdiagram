@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "~/server/db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { diagramCache } from "~/server/db/schema";
 import { sql } from "drizzle-orm";
 
@@ -103,5 +103,21 @@ export async function getDiagramStats() {
   } catch (error) {
     console.error("Error getting diagram stats:", error);
     return null;
+  }
+}
+
+export async function getAllCachedDiagrams() {
+  try {
+    return await db
+      .select({
+        username: diagramCache.username,
+        repo: diagramCache.repo,
+        updated_at: diagramCache.updatedAt
+      })
+      .from(diagramCache)
+      .orderBy(desc(diagramCache.updatedAt));
+  } catch (error) {
+    console.error("Error fetching all cached diagrams:", error);
+    return [];
   }
 }
