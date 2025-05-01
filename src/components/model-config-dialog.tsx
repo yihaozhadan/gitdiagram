@@ -27,8 +27,8 @@ export interface ModelConfig {
 const PROVIDERS = {
   openrouter: {
     name: "OpenRouter",
-    defaultModel: "microsoft/mai-ds-r1:free",
-    models: ["openrouter/o3-mini", "microsoft/mai-ds-r1:free"],
+    defaultModel: "meta-llama/llama-4-scout:free",
+    models: ["openrouter/o3-mini", "meta-llama/llama-4-scout:free"],
   },
   openai: {
     name: "OpenAI",

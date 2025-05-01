@@ -18,7 +18,7 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 ## 🤖 AI Model Configuration
 
 - **Model Selection**: Choose from multiple LLM providers:
-  - OpenRouter (default): microsoft/mai-ds-r1:free, o3-mini
+  - OpenRouter (default): meta-llama/llama-4-scout:free, o3-mini
   - OpenAI: GPT-4, GPT-3.5-turbo
   - Groq: mixtral-8x7b-32768
   - Ollama: mistral, llama2, codellama
