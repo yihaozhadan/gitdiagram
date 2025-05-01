@@ -26,6 +26,7 @@ interface MainCardProps {
   zoomingEnabled?: boolean;
   onZoomToggle?: () => void;
   loading?: boolean;
+  children?: React.ReactNode;
 }
 
 export default function MainCard({
@@ -41,6 +42,7 @@ export default function MainCard({
   zoomingEnabled,
   onZoomToggle,
   loading,
+  children,
 }: MainCardProps) {
   const [repoUrl, setRepoUrl] = useState("");
   const [error, setError] = useState("");
@@ -246,6 +248,8 @@ export default function MainCard({
           style={{ transform: "rotate(-15deg)" }}
         />
       </div>
+
+      {children}
     </Card>
   );
 }
