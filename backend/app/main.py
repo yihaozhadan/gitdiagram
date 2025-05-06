@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from app.routers import generate, modify
+from app.routers import generate, modify, cache
 from app.core.limiter import limiter
 from typing import cast
 from starlette.exceptions import ExceptionMiddleware
@@ -43,6 +43,7 @@ app.add_exception_handler(
 
 app.include_router(generate.router)
 app.include_router(modify.router)
+app.include_router(cache.router)
 
 
 @app.get("/")

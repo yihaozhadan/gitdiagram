@@ -5,14 +5,13 @@ import Link from "next/link";
 import { FaGithub, FaCoffee } from "react-icons/fa";
 import { getStarCount } from "~/app/_actions/github";
 import { PrivateReposDialog } from "./private-repos-dialog";
-import { ApiKeyDialog } from "./api-key-dialog";
+
 import { ModelConfigDialog } from "./model-config-dialog";
 import type { ModelConfig } from "./model-config-dialog";
 
 export function Header() {
   const [isPrivateReposDialogOpen, setIsPrivateReposDialogOpen] =
     useState(false);
-  const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
   const [isModelConfigDialogOpen, setIsModelConfigDialogOpen] = useState(false);
   const [starCount, setStarCount] = useState<number | null>(null);
 
@@ -32,11 +31,6 @@ export function Header() {
     // Store the PAT in localStorage
     localStorage.setItem("github_pat", pat);
     setIsPrivateReposDialogOpen(false);
-  };
-
-  const handleApiKeySubmit = (apiKey: string) => {
-    localStorage.setItem("api_key", apiKey);
-    setIsApiKeyDialogOpen(false);
   };
 
   const handleModelConfigSubmit = (config: ModelConfig) => {
@@ -70,17 +64,6 @@ export function Header() {
             </span>
           </span>
           <span
-            onClick={() => setIsApiKeyDialogOpen(true)}
-            className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
-          >
-            <span className="flex items-center sm:hidden">
-              <span>API Key</span>
-            </span>
-            <span className="hidden items-center gap-1 sm:flex">
-              <span>API Key</span>
-            </span>
-          </span>
-          <span
             onClick={() => setIsPrivateReposDialogOpen(true)}
             className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
           >
@@ -91,6 +74,17 @@ export function Header() {
               <span className="hidden sm:inline">Private Repos</span>
             </span>
           </span>
+          <Link
+            href="/cache"
+            className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
+          >
+            <span className="flex items-center sm:hidden">
+              <span>Cache</span>
+            </span>
+            <span className="hidden items-center gap-1 sm:flex">
+              <span>Cached Diagrams</span>
+            </span>
+          </Link>
           <Link
             href="/contact"
             className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
@@ -131,11 +125,6 @@ export function Header() {
           isOpen={isPrivateReposDialogOpen}
           onClose={() => setIsPrivateReposDialogOpen(false)}
           onSubmit={handlePrivateReposSubmit}
-        />
-        <ApiKeyDialog
-          isOpen={isApiKeyDialogOpen}
-          onClose={() => setIsApiKeyDialogOpen(false)}
-          onSubmit={handleApiKeySubmit}
         />
       </div>
     </header>

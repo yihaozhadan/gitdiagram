@@ -18,7 +18,7 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 ## 🤖 AI Model Configuration
 
 - **Model Selection**: Choose from multiple LLM providers:
-  - OpenRouter (default): optimus-alpha, o3-mini
+  - OpenRouter (default): meta-llama/llama-4-scout:free, o3-mini
   - OpenAI: GPT-4, GPT-3.5-turbo
   - Groq: mixtral-8x7b-32768
   - Ollama: mistral, llama2, codellama
@@ -85,7 +85,7 @@ Then edit the `.env` file with your Anthropic API key and optional GitHub person
 4. Run backend
 
 ```bash
-docker-compose up --build -d
+docker compose up --build -d
 ```
 
 or
@@ -94,7 +94,7 @@ or
 cd /path/to/gitdiagram/backend && source venv/bin/activate && uvicorn app.main:app --reload
 ```
 
-Logs available at `docker-compose logs -f`
+Logs available at `docker compose logs -f`
 The FastAPI server will be available at `localhost:8000`
 
 5. Start local database
