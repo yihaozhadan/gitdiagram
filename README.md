@@ -14,6 +14,8 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 - ⚡ **Fast Generation**: Powered by various AI models for quick and accurate diagrams
 - 🔄 **Customization**: Modify and regenerate diagrams with custom instructions
 - 🐛 **Debug Support**: View Mermaid diagram source code and syntax errors for easy debugging
+- 📊 **Caching**: Generated diagrams are cached in the database to save API tokens and provide up-to-date results
+- 🤖 **AI Chatbot**: Interact with the AI chatbot to get answers to your questions.
 
 ## 🤖 AI Model Configuration
 
@@ -45,13 +47,13 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 
 ## 🤔 About
 
-I created this because I wanted to contribute to open-source projects but quickly realized their codebases are too massive for me to dig through manually, so this helps me get started - but it's definitely got many more use cases!
+The intention to create this website is to contribute to open-source projects and help people get started with open-source projects. It is also a tool for people to learn and understand AI models and their capabilities.
 
 Given any public (or private!) GitHub repository it generates diagrams in Mermaid.js with your own AI model
 
-I extract information from the file tree and README for details and interactivity (you can click components to be taken to relevant files and directories)
+The GitHub repository information is extracted from the file tree and README. The interactivity is enabled by clicking on components to navigate directly to source files and relevant directories.
 
-Most of what you might call the "processing" of this app is done with prompt engineering - see `/backend/app/prompts.py`. This basically extracts and pipelines data and analysis for a larger action workflow, ending in the diagram code.
+Prompt engineering is the core of this website. Most of the "processing" is done with that - see `/backend/app/prompts.py`. It extracts, pipelines, and analyzes data for a large action workflow. Finally, it generates the diagram code.
 
 ## 🔒 How to diagram private repositories
 
@@ -134,16 +136,3 @@ Shoutout to [Romain Courtois](https://github.com/cyclotruc)'s [Gitingest](https:
 ## 📈 Rate Limits
 
 Hui Zhou is currently hosting it for free with no rate limits though this is somewhat likely to change in the future.
-
-<!-- If you would like to bypass these, self-hosting instructions are provided. I also plan on adding an input for your own Anthropic API key.
-
-Diagram generation:
-
-- 1 request per minute
-- 5 requests per day -->
-
-## 🤔 Future Steps
-
-- Implement font-awesome icons in diagram
-- Implement an embedded feature like star-history.com but for diagrams. The diagram could also be updated progressively as commits are made.
-- Feel free to suggest more features or improvements

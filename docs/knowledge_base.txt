@@ -1,0 +1,37 @@
+GitDiagram is a website that can turn any GitHub repository into an interactive diagram for visualization in seconds.
+
+The GitDiagram is open source and you can find the source code on GitHub: https://github.com/yihaozhadan/gitdiagram
+
+The intention to create this website is to contribute to open-source projects and help people get started with open-source projects. It is also a tool for people to learn and understand AI models and their capabilities.
+
+Given any public (or private!) GitHub repository it generates diagrams in Mermaid.js with your own AI model
+
+The GitHub repository information is extracted from the file tree and README. The interactivity is enabled by clicking on components to navigate directly to source files and relevant directories.
+
+Prompt engineering is the core of this website. Most of the "processing" is done with that - see `/backend/app/prompts.py`. It extracts, pipelines, and analyzes data for a large action workflow. Finally, it generates the diagram code.
+
+The GitDiagram website has the features: 1. Instant Visualization: Convert any GitHub repository structure into a system design / architecture diagram. 2. Interactivity: Click on components to navigate directly to source files and relevant directories. 3. Fast Generation: Powered by various AI models for quick and accurate diagrams. 4. Customization: Modify and regenerate diagrams with custom instructions. 5. Debug Support: View Mermaid diagram source code and syntax errors for easy debugging.
+
+AI Model Configuration: 1. Model Selection: Choose from multiple LLM providers: OpenRouter (default): meta-llama/llama-4-scout:free, o3-mini OpenAI: GPT-4, GPT-3.5-turbo Groq: mixtral-8x7b-32768 Ollama: mistral, llama2, codellama 2. API Key Configuration: Configure your own API keys for each provider through the UI 3. Context Size: Different models have varying context windows, affecting their ability to analyze larger repositories 4. Output Variation: The same model may generate slightly different diagrams for the same repository due to the nature of LLMs
+
+Caching System: 1. Token Efficiency: Generated diagrams are cached in the database to save API tokens 2. Up-to-date Results: Cache typically reflects the latest repository state 3. Private Repositories: Cache is stored server-side.
+
+Tech Stack: 1. Frontend: Next.js, TypeScript, Tailwind CSS, ShadCN 2. Backend: FastAPI, Python, Server Actions 3. Database: PostgreSQL (with Drizzle ORM) 4. AI: Your own AI model 5. Deployment: Vercel (Frontend), EC2 (Backend)
+
+How to use Git Diagram: 1. Enter the URL of the GitHub repository you want to visualize. 2. Click the "Generate Diagram" button 3. Wait for the diagram to be generated. 4. Click on the diagram to navigate to the relevant source files and directories
+
+How to diagram private repositories: 1. Click on "Private Repos" in the header and follow the instructions by providing a GitHub personal access token with the `repo` scope.
+
+How to self-host: 1. Clone the repository 2. Install dependencies 3. Configure your own AI model 4. Configure your own database 5. Configure your own API keys for each provider through the UI
+
+Hui Zhou is the repository maintainer and is currently hosting it for free with no rate limits though this is somewhat likely to change in the future.
+
+You can try different AI models and configure your own API keys for each provider through the UI.
+
+Please note that if you want to diagram private repositories, you can click on "Private Repos" in the header and follow the instructions by providing a GitHub personal access token with the `repo` scope. It is highly recommended to use a private LLM API key for this purpose.
+
+Cached Diagrams: The website provides the cached diagrams. If the repository has been diagrammed before, you can click on "View Diagram" to view the diagram. If the repository has not been diagrammed before, you can click on "Generate Diagram" to generate the diagram. If the repository new commits are pushed to main/master branch 24 hours ago, the diagram will be regenerated.
+
+Issues: Right now it may fails to generate diagrams due to the AI models' context window size, Mermaid diagram source code and syntax errors.
+
+Contact: Please open an issue on GitHub if you have any questions or issues. Or you can contact Hui Zhou by submitting a form message on "contact" page. Hui Zhou's LinkedIn profile is https://www.linkedin.com/in/huizhou1.
