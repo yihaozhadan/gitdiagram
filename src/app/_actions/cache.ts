@@ -138,8 +138,8 @@ export interface CacheFetchParams {
 export async function getAllCachedDiagrams(params?: CacheFetchParams): Promise<CacheFetchResult> {
   try {
     const {
-      sortBy = 'repository',
-      sortDirection = 'asc',
+      sortBy = 'updated_at',
+      sortDirection = 'desc',
       page = 1,
       pageSize = 20,
       search = '',

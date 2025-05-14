@@ -11,8 +11,8 @@ export default async function Page() {
       <CachePageClient 
         data={result.data} 
         pagination={result.pagination} 
-        initialSortBy="repository"
-        initialSortDirection="asc"
+        initialSortBy="updated_at"
+        initialSortDirection="desc"
         initialSearch=""
       />
     </Suspense>
