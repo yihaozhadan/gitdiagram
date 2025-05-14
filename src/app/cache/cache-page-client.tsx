@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { getAllCachedDiagrams } from '../_actions/cache';
+// import { getAllCachedDiagrams } from '../_actions/cache'; // No longer used on client
 import type { DiagramCacheItemWithDate, PaginationInfo, SortField, SortDirection } from '../_actions/cache';
 
 interface CachePageClientProps {
@@ -76,14 +76,18 @@ export default function CachePageClient({
     const fetchData = async () => {
       setLoading(true);
       try {
-        const result = await getAllCachedDiagrams({
+        const params = new URLSearchParams({
           sortBy,
           sortDirection,
-          page: currentPage,
-          pageSize: pagination.pageSize,
-          search,
+          page: currentPage.toString(),
+          pageSize: pagination.pageSize.toString(),
         });
-        
+        if (search) params.set('search', search);
+        const res = await fetch(`/api/cache?${params.toString()}`);
+        if (!res.ok) throw new Error('Failed to fetch cache data');
+        type ApiResponse = { data: DiagramCacheItemWithDate[]; pagination: PaginationInfo };
+       // eslint-disable-next-line
+        const result: ApiResponse = await res.json();
         setData(result.data);
         setPagination(result.pagination);
       } catch (error) {
@@ -92,7 +96,7 @@ export default function CachePageClient({
         setLoading(false);
       }
     };
-    
+
     // Always fetch data when sort parameters change
     void fetchData();
     
