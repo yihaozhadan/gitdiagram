@@ -285,6 +285,18 @@ async def generate_stream(request: Request, body: ApiRequest):
                     full_diagram, body.username, body.repo, default_branch
                 )
 
+                # Remove ':::' and everything after it on lines starting with 'subgraph'
+                def clean_subgraph_lines(diagram: str) -> str:
+                    lines = diagram.splitlines()
+                    cleaned = []
+                    for line in lines:
+                        if line.lstrip().startswith('subgraph') and ':::' in line:
+                            cleaned.append(line.split(':::')[0].rstrip())
+                        else:
+                            cleaned.append(line)
+                    return '\n'.join(cleaned)
+                full_diagram = clean_subgraph_lines(full_diagram)
+
                 if "BAD_INSTRUCTIONS" in full_diagram:
                     yield f"data: {json.dumps({'error': 'Invalid or unclear instructions provided'})}\n\n"
                     return
@@ -298,7 +310,9 @@ async def generate_stream(request: Request, body: ApiRequest):
                 if '--->' in full_diagram or '<---' in full_diagram:  # Wrong arrow syntax
                     full_diagram = full_diagram.replace('--->', '-->')
                     full_diagram = full_diagram.replace('<---', '<--')
-                
+                if '|>' in full_diagram:  # Wrong arrow syntax
+                    full_diagram = full_diagram.replace('|>', '|')
+
                 # Ensure proper line endings
                 full_diagram = '\n'.join(line.strip() for line in full_diagram.splitlines() if line.strip())
 

@@ -189,7 +189,8 @@ EXTREMELY Important notes on syntax!!! (PAY ATTENTION TO THIS):
 - In Mermaid.js syntax, you cannot apply a class style directly within a subgraph declaration. For example: `subgraph "Frontend Layer":::frontend` is a syntax error. However, you can apply them to nodes within the subgraph. For example: `Example["Example Node"]:::frontend` is valid, and `class Example1,Example2 frontend` is valid.
 - In Mermaid.js syntax, there cannot be spaces in the relationship label names. For example: `A -->| "example relationship" | B` is a syntax error. It should be `A -->|"example relationship"| B` 
 - In Mermaid.js syntax, you cannot give subgraphs an alias like nodes. For example: `subgraph A "Layer A"` is a syntax error. It should be `subgraph "Layer A"` 
-- In Mermaid.js syntax, avoid syntax like `subgraph "Layer A":::frontend`, the correct syntax should be `subgraph "Layer A"`.
+- In Mermaid.js syntax, when applying a class style, try to distinguish font color from background color. For example, if the background color is dark, try to use a light font color. If the background color is light, try to use a dark font color.
+- In Mermaid.js syntax, avoid syntax like `subgraph "Layer A":::frontend`, the correct syntax should be `subgraph "Layer A"`. When the line has "subgraph" keyword, do not include ":::".
 """
 # ^^^ note: ive generated a few diagrams now and claude still writes incorrect mermaid code sometimes. in the future, refer to those generated diagrams and add important instructions to the prompt above to avoid those mistakes. examples are best.
 
