@@ -225,6 +225,15 @@ export default function CachePageClient({
                       >
                         View Diagram
                       </Link>
+                      { " | " }
+                      <Link 
+                        href={`https://gitmcp.io/${item.username}/${item.repo}/chat`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        Chat
+                      </Link>
                     </td>
                   </tr>
                 ))}
