@@ -44,7 +44,7 @@ DEFAULT_MODELS = {
     "ollama": "mistral",
     "groq": "mixtral-8x7b-32768",
     "openai": "gpt-4",
-    "openrouter": "meta-llama/llama-4-scout:free"
+    "openrouter": "deepseek/deepseek-chat-v3-0324:free"
 }
 
 def get_service(service_name: str):

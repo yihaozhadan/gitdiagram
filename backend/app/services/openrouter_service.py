@@ -129,7 +129,7 @@ class OpenRouterService:
                 self.base_url,
                 headers=headers,
                 json=payload,
-                timeout=60.0
+                timeout=180.0
             ) as response:
                 async for line in response.aiter_lines():
                     if line.startswith("data: "):

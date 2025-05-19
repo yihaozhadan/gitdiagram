@@ -27,8 +27,8 @@ export interface ModelConfig {
 const PROVIDERS = {
   openrouter: {
     name: "OpenRouter",
-    defaultModel: "meta-llama/llama-4-scout:free",
-    models: ["openrouter/o3-mini", "meta-llama/llama-4-scout:free"],
+    defaultModel: "deepseek/deepseek-chat-v3-0324:free",
+    models: ["openrouter/o3-mini", "deepseek/deepseek-chat-v3-0324:free"],
   },
   openai: {
     name: "OpenAI",
