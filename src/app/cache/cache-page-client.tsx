@@ -20,10 +20,10 @@ interface SortIndicatorProps {
 }
 
 function SortIndicator({ isActive, direction }: SortIndicatorProps) {
-  if (!isActive) return <span className="text-gray-300 ml-1">↑↓</span>;
+  if (!isActive) return <span className="text-gray-300 dark:text-gray-600 ml-1">↑↓</span>;
   
   return (
-    <span className="ml-1">
+    <span className="ml-1 text-foreground">
       {direction === 'asc' ? '↑' : '↓'}
     </span>
   );
@@ -138,8 +138,8 @@ export default function CachePageClient({
   };
   
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Cached Diagrams</h1>
+    <div className="container mx-auto p-4 bg-background min-h-screen">
+      <h1 className="text-2xl font-bold mb-4 text-foreground">Cached Diagrams</h1>
       
       {/* Search form */}
       <div className="mb-4">

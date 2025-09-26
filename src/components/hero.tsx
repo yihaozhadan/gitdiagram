@@ -22,7 +22,7 @@ const Hero = () => {
           strokeLinecap="round"
         />
       </svg>
-      <h1 className="relative inline-block w-full text-center text-5xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:pt-5 lg:text-7xl">
+      <h1 className="relative inline-block w-full text-center text-5xl font-bold tracking-tighter text-foreground sm:text-5xl md:text-6xl lg:pt-5 lg:text-7xl">
         Repository to <br />
         diagram&nbsp;
       </h1>

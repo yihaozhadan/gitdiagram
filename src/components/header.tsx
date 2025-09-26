@@ -8,6 +8,7 @@ import { PrivateReposDialog } from "./private-repos-dialog";
 
 import { ModelConfigDialog } from "./model-config-dialog";
 import type { ModelConfig } from "./model-config-dialog";
+import { ThemeSwitch } from "./theme-switch";
 
 export function Header() {
   const [isPrivateReposDialogOpen, setIsPrivateReposDialogOpen] =
@@ -39,11 +40,11 @@ export function Header() {
   };
 
   return (
-    <header className="border-b-[3px] border-black">
+    <header className="border-b-[3px] border-black dark:border-white bg-background">
       <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4 sm:px-8">
         <Link href="/" className="flex items-center">
           <span className="text-lg font-semibold sm:text-xl">
-            <span className="text-black transition-colors duration-200 hover:text-gray-600">
+            <span className="text-foreground transition-colors duration-200 hover:text-gray-600 dark:hover:text-gray-300">
               Git
             </span>
             <span className="text-purple-600 transition-colors duration-200 hover:text-purple-500">
@@ -54,7 +55,7 @@ export function Header() {
         <nav className="flex items-center gap-3 sm:gap-6">
           <span
             onClick={() => setIsModelConfigDialogOpen(true)}
-            className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
+            className="cursor-pointer text-sm font-medium text-foreground transition-transform hover:translate-y-[-2px] hover:text-purple-600"
           >
             <span className="flex items-center sm:hidden">
               <span>Model</span>
@@ -65,7 +66,7 @@ export function Header() {
           </span>
           <span
             onClick={() => setIsPrivateReposDialogOpen(true)}
-            className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
+            className="cursor-pointer text-sm font-medium text-foreground transition-transform hover:translate-y-[-2px] hover:text-purple-600"
           >
             <span className="flex items-center sm:hidden">
               <span>Repos</span>
@@ -76,7 +77,7 @@ export function Header() {
           </span>
           <Link
             href="/cache"
-            className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
+            className="cursor-pointer text-sm font-medium text-foreground transition-transform hover:translate-y-[-2px] hover:text-purple-600"
           >
             <span className="flex items-center sm:hidden">
               <span>Cache</span>
@@ -87,7 +88,7 @@ export function Header() {
           </Link>
           <Link
             href="/contact"
-            className="cursor-pointer text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600"
+            className="cursor-pointer text-sm font-medium text-foreground transition-transform hover:translate-y-[-2px] hover:text-purple-600"
           >
             <span className="flex items-center sm:hidden">
               <span>Contact</span>
@@ -96,21 +97,22 @@ export function Header() {
               <span>Contact</span>
             </span>
           </Link>
+          <ThemeSwitch />
           <Link
             href="https://buymeacoffee.com/hui.zhou"
-            className="flex items-center gap-1 text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600 sm:gap-2"
+            className="flex items-center gap-1 text-sm font-medium text-foreground transition-transform hover:translate-y-[-2px] hover:text-purple-600 sm:gap-2"
           >
             <FaCoffee className="h-5 w-5" />
             <span className="hidden sm:inline">Sponsor</span>
           </Link>
           <Link
             href="https://github.com/yihaozhadan/gitdiagram"
-            className="flex items-center gap-1 text-sm font-medium text-black transition-transform hover:translate-y-[-2px] hover:text-purple-600 sm:gap-2"
+            className="flex items-center gap-1 text-sm font-medium text-foreground transition-transform hover:translate-y-[-2px] hover:text-purple-600 sm:gap-2"
           >
             <FaGithub className="h-5 w-5" />
             <span className="hidden sm:inline">GitHub</span>
           </Link>
-          <span className="flex items-center gap-1 text-sm font-medium text-black">
+          <span className="flex items-center gap-1 text-sm font-medium text-foreground">
             <span className="text-amber-400">★</span>
             {formatStarCount(starCount)}
           </span>

@@ -41,7 +41,7 @@ export function PrivateReposDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="border-[3px] border-black bg-purple-200 p-6 shadow-[8px_8px_0_0_#000000] sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-black">
+          <DialogTitle className="text-xl font-bold text-black dark:text-white">
             Enter GitHub Personal Access Token
           </DialogTitle>
         </DialogHeader>
@@ -97,14 +97,14 @@ export function PrivateReposDialog({
               <Button
                 type="button"
                 onClick={onClose}
-                className="border-[3px] border-black bg-gray-200 px-4 py-2 text-black shadow-[4px_4px_0_0_#000000] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gray-300"
+                className="border-[3px] border-black dark:border-white bg-gray-200 dark:bg-gray-700 px-4 py-2 text-black dark:text-white shadow-[4px_4px_0_0_#000000] dark:shadow-[4px_4px_0_0_#ffffff] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gray-300 dark:hover:bg-gray-600"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={!pat.startsWith("ghp_")}
-                className="border-[3px] border-black bg-purple-400 px-4 py-2 text-black shadow-[4px_4px_0_0_#000000] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-purple-300 disabled:opacity-50"
+                className="border-[3px] border-black dark:border-white bg-purple-400 dark:bg-purple-600 px-4 py-2 text-black dark:text-white shadow-[4px_4px_0_0_#000000] dark:shadow-[4px_4px_0_0_#ffffff] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-purple-300 dark:hover:bg-purple-500 disabled:opacity-50"
               >
                 Save Token
               </Button>

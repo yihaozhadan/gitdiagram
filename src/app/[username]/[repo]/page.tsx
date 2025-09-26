@@ -30,7 +30,7 @@ export default function Repo() {
   } = useDiagram(params.username.toLowerCase(), params.repo.toLowerCase());
 
   return (
-    <div className="flex flex-col items-center p-4">
+    <div className="flex flex-col items-center p-4 bg-background min-h-screen">
       <div className="flex w-full justify-center pt-8">
         <MainCard
           isHome={false}
@@ -60,7 +60,7 @@ export default function Repo() {
             {/* Show error message if present */}
             {(error || state.error) && (
               <div className="text-center">
-                <p className="max-w-4xl text-lg font-medium text-purple-600">
+                <p className="max-w-4xl text-lg font-medium text-purple-600 dark:text-purple-400">
                   {error || state.error}
                 </p>
                 {(error?.includes("API key") ||

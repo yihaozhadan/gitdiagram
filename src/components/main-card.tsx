@@ -96,19 +96,19 @@ export default function MainCard({
   };
 
   return (
-    <Card className="relative w-full max-w-3xl border-[3px] border-black bg-purple-200 p-4 shadow-[8px_8px_0_0_#000000] sm:p-8">
+    <Card className="relative w-full max-w-3xl border-[3px] border-black dark:border-white bg-card p-4 shadow-[8px_8px_0_0_#000000] dark:shadow-[8px_8px_0_0_#ffffff] sm:p-8">
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
           <Input
             placeholder="https://github.com/username/repo"
-            className="flex-1 rounded-md border-[3px] border-black px-3 py-4 text-base font-bold shadow-[4px_4px_0_0_#000000] placeholder:text-base placeholder:font-normal placeholder:text-gray-700 sm:px-4 sm:py-6 sm:text-lg sm:placeholder:text-lg"
+            className="flex-1 rounded-md border-[3px] border-black dark:border-white px-3 py-4 text-base font-bold shadow-[4px_4px_0_0_#000000] dark:shadow-[4px_4px_0_0_#ffffff] placeholder:text-base placeholder:font-normal placeholder:text-gray-700 dark:placeholder:text-gray-300 bg-background text-foreground sm:px-4 sm:py-6 sm:text-lg sm:placeholder:text-lg"
             value={repoUrl}
             onChange={(e) => setRepoUrl(e.target.value)}
             required
           />
           <Button
             type="submit"
-            className="border-[3px] border-black bg-purple-400 p-4 px-4 text-base text-black shadow-[4px_4px_0_0_#000000] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:transform hover:bg-purple-400 sm:p-6 sm:px-6 sm:text-lg"
+            className="border-[3px] border-black dark:border-white bg-purple-400 dark:bg-purple-600 p-4 px-4 text-base text-black dark:text-white shadow-[4px_4px_0_0_#000000] dark:shadow-[4px_4px_0_0_#ffffff] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:transform hover:bg-purple-400 dark:hover:bg-purple-600 sm:p-6 sm:px-6 sm:text-lg"
           >
             Diagram
           </Button>
@@ -133,10 +133,10 @@ export default function MainCard({
                           e.preventDefault();
                           handleDropdownToggle("customize");
                         }}
-                        className={`flex items-center justify-between gap-2 rounded-md border-[3px] border-black px-4 py-2 font-medium text-black transition-colors sm:max-w-[250px] ${
+                        className={`flex items-center justify-between gap-2 rounded-md border-[3px] border-black dark:border-white px-4 py-2 font-medium text-black dark:text-white transition-colors sm:max-w-[250px] ${
                           activeDropdown === "customize"
-                            ? "bg-purple-400"
-                            : "bg-purple-300 hover:bg-purple-400"
+                            ? "bg-purple-400 dark:bg-purple-600"
+                            : "bg-purple-300 dark:bg-purple-500 hover:bg-purple-400 dark:hover:bg-purple-600"
                         }`}
                       >
                         <span>Customize Diagram</span>
@@ -155,10 +155,10 @@ export default function MainCard({
                           e.preventDefault();
                           handleDropdownToggle("export");
                         }}
-                        className={`flex items-center justify-between gap-2 rounded-md border-[3px] border-black px-4 py-2 font-medium text-black transition-colors sm:max-w-[250px] ${
+                        className={`flex items-center justify-between gap-2 rounded-md border-[3px] border-black dark:border-white px-4 py-2 font-medium text-black dark:text-white transition-colors sm:max-w-[250px] ${
                           activeDropdown === "export"
-                            ? "bg-purple-400"
-                            : "bg-purple-300 hover:bg-purple-400"
+                            ? "bg-purple-400 dark:bg-purple-600"
+                            : "bg-purple-300 dark:bg-purple-500 hover:bg-purple-400 dark:hover:bg-purple-600"
                         }`}
                       >
                         <span>Export Diagram</span>
@@ -173,7 +173,7 @@ export default function MainCard({
                   {lastGenerated && (
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
-                        <label className="font-medium text-black">
+                        <label className="font-medium text-black dark:text-white">
                           Enable Zoom
                         </label>
                         <Switch
@@ -181,7 +181,7 @@ export default function MainCard({
                           onCheckedChange={onZoomToggle}
                         />
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 dark:text-gray-300">
                         Last updated: {lastGenerated.toLocaleString()}
                       </div>
                     </div>
@@ -221,7 +221,7 @@ export default function MainCard({
         {/* Example Repositories */}
         {isHome && (
           <div className="space-y-2">
-            <div className="text-sm text-gray-700 sm:text-base">
+            <div className="text-sm text-gray-700 dark:text-gray-300 sm:text-base">
               Try these example repositories:
             </div>
             <div className="flex flex-wrap gap-2">
@@ -229,7 +229,7 @@ export default function MainCard({
                 <Button
                   key={name}
                   variant="outline"
-                  className="border-2 border-black bg-purple-400 text-sm text-black transition-transform hover:-translate-y-0.5 hover:transform hover:bg-purple-300 sm:text-base"
+                  className="border-2 border-black dark:border-white bg-purple-400 dark:bg-purple-600 text-sm text-black dark:text-white transition-transform hover:-translate-y-0.5 hover:transform hover:bg-purple-300 dark:hover:bg-purple-500 sm:text-base"
                   onClick={(e) => handleExampleClick(path, e)}
                 >
                   {name}
@@ -243,7 +243,7 @@ export default function MainCard({
       {/* Decorative Sparkle */}
       <div className="absolute -bottom-8 -left-12 hidden sm:block">
         <Sparkles
-          className="h-20 w-20 fill-sky-400 text-black"
+          className="h-20 w-20 fill-sky-400 text-black dark:text-white"
           strokeWidth={0.6}
           style={{ transform: "rotate(-15deg)" }}
         />

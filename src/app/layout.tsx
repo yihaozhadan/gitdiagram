@@ -6,6 +6,7 @@ import { Header } from "~/components/header";
 import Head from "next/head";
 import Script from "next/script";
 import { Footer } from "~/components/footer";
+import { ThemeProvider } from "~/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "GitDiagram",
@@ -79,14 +80,18 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable}`}> 
+    <html lang="en" className={`${GeistSans.variable}`} style={{ colorScheme: 'light dark' }}> 
       <Head>
         <style>{`#dify-chatbot-bubble-button {background-color: #1C64F2 !important;} #dify-chatbot-bubble-window {width: 24rem !important; height: 40rem !important;}`}</style>
       </Head>
-      <body className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-grow">{children}</main>
-        <Footer />
+      <body className="flex min-h-screen flex-col bg-background text-foreground">
+        <ThemeProvider>
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-grow">{children}</main>
+            <Footer />
+          </div>
+        </ThemeProvider>
         <Script id="stats-script" defer src="https://stats.huizhou.dev/script.js" data-website-id="d4a101c7-6377-4259-9fca-d00a1bc971d2"></Script>
         <Script
           id="dify-chatbot-init"
