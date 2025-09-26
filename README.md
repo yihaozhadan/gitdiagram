@@ -16,6 +16,8 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 - 🐛 **Debug Support**: View Mermaid diagram source code and syntax errors for easy debugging
 - 📊 **Caching**: Generated diagrams are cached in the database to save API tokens and provide up-to-date results
 - 🤖 **AI Chatbot**: Interact with the AI chatbot to get answers to your questions.
+- 📱 **Mobile Support**: Access GitDiagram on your phone or tablet.
+- 🌐 **Dark Mode**: Support dark mode.
 
 ## 🤖 AI Model Configuration
 
