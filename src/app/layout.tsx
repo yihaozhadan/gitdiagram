@@ -88,8 +88,21 @@ export default function RootLayout({
         <main className="flex-grow">{children}</main>
         <Footer />
         <Script id="stats-script" defer src="https://stats.huizhou.dev/script.js" data-website-id="d4a101c7-6377-4259-9fca-d00a1bc971d2"></Script>
-        <Script id="dify-chatbot" dangerouslySetInnerHTML={{__html:`window.difyChatbotConfig={token:'sh3bQeW3gDfbHfal',baseUrl:'https://dify.huizhous.ai'}`}} />
-        <Script id="dify-embed" src="https://dify.huizhous.ai/embed.min.js" defer></Script>
+        <Script
+          id="dify-chatbot-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.difyChatbotConfig = {token:'sh3bQeW3gDfbHfal', baseUrl:'https://dify.huizhous.ai'};
+              (function() {
+                var script = document.createElement('script');
+                script.src = 'https://dify.huizhous.ai/embed.min.js';
+                script.defer = true;
+                document.body.appendChild(script);
+              })();
+            `
+          }}
+        />
       </body>
     </html>
   );
