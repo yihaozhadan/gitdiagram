@@ -109,12 +109,12 @@ chmod +x start-database.sh
 ```
 
 When prompted to generate a random password, input yes.
-The Postgres database will start in a container at `localhost:5433`
+The Postgres database will start in a container at `localhost:5432`
 
 6. Initialize the database schema
 
 ```bash
-pnpm db:push --port 5433 --dialect=postgresql --schema=public
+pnpm db:push
 ```
 
 You can view and interact with the database using `pnpm db:studio`
