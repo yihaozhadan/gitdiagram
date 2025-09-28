@@ -88,6 +88,7 @@ export function useDiagram(username: string, repo: string) {
         let explanation = "";
         let mapping = "";
         let diagram = "";
+        let buffer = ""; // Buffer to accumulate incomplete data
 
         // Process the stream
         const processStream = async () => {
@@ -96,15 +97,26 @@ export function useDiagram(username: string, repo: string) {
               const { done, value } = await reader.read();
               if (done) break;
 
-              // Convert the chunk to text
+              // Convert the chunk to text and add to buffer
               const chunk = new TextDecoder().decode(value);
-              const lines = chunk.split("\n");
+              buffer += chunk;
 
-              // Process each SSE message
+              // Process complete lines from the buffer
+              const lines = buffer.split('\n');
+              
+              // Keep the last potentially incomplete line in the buffer
+              buffer = lines.pop() ?? '';
+
+              // Process each complete line
               for (const line of lines) {
                 if (line.startsWith("data: ")) {
+                  const jsonStr = line.slice(6).trim();
+                  
+                  // Skip empty data lines
+                  if (!jsonStr) continue;
+                  
                   try {
-                    const data = JSON.parse(line.slice(6)) as StreamResponse;
+                    const data = JSON.parse(jsonStr) as StreamResponse;
 
                     // If we receive an error, preserve any existing diagram text
                     if (data.error) {
@@ -208,19 +220,110 @@ export function useDiagram(username: string, repo: string) {
                         setState({ status: "error", error: data.error });
                         break;
                     }
-                  } catch (error) {
-                    // If there's a JSON parse error, try to extract the raw diagram text
-                    console.error("Error parsing SSE message:", error);
-                    const rawData = line.slice(6);
-                    if (rawData.includes("```mermaid")) {
-                      // Extract content between ```mermaid and ``` tags
-                      const mermaidRegex = /```mermaid\s*([\s\S]*?)```/;
-                      const mermaidMatch = mermaidRegex.exec(rawData);
-                      if (mermaidMatch?.[1]) {
-                        setState({
-                          status: "diagram",
-                          diagram: mermaidMatch[1].trim(),
-                        });
+                  } catch (parseError) {
+                    // If there's a JSON parse error, log it and try to extract useful data
+                    console.error("Error parsing SSE message:", parseError);
+                    console.error("Raw SSE line (first 200 chars):", jsonStr.substring(0, 200));
+                    
+                    // Try to handle the case where the JSON might be malformed
+                    // but still contains useful data (especially for complete status)
+                    if (jsonStr.includes('"status":"complete"') && jsonStr.includes('"diagram"')) {
+                      // Try to extract diagram from malformed JSON using regex
+                      try {
+                        // Look for the diagram field in the JSON string
+                        const diagramRegex = /"diagram":\s*"((?:[^"\\]|\\.)*)"/;
+                        const diagramMatch = diagramRegex.exec(jsonStr);
+                        if (diagramMatch?.[1]) {
+                          const extractedDiagram = diagramMatch[1]
+                            .replace(/\\n/g, '\n')
+                            .replace(/\\"/g, '"')
+                            .replace(/\\\\/g, '\\')
+                            .replace(/\\t/g, '\t')
+                            .replace(/\\r/g, '\r');
+                          
+                          // Also try to extract explanation if available
+                          const explanationRegex = /"explanation":\s*"((?:[^"\\]|\\.)*)"/;
+                          const explanationMatch = explanationRegex.exec(jsonStr);
+                          const extractedExplanation = explanationMatch?.[1]
+                            ?.replace(/\\n/g, '\n')
+                            ?.replace(/\\"/g, '"')
+                            ?.replace(/\\\\/g, '\\') ?? "Diagram generated successfully";
+                          
+                          setState({
+                            status: "complete",
+                            diagram: extractedDiagram,
+                            explanation: extractedExplanation,
+                          });
+                          
+                          const date = await getLastGeneratedDate(username, repo);
+                          setLastGenerated(date ?? undefined);
+                          if (!hasUsedFreeGeneration) {
+                            localStorage?.setItem("has_used_free_generation", "true");
+                            setHasUsedFreeGeneration(true);
+                          }
+                          return; // Exit the processing loop since we got the complete data
+                        }
+                      } catch (extractError) {
+                        console.error("Failed to extract diagram from malformed JSON:", extractError);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            
+            // Process any remaining data in the buffer
+            if (buffer.trim()) {
+              const lines = buffer.split("\n");
+              for (const line of lines) {
+                if (line.startsWith("data: ")) {
+                  const jsonStr = line.slice(6).trim();
+                  if (!jsonStr) continue;
+                  
+                  try {
+                    const data = JSON.parse(jsonStr) as StreamResponse;
+                    
+                    if (data.status === "complete") {
+                      setState({
+                        status: "complete",
+                        explanation: data.explanation,
+                        diagram: data.diagram,
+                      });
+                      const date = await getLastGeneratedDate(username, repo);
+                      setLastGenerated(date ?? undefined);
+                      if (!hasUsedFreeGeneration) {
+                        localStorage?.setItem("has_used_free_generation", "true");
+                        setHasUsedFreeGeneration(true);
+                      }
+                    }
+                  } catch (parseError) {
+                    console.error("Error parsing final buffer:", parseError);
+                    // Try regex extraction for final buffer too
+                    if (jsonStr.includes('"status":"complete"') && jsonStr.includes('"diagram"')) {
+                      try {
+                        const diagramRegex = /"diagram":\s*"((?:[^"\\]|\\.)*)"/;
+                        const diagramMatch = diagramRegex.exec(jsonStr);
+                        if (diagramMatch?.[1]) {
+                          const extractedDiagram = diagramMatch[1]
+                            .replace(/\\n/g, '\n')
+                            .replace(/\\"/g, '"')
+                            .replace(/\\\\/g, '\\');
+                          
+                          setState({
+                            status: "complete",
+                            diagram: extractedDiagram,
+                            explanation: "Diagram generated successfully",
+                          });
+                          
+                          const date = await getLastGeneratedDate(username, repo);
+                          setLastGenerated(date ?? undefined);
+                          if (!hasUsedFreeGeneration) {
+                            localStorage?.setItem("has_used_free_generation", "true");
+                            setHasUsedFreeGeneration(true);
+                          }
+                        }
+                      } catch (extractError) {
+                        console.error("Failed to extract from final buffer:", extractError);
                       }
                     }
                   }

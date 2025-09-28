@@ -29,6 +29,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       // Fallback for SSR or when localStorage is not available
+      console.error("Failed to load theme from localStorage:", error);
       setTheme("light");
     }
     setMounted(true);
@@ -46,7 +47,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       try {
         localStorage.setItem("theme", theme);
       } catch (error) {
-        // Ignore localStorage errors
+        console.error("Failed to save theme to localStorage:", error);
       }
     }
   }, [theme, mounted]);
