@@ -101,7 +101,7 @@ export default function MainCard({
         <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
           <Input
             placeholder="https://github.com/username/repo"
-            className="flex-1 rounded-md border-[3px] border-black dark:border-white px-3 py-4 text-base font-bold shadow-[4px_4px_0_0_#000000] dark:shadow-[4px_4px_0_0_#ffffff] placeholder:text-base placeholder:font-normal placeholder:text-gray-700 dark:placeholder:text-gray-300 bg-background text-foreground sm:px-4 sm:py-6 sm:text-lg sm:placeholder:text-lg"
+            className="flex-1 rounded-md border-[3px] border-black dark:border-white px-3 py-4 text-base font-bold shadow-[4px_4px_0_0_#000000] dark:shadow-[4px_4px_0_0_#ffffff] placeholder:text-base placeholder:font-normal bg-background text-foreground sm:px-4 sm:py-6 sm:text-lg sm:placeholder:text-lg"
             value={repoUrl}
             onChange={(e) => setRepoUrl(e.target.value)}
             required
@@ -221,7 +221,7 @@ export default function MainCard({
         {/* Example Repositories */}
         {isHome && (
           <div className="space-y-2">
-            <div className="text-sm text-gray-700 dark:text-gray-300 sm:text-base">
+            <div className="text-sm sm:text-base">
               Try these example repositories:
             </div>
             <div className="flex flex-wrap gap-2">

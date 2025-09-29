@@ -53,14 +53,14 @@ export default function ContactPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-8 bg-background min-h-screen">
       <h1 className="mb-8 text-3xl font-bold text-foreground">Contact Me</h1>
-      <p className="mb-8 text-gray-600 dark:text-gray-300">
+      <p className="mb-8">
         Have questions or feedback about GitDiagram? I&apos;d love to hear from you!
         Fill out the form below and I&apos;ll get back to you as soon as possible.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="name" className="block text-sm font-medium">
             Name
           </label>
           <input
@@ -75,7 +75,7 @@ export default function ContactPage() {
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="email" className="block text-sm font-medium">
             Email
           </label>
           <input
@@ -90,7 +90,7 @@ export default function ContactPage() {
         </div>
 
         <div>
-          <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="message" className="block text-sm font-medium">
             Message
           </label>
           <textarea

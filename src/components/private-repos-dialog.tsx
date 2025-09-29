@@ -100,7 +100,7 @@ export function PrivateReposDialog({
             placeholder="ghp_..."
             value={pat}
             onChange={(e) => setPat(e.target.value)}
-            className="flex-1 rounded-md border-[3px] border-black px-3 py-2 text-base font-bold shadow-[4px_4px_0_0_#000000] placeholder:text-base placeholder:font-normal placeholder:text-gray-700"
+            className="flex-1 rounded-md border-[3px] border-black px-3 py-2 text-base font-bold shadow-[4px_4px_0_0_#000000] placeholder:text-base placeholder:font-normal"
             required
           />
           <div className="flex items-center justify-between">
