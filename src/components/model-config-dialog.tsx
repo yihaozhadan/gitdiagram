@@ -57,6 +57,7 @@ export function ModelConfigDialog({
     model: PROVIDERS.openrouter.defaultModel,
     apiKey: "",
   });
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     // Load saved config from localStorage
@@ -64,6 +65,23 @@ export function ModelConfigDialog({
     if (savedConfig) {
       setConfig(JSON.parse(savedConfig) as ModelConfig);
     }
+    
+    // Check for dark mode
+    const checkDarkMode = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    
+    // Initial check
+    checkDarkMode();
+    
+    // Watch for theme changes
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
   }, []);
 
   const handleProviderChange = (provider: keyof typeof PROVIDERS) => {
@@ -92,20 +110,21 @@ export function ModelConfigDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="border-[3px] border-black bg-purple-200 p-6 shadow-[8px_8px_0_0_#000000] sm:max-w-md">
+      {/* Change the background color of the dialog based on the mode */}
+      <DialogContent className={`border-[3px] border-black p-6 shadow-[8px_8px_0_0_#000000] sm:max-w-md ${isDark ? 'bg-purple-800' : 'bg-purple-200'}`}>
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-black">
+          <DialogTitle className={`text-xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>
             AI Model Configuration
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="text-sm">
+          <div className={`text-sm ${isDark ? 'text-white' : 'text-black'}`}>
             Configure the AI model provider and settings. Your configuration will be
             stored locally in your browser.
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Provider</label>
+            <label className={`text-sm font-medium ${isDark ? 'text-white' : 'text-black'}`}>Provider</label>
             <Select
               value={config.provider}
               onValueChange={handleProviderChange}
@@ -124,7 +143,7 @@ export function ModelConfigDialog({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Model</label>
+            <label className={`text-sm font-medium ${isDark ? 'text-white' : 'text-black'}`}>Model</label>
             <Select
               value={config.model}
               onValueChange={(model: string) => setConfig((prev) => ({ ...prev, model }))}
@@ -145,7 +164,7 @@ export function ModelConfigDialog({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">API Key</label>
+            <label className={`text-sm font-medium ${isDark ? 'text-white' : 'text-black'}`}>API Key</label>
             <Input
               type="password"
               placeholder="Enter API key"
