@@ -201,10 +201,23 @@ export function useDiagram(username: string, repo: string) {
                         }
                         break;
                       case "complete":
+                        console.log(`[Stream Debug] Complete status received`);
+                        console.log(`[Stream Debug] data.diagram length:`, data.diagram?.length ?? 0);
+                        console.log(`[Stream Debug] data.explanation length:`, data.explanation?.length ?? 0);
+                        console.log(`[Stream Debug] accumulated diagram length:`, diagram.length);
+                        console.log(`[Stream Debug] accumulated explanation length:`, explanation.length);
+                        
+                        // Use accumulated data if server data is empty
+                        const finalDiagram = data.diagram ?? diagram;
+                        const finalExplanation = data.explanation ?? explanation;
+                        
+                        console.log(`[Stream Debug] final diagram length:`, finalDiagram.length);
+                        console.log(`[Stream Debug] final explanation length:`, finalExplanation.length);
+                        
                         setState({
                           status: "complete",
-                          explanation: data.explanation,
-                          diagram: data.diagram,
+                          explanation: finalExplanation,
+                          diagram: finalDiagram,
                         });
                         const date = await getLastGeneratedDate(username, repo);
                         setLastGenerated(date ?? undefined);
@@ -249,6 +262,8 @@ export function useDiagram(username: string, repo: string) {
                             ?.replace(/\\"/g, '"')
                             ?.replace(/\\\\/g, '\\') ?? "Diagram generated successfully";
                           
+                          console.log(`[Stream Debug] Extracted diagram from malformed JSON, length: ${extractedDiagram.length}`);
+                          
                           setState({
                             status: "complete",
                             diagram: extractedDiagram,
@@ -284,10 +299,18 @@ export function useDiagram(username: string, repo: string) {
                     const data = JSON.parse(jsonStr) as StreamResponse;
                     
                     if (data.status === "complete") {
+                      console.log(`[Stream Debug] Final buffer complete status`);
+                      console.log(`[Stream Debug] Final buffer data.diagram length:`, data.diagram?.length ?? 0);
+                      console.log(`[Stream Debug] Final buffer accumulated diagram length:`, diagram.length);
+                      
+                      // Use accumulated data if server data is empty
+                      const finalDiagram = data.diagram ?? diagram;
+                      const finalExplanation = data.explanation ?? explanation;
+                      
                       setState({
                         status: "complete",
-                        explanation: data.explanation,
-                        diagram: data.diagram,
+                        explanation: finalExplanation,
+                        diagram: finalDiagram,
                       });
                       const date = await getLastGeneratedDate(username, repo);
                       setLastGenerated(date ?? undefined);
@@ -352,15 +375,23 @@ export function useDiagram(username: string, repo: string) {
 
   useEffect(() => {
     if (state.status === "complete" && state.diagram) {
+      console.log(`[useDiagram] Caching completed diagram (${state.diagram.length} chars)`);
+      
       // Cache the completed diagram with the usedOwnKey flag
       const hasApiKey = !!localStorage.getItem("api_key");
-      void cacheDiagramAndExplanation(
+      
+      cacheDiagramAndExplanation(
         username,
         repo,
         state.diagram,
         state.explanation ?? "No explanation provided",
         hasApiKey,
-      );
+      ).then(() => {
+        console.log(`[useDiagram] Cache operation completed successfully`);
+      }).catch((error) => {
+        console.error(`[useDiagram] Cache operation failed:`, error);
+      });
+      
       setDiagram(state.diagram);
       void getLastGeneratedDate(username, repo).then((date) =>
         setLastGenerated(date ?? undefined),

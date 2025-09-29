@@ -47,7 +47,9 @@ export async function cacheDiagramAndExplanation(
   usedOwnKey = false,
 ) {
   try {
-    await db
+    console.log(`[Cache] Caching diagram for ${username}/${repo} (${diagram.length} chars)`);
+    
+    const result = await db
       .insert(diagramCache)
       .values({
         username,
@@ -65,8 +67,12 @@ export async function cacheDiagramAndExplanation(
           updatedAt: new Date(),
         },
       });
+    
+    console.log(`[Cache] Successfully cached diagram for ${username}/${repo}`);
+    return result;
   } catch (error) {
-    console.error("Error caching diagram:", error);
+    console.error(`[Cache] Error caching diagram for ${username}/${repo}:`, error);
+    throw error;
   }
 }
 

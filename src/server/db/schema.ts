@@ -8,6 +8,7 @@ import {
   varchar,
   primaryKey,
   boolean,
+  text,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -23,8 +24,8 @@ export const diagramCache = createTable(
   {
     username: varchar("username", { length: 256 }).notNull(),
     repo: varchar("repo", { length: 256 }).notNull(),
-    diagram: varchar("diagram", { length: 10000 }).notNull(), // Adjust length as needed
-    explanation: varchar("explanation", { length: 10000 })
+    diagram: text("diagram").notNull(),
+    explanation: text("explanation")
       .notNull()
       .default("No explanation provided"), // Default explanation to avoid data loss of existing rows
     createdAt: timestamp("created_at", { withTimezone: true })
