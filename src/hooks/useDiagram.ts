@@ -393,6 +393,7 @@ export function useDiagram(username: string, repo: string) {
       });
       
       setDiagram(state.diagram);
+      setLoading(false); // Set loading to false when diagram generation is complete
       void getLastGeneratedDate(username, repo).then((date) =>
         setLastGenerated(date ?? undefined),
       );
