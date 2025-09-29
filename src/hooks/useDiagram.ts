@@ -505,6 +505,8 @@ export function useDiagram(username: string, repo: string) {
   };
 
   const handleExportImage = () => {
+    if (typeof document === 'undefined') return;
+    
     const svgElement = document.querySelector(".mermaid svg");
     if (!(svgElement instanceof SVGSVGElement)) return;
 

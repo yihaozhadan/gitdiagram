@@ -39,6 +39,7 @@ export default function CachePageClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isDark, setIsDark] = useState(false);
   
   // Parse URL parameters
   const urlSortBy = (searchParams.get('sortBy') as SortField) ?? initialSortBy;
@@ -57,6 +58,29 @@ export default function CachePageClient({
   const [currentPage, setCurrentPage] = useState(urlPage);
   const [search, setSearch] = useState(urlSearch);
   const [searchInput, setSearchInput] = useState(urlSearch);
+  
+  // Check for dark mode
+  useEffect(() => {
+    const checkDarkMode = () => {
+      if (typeof document !== 'undefined') {
+        setIsDark(document.documentElement.classList.contains('dark'));
+      }
+    };
+    
+    // Initial check
+    checkDarkMode();
+    
+    // Watch for theme changes
+    if (typeof document !== 'undefined') {
+      const observer = new MutationObserver(checkDarkMode);
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
+      
+      return () => observer.disconnect();
+    }
+  }, []);
   
   // Update URL when params change
   useEffect(() => {
@@ -149,11 +173,11 @@ export default function CachePageClient({
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search repositories..."
-            className="px-4 py-2 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow"
+            className={`px-4 py-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow ${isDark ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-black'}`}
           />
           <button 
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark ? 'bg-blue-700' : 'bg-blue-600'}`}
           >
             Search
           </button>
@@ -161,7 +185,7 @@ export default function CachePageClient({
             <button 
               type="button"
               onClick={handleClearSearch}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-r hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 ml-1"
+              className={`px-4 py-2 rounded-r hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 ml-1 ${isDark ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700'}`}
             >
               Clear
             </button>
@@ -176,11 +200,11 @@ export default function CachePageClient({
       ) : data && data.length > 0 ? (
         <>
           <div className="overflow-x-auto mb-4">
-            <table className="min-w-full bg-white border border-gray-200">
+            <table className={`min-w-full border ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'}`}>
               <thead>
-                <tr className="bg-gray-100">
+                <tr className={`${isDark ? 'bg-gray-700' : 'bg-gray-100'}`}>
                   <th 
-                    className="py-2 px-4 border-b cursor-pointer select-none"
+                    className={`py-2 px-4 border-b cursor-pointer select-none ${isDark ? 'border-gray-600 text-white' : 'border-gray-200 text-black'}`}
                     onClick={() => toggleSort('repository')}
                   >
                     GitHub Repository
@@ -190,7 +214,7 @@ export default function CachePageClient({
                     />
                   </th>
                   <th 
-                    className="py-2 px-4 border-b cursor-pointer select-none"
+                    className={`py-2 px-4 border-b cursor-pointer select-none ${isDark ? 'border-gray-600 text-white' : 'border-gray-200 text-black'}`}
                     onClick={() => toggleSort('updated_at')}
                   >
                     Last Updated
@@ -199,29 +223,29 @@ export default function CachePageClient({
                       direction={sortDirection} 
                     />
                   </th>
-                  <th className="py-2 px-4 border-b">Actions</th>
+                  <th className={`py-2 px-4 border-b ${isDark ? 'border-gray-600 text-white' : 'border-gray-200 text-black'}`}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {data.map((item) => (
-                  <tr key={`${item.username}/${item.repo}`} className="hover:bg-gray-50">
-                    <td className="py-2 px-4 border-b">
+                  <tr key={`${item.username}/${item.repo}`} className={`${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
+                    <td className={`py-2 px-4 border-b ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
                       <a 
                         href={`https://github.com/${item.username}/${item.repo}`} 
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
+                        className={`hover:underline ${isDark ? 'text-blue-400' : 'text-blue-600'}`}
                       >
                         {item.username}/{item.repo}
                       </a>
                     </td>
-                    <td className="py-2 px-4 border-b">
+                    <td className={`py-2 px-4 border-b ${isDark ? 'border-gray-600 text-white' : 'border-gray-200 text-black'}`}>
                       {new Date(item.updated_at).toLocaleString()}
                     </td>
-                    <td className="py-2 px-4 border-b">
+                    <td className={`py-2 px-4 border-b ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
                       <Link 
                         href={`/${item.username}/${item.repo}`}
-                        className="text-blue-600 hover:underline"
+                        className={`hover:underline ${isDark ? 'text-blue-400' : 'text-blue-600'}`}
                       >
                         View Diagram
                       </Link>
@@ -230,7 +254,7 @@ export default function CachePageClient({
                         href={`https://gitmcp.io/${item.username}/${item.repo}/chat`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
+                        className={`hover:underline ${isDark ? 'text-blue-400' : 'text-blue-600'}`}
                       >
                         Chat
                       </Link>
@@ -245,7 +269,7 @@ export default function CachePageClient({
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
               <div>
-                <span className="text-sm text-gray-700">
+                <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                   Showing <span className="font-medium">{((currentPage - 1) * pagination.pageSize) + 1}</span> to <span className="font-medium">{Math.min(currentPage * pagination.pageSize, pagination.total)}</span> of <span className="font-medium">{pagination.total}</span> results
                 </span>
               </div>
@@ -287,7 +311,7 @@ export default function CachePageClient({
           )}
         </>
       ) : (
-        <p className="text-gray-500">
+        <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
           {search ? `No cached diagrams found matching "${search}"` : "No cached diagrams found."}
         </p>
       )}
