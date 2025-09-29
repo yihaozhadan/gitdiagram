@@ -18,12 +18,30 @@ export function PrivateReposDialog({
   onSubmit,
 }: PrivateReposDialogProps) {
   const [pat, setPat] = useState<string>("");
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     const storedPat = localStorage.getItem("github_pat");
     if (storedPat) {
       setPat(storedPat);
     }
+    
+    // Check for dark mode
+    const checkDarkMode = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    
+    // Initial check
+    checkDarkMode();
+    
+    // Watch for theme changes
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -39,37 +57,37 @@ export function PrivateReposDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="border-[3px] border-black bg-purple-200 p-6 shadow-[8px_8px_0_0_#000000] sm:max-w-md">
+      <DialogContent className={`border-[3px] border-black p-6 shadow-[8px_8px_0_0_#000000] sm:max-w-md ${isDark ? 'bg-purple-600' : 'bg-purple-200'}`}>
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-black dark:text-white">
+          <DialogTitle className={`text-xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>
             Enter GitHub Personal Access Token
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="text-sm">
+          <div className={`text-sm ${isDark ? 'text-white' : 'text-black'}`}>
             To enable private repositories, you&apos;ll need to provide a GitHub
             Personal Access Token with repo scope. The token will be stored
             locally in your browser. Find out how{" "}
             <Link
               href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens"
-              className="text-purple-600 transition-colors duration-200 hover:text-purple-500"
+              className={`transition-colors duration-200 ${isDark ? 'text-purple-300 hover:text-purple-200' : 'text-purple-600 hover:text-purple-500'}`}
             >
               here
             </Link>
             .
           </div>
           <details className="group text-sm [&>summary:focus-visible]:outline-none">
-            <summary className="cursor-pointer font-medium text-purple-700 hover:text-purple-600">
+            <summary className={`cursor-pointer font-medium ${isDark ? 'text-purple-300 hover:text-purple-200' : 'text-purple-700 hover:text-purple-600'}`}>
               Data storage disclaimer
             </summary>
             <div className="animate-accordion-down mt-2 space-y-2 overflow-hidden pl-2">
-              <p>
+              <p className={`${isDark ? 'text-white' : 'text-black'}`}>
                 Take note that the diagram data will be stored in my database
                 (not that I would use it for anything anyways). You can also
                 self-host this app by following the instructions in the{" "}
                 <Link
                   href="https://github.com/yihaozhadan/gitdiagram"
-                  className="text-purple-600 transition-colors duration-200 hover:text-purple-500"
+                  className={`transition-colors duration-200 ${isDark ? 'text-purple-300 hover:text-purple-200' : 'text-purple-600 hover:text-purple-500'}`}
                 >
                   README
                 </Link>
@@ -89,7 +107,7 @@ export function PrivateReposDialog({
             <button
               type="button"
               onClick={handleClear}
-              className="text-sm text-purple-600 hover:text-purple-500"
+              className={`text-sm ${isDark ? 'text-purple-300 hover:text-purple-200' : 'text-purple-600 hover:text-purple-500'}`}
             >
               Clear
             </button>

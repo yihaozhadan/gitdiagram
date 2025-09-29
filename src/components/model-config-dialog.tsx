@@ -111,7 +111,7 @@ export function ModelConfigDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       {/* Change the background color of the dialog based on the mode */}
-      <DialogContent className={`border-[3px] border-black p-6 shadow-[8px_8px_0_0_#000000] sm:max-w-md ${isDark ? 'bg-purple-800' : 'bg-purple-200'}`}>
+      <DialogContent className={`border-[3px] border-black p-6 shadow-[8px_8px_0_0_#000000] sm:max-w-md ${isDark ? 'bg-purple-600' : 'bg-purple-200'}`}>
         <DialogHeader>
           <DialogTitle className={`text-xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>
             AI Model Configuration
