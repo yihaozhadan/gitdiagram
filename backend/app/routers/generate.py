@@ -138,7 +138,11 @@ async def generate_stream(request: Request, body: ApiRequest):
                 # Get the requested service and model
                 try:
                     service = get_service(body.service)
-                    model = body.model or DEFAULT_MODELS[body.service]
+                    # Use default model if API key is empty, otherwise use specified model or service default
+                    if not body.api_key or body.api_key.strip() == "":
+                        model = DEFAULT_MODELS[body.service]
+                    else:
+                        model = body.model if body.model and body.model.strip() else DEFAULT_MODELS[body.service]
                     if hasattr(service, '__init__') and 'model' in str(service.__init__.__code__.co_varnames):
                         service = type(service)(model=model)
                 except ValueError as e:

@@ -51,6 +51,7 @@ class ModifyRequest(BaseModel):
     explanation: str
     service: str = "openrouter"  # Default to OpenRouter
     model: str | None = None  # If None, will use service's default model
+    api_key: str | None = None  # API key for the service
 
 
 @router.post("")
@@ -86,8 +87,11 @@ async def modify(request: Request, body: ModifyRequest):
         # Get the requested service
         service = get_service(body.service)
 
-        # Use specified model or default for the service
-        model = body.model or DEFAULT_MODELS[body.service]
+        # Use default model if API key is empty, otherwise use specified model or service default
+        if not body.api_key or body.api_key.strip() == "":
+            model = DEFAULT_MODELS[body.service]
+        else:
+            model = body.model if body.model and body.model.strip() else DEFAULT_MODELS[body.service]
 
         modified_mermaid_code = service.call_api(
             system_prompt=SYSTEM_MODIFY_PROMPT,

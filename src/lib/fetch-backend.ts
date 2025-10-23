@@ -81,6 +81,16 @@ export async function modifyAndCacheDiagram(
       return { error: "No existing diagram or explanation found to modify" };
     }
 
+    // Get model configuration from localStorage
+    let modelConfig = { service: "openrouter", model: "", apiKey: "" };
+    if (typeof window !== "undefined") {
+      const savedConfig = localStorage.getItem("model_config");
+      if (savedConfig) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        modelConfig = JSON.parse(savedConfig);
+      }
+    }
+
     const baseUrl =
       process.env.NEXT_PUBLIC_API_DEV_URL ?? "https://api.gitdiagram.com";
     const url = new URL(`${baseUrl}/modify`);
@@ -96,6 +106,9 @@ export async function modifyAndCacheDiagram(
         instructions: instructions,
         current_diagram: currentDiagram,
         explanation: explanation,
+        service: modelConfig.service,
+        model: modelConfig.model,
+        api_key: modelConfig.apiKey,
       }),
     });
 
