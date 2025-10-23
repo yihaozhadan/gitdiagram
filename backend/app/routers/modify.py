@@ -30,7 +30,7 @@ DEFAULT_MODELS = {
     "ollama": "mistral",
     "groq": "mixtral-8x7b-32768",
     "openai": "gpt-4",
-    "openrouter": "x-ai/grok-4-fast:free"
+    "openrouter": "openai/gpt-oss-20b:free"
 }
 
 def get_service(service_name: str):

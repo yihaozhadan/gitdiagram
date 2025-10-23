@@ -22,6 +22,7 @@ DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
 from app.services.claude_service import ClaudeService
 from app.services.groq_service import GroqService
 from app.services.openai_service import OpenAIService
+from app.utils.mermaid_validator import validate_and_fix_mermaid, get_validation_report
 # from app.core.limiter import limiter
 
 load_dotenv()
@@ -44,7 +45,7 @@ DEFAULT_MODELS = {
     "ollama": "mistral",
     "groq": "mixtral-8x7b-32768",
     "openai": "gpt-4",
-    "openrouter": "x-ai/grok-4-fast:free"
+    "openrouter": "openai/gpt-oss-20b:free"
 }
 
 def get_service(service_name: str):
@@ -273,48 +274,62 @@ async def generate_stream(request: Request, body: ApiRequest):
                 if DEBUG:
                     print("\n[DEBUG] Final processing...")
                     print("[DEBUG] Raw Mermaid code:")
-                    print(diagram_chunks[0])
+                    if diagram_chunks:
+                        print(diagram_chunks[0])
+                    else:
+                        print("[DEBUG] No diagram chunks received!")
+
+                # Check if we have diagram content
+                if not diagram_chunks:
+                    yield f"data: {json.dumps({'error': 'AI did not generate any diagram content. Please try again.'})}\n\n"
+                    return
 
                 # Clean up Mermaid code
                 full_diagram = ''.join(diagram_chunks)
+                
+                if not full_diagram.strip():
+                    yield f"data: {json.dumps({'error': 'Generated diagram is empty. Please try again with different instructions.'})}\n\n"
+                    return
+                
                 full_diagram = full_diagram.replace("```mermaid", "").replace("```", "")
                 full_diagram = re.sub(r"^\s*graph\s+[A-Za-z]+\s*$", "graph TD", full_diagram, flags=re.MULTILINE)
-
-                # Process click events to add GitHub URLs
-                full_diagram = process_click_events(
-                    full_diagram, body.username, body.repo, default_branch
-                )
-
-                # Remove ':::' and everything after it on lines starting with 'subgraph'
-                def clean_subgraph_lines(diagram: str) -> str:
-                    lines = diagram.splitlines()
-                    cleaned = []
-                    for line in lines:
-                        if line.lstrip().startswith('subgraph') and ':::' in line:
-                            cleaned.append(line.split(':::')[0].rstrip())
-                        else:
-                            cleaned.append(line)
-                    return '\n'.join(cleaned)
-                full_diagram = clean_subgraph_lines(full_diagram)
 
                 if "BAD_INSTRUCTIONS" in full_diagram:
                     yield f"data: {json.dumps({'error': 'Invalid or unclear instructions provided'})}\n\n"
                     return
                 
-                # Basic Mermaid syntax validation
-                if not full_diagram.strip().startswith(('graph ', 'flowchart ', 'sequenceDiagram', 'classDiagram', 'stateDiagram-v2', 'erDiagram')):
+                # Validate and auto-fix Mermaid syntax
+                if DEBUG:
+                    print("\n[DEBUG] Validating and fixing Mermaid syntax...")
+                
+                try:
+                    validation_report = get_validation_report(full_diagram)
+                    if DEBUG:
+                        print(f"[DEBUG] Validation report: {validation_report}")
+                    
+                    full_diagram, fixes_applied = validate_and_fix_mermaid(full_diagram)
+                except Exception as validation_error:
+                    if DEBUG:
+                        print(f"[DEBUG] Validation error: {str(validation_error)}")
+                    # Continue without validation if it fails
+                    fixes_applied = []
+                
+                if DEBUG and fixes_applied:
+                    print(f"[DEBUG] Applied fixes: {fixes_applied}")
+                
+                # Send fixes info to client if any were applied
+                if fixes_applied:
+                    yield f"data: {json.dumps({'status': 'fixes_applied', 'fixes': fixes_applied})}\n\n"
+                
+                # Process click events to add GitHub URLs (after validation)
+                full_diagram = process_click_events(
+                    full_diagram, body.username, body.repo, default_branch
+                )
+                
+                # Final validation check
+                if not full_diagram.strip().startswith(('graph ', 'flowchart ', 'sequenceDiagram', 'classDiagram', 'stateDiagram', 'erDiagram')):
                     yield f"data: {json.dumps({'error': 'Invalid Mermaid diagram syntax - must start with a valid diagram type'})}\n\n"
                     return
-                
-                # Check for common syntax errors
-                if '--->' in full_diagram or '<---' in full_diagram:  # Wrong arrow syntax
-                    full_diagram = full_diagram.replace('--->', '-->')
-                    full_diagram = full_diagram.replace('<---', '<--')
-                if '|>' in full_diagram:  # Wrong arrow syntax
-                    full_diagram = full_diagram.replace('|>', '|')
-
-                # Ensure proper line endings
-                full_diagram = '\n'.join(line.strip() for line in full_diagram.splitlines() if line.strip())
 
                 # Send final result
                 yield f"data: {json.dumps({

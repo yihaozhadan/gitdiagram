@@ -27,8 +27,8 @@ export interface ModelConfig {
 const PROVIDERS = {
   openrouter: {
     name: "OpenRouter",
-    defaultModel: "x-ai/grok-4-fast:free",
-    models: ["x-ai/grok-4-fast:free"],
+    defaultModel: "openai/gpt-oss-20b:free",
+    models: ["openai/gpt-oss-20b:free"],
   },
   openai: {
     name: "OpenAI",

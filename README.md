@@ -14,6 +14,7 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 - ⚡ **Fast Generation**: Powered by various AI models for quick and accurate diagrams
 - 🔄 **Customization**: Modify and regenerate diagrams with custom instructions
 - 🐛 **Debug Support**: View Mermaid diagram source code and syntax errors for easy debugging
+- ✨ **Auto-Correction**: Intelligent validation and auto-fixing of Mermaid syntax errors
 - 📊 **Caching**: Generated diagrams are cached in the database to save API tokens and provide up-to-date results
 - 🤖 **AI Chatbot**: Interact with the AI chatbot to get answers to your questions.
 - 📱 **Mobile Support**: Access GitDiagram on your phone or tablet.
@@ -22,7 +23,7 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 ## 🤖 AI Model Configuration
 
 - **Model Selection**: Choose from multiple LLM providers:
-  - OpenRouter (default): x-ai/grok-4-fast:free
+  - OpenRouter (default): openai/gpt-oss-20b:free
   - OpenAI: GPT-4, GPT-3.5-turbo
   - Groq: mixtral-8x7b-32768
   - Ollama: mistral, llama2, codellama

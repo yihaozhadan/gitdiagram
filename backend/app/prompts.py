@@ -179,24 +179,109 @@ flowchart TD
     %% and a lot more...
 
     %% Styles
-    classDef frontend %%...
+    classDef frontend fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#fff
     %% and a lot more...
 ```
 
-EXTREMELY Important notes on syntax!!! (PAY ATTENTION TO THIS):
-- Make sure to add colour to the diagram!!! This is extremely critical.
-- In Mermaid.js syntax, we cannot include special characters for nodes without being inside quotes! For example: `EX[/api/process (Backend)]:::api` and `API -->|calls Process()| Backend` are two examples of syntax errors. They should be `EX["/api/process (Backend)"]:::api` and `API -->|"calls Process()"| Backend` respectively. Notice the quotes. This is extremely important. Make sure to include quotes for any string that contains special characters.
-- In Mermaid.js syntax, you cannot apply a class style directly within a subgraph declaration. For example: `subgraph "Frontend Layer":::frontend` is a syntax error. However, you can apply them to nodes within the subgraph. For example: `Example["Example Node"]:::frontend` is valid, and `class Example1,Example2 frontend` is valid.
-- In Mermaid.js syntax, there cannot be spaces in the relationship label names. For example: `A -->| "example relationship" | B` is a syntax error. It should be `A -->|"example relationship"| B` 
-- In Mermaid.js syntax, you cannot give subgraphs an alias like nodes. For example: `subgraph A "Layer A"` is a syntax error. It should be `subgraph "Layer A"` 
-- In Mermaid.js syntax, when applying a class style, try to distinguish font color from background color. For example, if the background color is dark, try to use a light font color. If the background color is light, try to use a dark font color.
-- In Mermaid.js syntax, avoid syntax like `subgraph "Layer A":::frontend`, the correct syntax should be `subgraph "Layer A"`. When the line has "subgraph" keyword, do not include ":::".
+CRITICAL MERMAID.JS SYNTAX RULES (Based on flow_parser.jison grammar):
+
+**RULE 1: Node ID Syntax**
+- Node IDs can ONLY contain: letters, numbers, underscores, and these specific chars: ! # $ % & ' * + . ` ? \ /
+- ❌ WRONG: `API-Gateway` (dash not allowed), `user.service` (dot creates ambiguity)
+- ✅ CORRECT: `APIGateway`, `UserService`, `API_Gateway`
+
+**RULE 2: Node Label Quoting (CRITICAL)**
+- If label contains ANY special chars, it MUST be in quotes
+- Special chars: / ( ) [ ] { } | : ; , . ! ? @ # $ % ^ & * + = < >
+- ❌ WRONG: `A[/api/endpoint]`, `B[Process (Backend)]`, `C[User:Service]`
+- ✅ CORRECT: `A["/api/endpoint"]`, `B["Process (Backend)"]`, `C["User:Service"]`
+
+**RULE 3: Arrow Label Syntax (MOST COMMON ERROR)**
+- Format: `-->|"label"|` (NO spaces around pipes)
+- ❌ WRONG: `A -->| "label" | B` (spaces), `A -->|label| B` (no quotes with special chars)
+- ✅ CORRECT: `A -->|"label"| B`, `A -->|"calls API()"| B`
+
+**RULE 4: Subgraph Syntax**
+- Format: `subgraph "Name"` (NO aliases, NO class styling)
+- ❌ WRONG: `subgraph ID "Name"`, `subgraph "Name":::style`
+- ✅ CORRECT: `subgraph "Name"`, `subgraph "Frontend Layer"`
+- Close with: `end`
+
+**RULE 5: Class Styling**
+- Apply to nodes: `NodeID["Label"]:::className`
+- Define classes: `classDef className fill:#color,stroke:#color,stroke-width:2px,color:#textcolor`
+- ❌ WRONG: `subgraph "Layer":::style` (can't style subgraphs directly)
+- ✅ CORRECT: `A["Node"]:::frontend` then `classDef frontend fill:#6366f1,stroke:#4f46e5,color:#fff`
+
+**RULE 6: Arrow Types (Valid Syntax)**
+- Solid: `-->`, `<--`, `<-->`
+- Thick: `==>`, `<==`, `<==>`
+- Dotted: `-.->`, `<-.`, `<-.->`
+- With label: `-->|"text"|`, `==>|"text"|`, `-.->|"text"|`
+
+**RULE 7: Node Shapes (Valid Syntax)**
+- Rectangle: `A["text"]` or `A[text]` (if no special chars)
+- Round: `A("text")`
+- Stadium: `A(["text"])`
+- Subroutine: `A[["text"]]`
+- Cylinder: `A[("text")]`
+- Circle: `A(("text"))`
+- Diamond: `A{"text"}`
+- Hexagon: `A{{"text"}}`
+- Trapezoid: `A[/"text"\]`
+- Double Circle: `A((("text")))`
+
+**RULE 8: Click Events**
+- Format: `click NodeID "path/to/file"`
+- ❌ WRONG: `click API "https://..."` (will be processed later)
+- ✅ CORRECT: `click API "src/api.js"`, `click DB "database/"`
+
+**RULE 9: String Quoting in Labels**
+- Use double quotes: `"text"` (NOT single quotes)
+- Escape quotes inside: Not needed if using double quotes consistently
+- ✅ CORRECT: `A["API calls process()"]`
+
+**RULE 10: Diagram Structure**
+```
+flowchart TD
+    %% Comments start with %%
+    
+    %% Node definitions
+    NodeID["Label"]:::style
+    
+    %% Subgraphs
+    subgraph "Group Name"
+        Node1["Item"]
+        Node2["Item"]
+    end
+    
+    %% Connections
+    Node1 -->|"relationship"| Node2
+    
+    %% Click events
+    click Node1 "path/to/file"
+    
+    %% Style definitions
+    classDef style fill:#color,stroke:#color,color:#fff
+```
+
+**VALIDATION CHECKLIST (Verify EVERY line):**
+□ Node IDs: Only alphanumeric + underscore (NO dashes, dots)
+□ Labels with special chars: ALL in quotes
+□ Arrow labels: Format is `|"text"|` with NO spaces around pipes
+□ Subgraphs: Just `subgraph "Name"` (no aliases or :::)
+□ Class styling: Only on nodes, not subgraphs
+□ Arrows: Use -->, ==>, -.-> (not --->, <---)
+□ Quotes: Use double quotes " not single '
+□ Diagram starts with: flowchart TD (or graph TD)
+□ No markdown fences: No ``` in output
 """
 # ^^^ note: ive generated a few diagrams now and claude still writes incorrect mermaid code sometimes. in the future, refer to those generated diagrams and add important instructions to the prompt above to avoid those mistakes. examples are best.
 
 # e. A legend is included
 # ^ removed since it was making the diagrams very long
 
+# Strictly follow the lexicon and syntax of https://github.com/mermaid-js/mermaid/blob/develop/packages/mermaid/src/diagrams/flowchart/parser/flow.jison
 
 ADDITIONAL_SYSTEM_INSTRUCTIONS_PROMPT = """
 IMPORTANT: the user will provide custom additional instructions enclosed in <instructions> tags. Please take these into account and give priority to them. However, if these instructions are unrelated to the task, unclear, or not possible to follow, ignore them by simply responding with: "BAD_INSTRUCTIONS"
