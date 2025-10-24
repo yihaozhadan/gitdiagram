@@ -1,6 +1,7 @@
 """
 Mermaid diagram validation and auto-correction utilities.
 Helps ensure generated Mermaid diagrams follow proper syntax.
+Based on flow_parser.jison lexical grammar from Mermaid.js
 """
 
 import re
@@ -25,12 +26,19 @@ def validate_and_fix_mermaid(diagram: str) -> Tuple[str, List[str]]:
     
     fixed = diagram
     
-    # 1. Fix arrow syntax - remove spaces around pipes
+    # 1. Fix arrow syntax - remove spaces around pipes (CRITICAL)
     # Pattern: -->| "text" | becomes -->|"text"|
-    arrow_pattern = r'(-->|<--|<-->|\.\.>|\-\.\->)\s*\|\s*"([^"]+)"\s*\|'
+    # Also handles: --> | "text" | (space before pipe)
+    arrow_pattern = r'(-->|<--|<-->|==>|<==|<==>|\.\->|<\.-|<\.->)\s*\|\s*"([^"]+)"\s*\|'
     if re.search(arrow_pattern, fixed):
         fixed = re.sub(arrow_pattern, r'\1|"\2"|', fixed)
         fixes_applied.append("Fixed arrow label spacing (removed spaces around pipes)")
+    
+    # 1b. Fix arrows with spaces before pipe
+    arrow_space_pattern = r'(-->|<--|<-->|==>|<==|<==>|\.\->|<\.-|<\.->)\s+(\|"[^"]+"\|)'
+    if re.search(arrow_space_pattern, fixed):
+        fixed = re.sub(arrow_space_pattern, r'\1\2', fixed)
+        fixes_applied.append("Fixed arrow syntax (removed space before pipe)")
     
     # 2. Fix subgraph class styling - remove ::: from subgraph lines
     subgraph_pattern = r'(subgraph\s+[^:\n]+)(:::[^\n]+)'
@@ -39,16 +47,19 @@ def validate_and_fix_mermaid(diagram: str) -> Tuple[str, List[str]]:
         fixes_applied.append("Removed invalid class styling from subgraph declarations")
     
     # 3. Fix node IDs with special characters (dashes, dots)
-    # This is complex - we'll flag it but not auto-fix to avoid breaking references
-    node_id_pattern = r'^[\s]*([A-Za-z0-9_-]+[\.\-][A-Za-z0-9_\.\-]*)\['
+    # Based on NODE_STRING token: only alphanumeric + underscore is safe
+    # Pattern matches node IDs at start of lines or after spaces
+    node_id_pattern = r'(?:^|\s)([A-Za-z0-9_]*[\-\.][A-Za-z0-9_\-\.]*)(?=\[|\(|\{|\s|-->|<--|==>|<==|\.\->)'
     problematic_ids = re.findall(node_id_pattern, fixed, re.MULTILINE)
     if problematic_ids:
         # Replace dashes and dots with underscores in node IDs
         for old_id in set(problematic_ids):
-            new_id = old_id.replace('-', '_').replace('.', '_')
-            # Replace all occurrences (in definitions, connections, and click events)
-            fixed = re.sub(r'\b' + re.escape(old_id) + r'\b', new_id, fixed)
-        fixes_applied.append(f"Fixed node IDs with special characters: {', '.join(set(problematic_ids))}")
+            if old_id:  # Skip empty matches
+                new_id = old_id.replace('-', '_').replace('.', '_')
+                # Replace all occurrences (in definitions, connections, and click events)
+                # Use word boundaries to avoid partial replacements
+                fixed = re.sub(r'(?<![A-Za-z0-9_])' + re.escape(old_id) + r'(?![A-Za-z0-9_])', new_id, fixed)
+        fixes_applied.append(f"Fixed node IDs with special characters: {', '.join([id for id in set(problematic_ids) if id])}")
     
     # 4. Ensure special characters in labels are quoted
     # Check node labels: NodeID[text] should be NodeID["text"] if text has special chars
@@ -86,13 +97,24 @@ def validate_and_fix_mermaid(diagram: str) -> Tuple[str, List[str]]:
             fixed = 'flowchart TD\n' + fixed
             fixes_applied.append("Added missing diagram type declaration")
     
-    # 7. Fix common wrong arrow syntax
+    # 7. Fix common wrong arrow syntax (based on LINK tokens in jison)
     if '--->' in fixed:
         fixed = fixed.replace('--->', '-->')
         fixes_applied.append("Fixed arrow syntax (---> to -->)")
     if '<---' in fixed:
         fixed = fixed.replace('<---', '<--')
         fixes_applied.append("Fixed arrow syntax (<--- to <--)")
+    if '===>' in fixed:
+        fixed = fixed.replace('===>', '==>')
+        fixes_applied.append("Fixed arrow syntax (===> to ==>)")
+    if '<===' in fixed:
+        fixed = fixed.replace('<===', '<==')
+        fixes_applied.append("Fixed arrow syntax (<=== to <==)")
+    # Fix single dash arrows (not valid)
+    single_arrow_pattern = r'(?<!-)(?<!\.)\->(?!-)'
+    if re.search(single_arrow_pattern, fixed):
+        fixed = re.sub(single_arrow_pattern, '-->', fixed)
+        fixes_applied.append("Fixed single-dash arrows (-> to -->)")
     
     # 8. Ensure classDef has proper color properties
     classdef_pattern = r'classDef\s+(\w+)\s+([^\n]+)'
@@ -107,12 +129,46 @@ def validate_and_fix_mermaid(diagram: str) -> Tuple[str, List[str]]:
             # This is a warning, not an auto-fix (too complex)
             fixes_applied.append(f"Warning: classDef '{class_name}' may be missing fill/stroke/color properties")
     
-    # 9. Remove any remaining markdown code fences
+    # 9. Fix single quotes to double quotes (jison only recognizes double quotes)
+    # Pattern: Node labels with single quotes
+    single_quote_label_pattern = r"([A-Za-z0-9_]+)\['([^']+)'\]"
+    if re.search(single_quote_label_pattern, fixed):
+        fixed = re.sub(single_quote_label_pattern, r'\1["\2"]', fixed)
+        fixes_applied.append("Fixed single quotes to double quotes in node labels")
+    
+    # Pattern: Arrow labels with single quotes
+    single_quote_arrow_pattern = r"(-->|<--|<-->|==>|<==|<==>|\.\->|<\.-|<\.->)\|'([^']+)'\|"
+    if re.search(single_quote_arrow_pattern, fixed):
+        fixed = re.sub(single_quote_arrow_pattern, r"\1|\"\2\"|" , fixed)
+        fixes_applied.append("Fixed single quotes to double quotes in arrow labels")
+    
+    # 10. Remove any remaining markdown code fences
     if '```mermaid' in fixed or '```' in fixed:
         fixed = fixed.replace('```mermaid', '').replace('```', '')
         fixes_applied.append("Removed markdown code fences")
     
-    # 10. Clean up excessive whitespace
+    # 11. Fix subgraph with ID prefix (not allowed in basic flowcharts)
+    # Pattern: subgraph id "Name" or subgraph id["Name"]
+    subgraph_id_pattern = r'subgraph\s+([A-Za-z0-9_]+)\s+["\[]'
+    if re.search(subgraph_id_pattern, fixed):
+        # Remove the ID, keep just the name
+        fixed = re.sub(r'subgraph\s+[A-Za-z0-9_]+\s+', 'subgraph ', fixed)
+        fixes_applied.append("Removed invalid ID prefix from subgraph declarations")
+    
+    # 12. Ensure all node labels are quoted (best practice)
+    # Pattern: NodeID[text] where text has no quotes but should be quoted
+    unquoted_label_pattern = r'([A-Za-z0-9_]+)\[([^"\[\]]+)\](?!::)'
+    matches = re.findall(unquoted_label_pattern, fixed)
+    if matches:
+        for node_id, label in matches:
+            # Skip if it's already a shape syntax like (text) or {text}
+            if not (label.startswith('(') or label.startswith('{') or label.startswith('[')):
+                old_pattern = f'{node_id}[{label}]'
+                new_pattern = f'{node_id}["{label}"]'
+                fixed = fixed.replace(old_pattern, new_pattern)
+        fixes_applied.append("Added quotes to unquoted node labels")
+    
+    # 13. Clean up excessive whitespace
     lines = fixed.split('\n')
     cleaned_lines = []
     for line in lines:
@@ -162,15 +218,35 @@ def get_validation_report(diagram: str) -> dict:
     if re.search(r'(-->|<--|<-->)\s*\|\s*"[^"]+"\s*\|', diagram):
         issues.append("Arrow labels have incorrect spacing around pipes")
     
-    # Check 4: Node IDs with special chars
-    problematic_ids = re.findall(r'^[\s]*([A-Za-z0-9_]+[\.\-][A-Za-z0-9_\.\-]*)\[', diagram, re.MULTILINE)
+    # Check 4: Node IDs with special chars (based on NODE_STRING token)
+    problematic_ids = re.findall(r'(?:^|\s)([A-Za-z0-9_]*[\-\.][A-Za-z0-9_\-\.]*)(?=\[|\(|\{|\s|-->|<--|==>)', diagram, re.MULTILINE)
     if problematic_ids:
-        warnings.append(f"Node IDs contain special characters: {', '.join(set(problematic_ids))}")
+        issues.append(f"Node IDs contain dashes or dots: {', '.join([id for id in set(problematic_ids) if id])}")
     
-    # Check 5: Unquoted special characters
-    special_chars = r'[/\(\)\[\]\{\}:;,\.!?@#$%^&*+=<>|]'
+    # Check 5: Unquoted special characters in labels
+    special_chars = r'[/\(\)\[\]\{\}:;,\.!?@#$%^&*+=<>|\-]'
     if re.search(r'[A-Za-z0-9_]+\[([^\]"]+' + special_chars + r'[^\]"]*)\]', diagram):
         issues.append("Node labels contain special characters without quotes")
+    
+    # Check 6: Single quotes instead of double quotes
+    if re.search(r"[A-Za-z0-9_]+\['[^']+'\]", diagram):
+        issues.append("Node labels use single quotes (should be double quotes)")
+    if re.search(r"(-->|<--|<-->|==>|<==|<==>|\.\->)\|'[^']+'\|", diagram):
+        issues.append("Arrow labels use single quotes (should be double quotes)")
+    
+    # Check 7: Wrong arrow syntax (3+ dashes/equals)
+    if '--->' in diagram or '<---' in diagram:
+        issues.append("Arrows use 3+ dashes (should be exactly 2: -->)")
+    if '===>' in diagram or '<===' in diagram:
+        issues.append("Arrows use 3+ equals (should be exactly 2: ==>)")
+    
+    # Check 8: Subgraph with ID prefix
+    if re.search(r'subgraph\s+[A-Za-z0-9_]+\s+["\[]', diagram):
+        issues.append("Subgraph has invalid ID prefix (use: subgraph \"Name\")")
+    
+    # Check 9: Space before pipe in arrow labels
+    if re.search(r'(-->|<--|<-->|==>|<==|<==>|\.\->)\s+\|', diagram):
+        issues.append("Arrow labels have space before pipe (should be: -->|\"text\"|)")
     
     return {
         'valid': len(issues) == 0,

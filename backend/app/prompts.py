@@ -183,98 +183,130 @@ flowchart TD
     %% and a lot more...
 ```
 
-CRITICAL MERMAID.JS SYNTAX RULES (Based on flow_parser.jison grammar):
+CRITICAL MERMAID.JS SYNTAX RULES (Based on flow_parser.jison lexical grammar):
 
-**RULE 1: Node ID Syntax**
-- Node IDs can ONLY contain: letters, numbers, underscores, and these specific chars: ! # $ % & ' * + . ` ? \ /
-- ❌ WRONG: `API-Gateway` (dash not allowed), `user.service` (dot creates ambiguity)
-- ✅ CORRECT: `APIGateway`, `UserService`, `API_Gateway`
+**RULE 1: Node ID Syntax (FROM JISON: NODE_STRING token)**
+- Valid chars in Node IDs: A-Z, a-z, 0-9, and ONLY these special chars: ! " # $ % & ' * + . ` ? \ _ /
+- Dash (-) is ONLY valid if NOT followed by > or - or .
+- Equals (=) is ONLY valid if NOT followed by another =
+- ❌ WRONG: `API-Gateway` (dash followed by uppercase creates ambiguity), `user.service` (dot can break parsing)
+- ✅ CORRECT: `APIGateway`, `UserService`, `API_Gateway`, `User_Service`
+- **BEST PRACTICE**: Use ONLY alphanumeric + underscore to avoid all ambiguity
 
-**RULE 2: Node Label Quoting (CRITICAL)**
-- If label contains ANY special chars, it MUST be in quotes
-- Special chars: / ( ) [ ] { } | : ; , . ! ? @ # $ % ^ & * + = < >
-- ❌ WRONG: `A[/api/endpoint]`, `B[Process (Backend)]`, `C[User:Service]`
-- ✅ CORRECT: `A["/api/endpoint"]`, `B["Process (Backend)"]`, `C["User:Service"]`
+**RULE 2: Node Label Quoting (CRITICAL - MOST COMMON ERROR)**
+- If label contains ANY of these chars, it MUST be in double quotes: / ( ) [ ] { } | : ; , . ! ? @ # $ % ^ & * + = < > -
+- Even simple text should be quoted for safety
+- ❌ WRONG: `A[/api/endpoint]`, `B[Process (Backend)]`, `C[User:Service]`, `D[API-Gateway]`
+- ✅ CORRECT: `A["/api/endpoint"]`, `B["Process (Backend)"]`, `C["User:Service"]`, `D["API Gateway"]`
+- **BEST PRACTICE**: Always quote all node labels to prevent parsing errors
 
-**RULE 3: Arrow Label Syntax (MOST COMMON ERROR)**
-- Format: `-->|"label"|` (NO spaces around pipes)
-- ❌ WRONG: `A -->| "label" | B` (spaces), `A -->|label| B` (no quotes with special chars)
-- ✅ CORRECT: `A -->|"label"| B`, `A -->|"calls API()"| B`
+**RULE 3: Arrow Label Syntax (CRITICAL - CAUSES MOST SYNTAX ERRORS)**
+- Format: `-->|"label"|` (NO spaces around pipes, ALWAYS use quotes)
+- The pipes | are delimiters that enter/exit text mode in the lexer
+- ❌ WRONG: `A -->| "label" | B` (spaces around pipes), `A -->|label| B` (missing quotes), `A --> |"label"| B` (space before pipe)
+- ✅ CORRECT: `A -->|"label"| B`, `A -->|"calls API()"| B`, `A ==>|"HTTP request"| B`
+- **CRITICAL**: No spaces between arrow and first pipe, no spaces between pipes and arrow end
 
-**RULE 4: Subgraph Syntax**
-- Format: `subgraph "Name"` (NO aliases, NO class styling)
-- ❌ WRONG: `subgraph ID "Name"`, `subgraph "Name":::style`
-- ✅ CORRECT: `subgraph "Name"`, `subgraph "Frontend Layer"`
-- Close with: `end`
+**RULE 4: Subgraph Syntax (FROM JISON: subgraph statement)**
+- Format: `subgraph "Name"` or `subgraph Name` (if Name has no spaces/special chars)
+- NO aliases allowed (e.g., `subgraph ID "Name"` is INVALID in basic flowcharts)
+- NO class styling on subgraph line (e.g., `subgraph "Name":::style` is INVALID)
+- ❌ WRONG: `subgraph api "API Layer"`, `subgraph "Backend":::backend`
+- ✅ CORRECT: `subgraph "API Layer"`, `subgraph Backend`
+- Close with: `end` (lowercase, no quotes)
 
-**RULE 5: Class Styling**
-- Apply to nodes: `NodeID["Label"]:::className`
-- Define classes: `classDef className fill:#color,stroke:#color,stroke-width:2px,color:#textcolor`
-- ❌ WRONG: `subgraph "Layer":::style` (can't style subgraphs directly)
-- ✅ CORRECT: `A["Node"]:::frontend` then `classDef frontend fill:#6366f1,stroke:#4f46e5,color:#fff`
+**RULE 5: Class Styling (FROM JISON: STYLE_SEPARATOR token)**
+- Apply to nodes using `:::` separator: `NodeID["Label"]:::className`
+- Define classes: `classDef className fill:#color,stroke:#color,stroke-width:2px,color:#fff`
+- ❌ WRONG: `subgraph "Layer":::style` (can't style subgraphs), `NodeID:::style["Label"]` (wrong order)
+- ✅ CORRECT: `NodeID["Label"]:::frontend`, then `classDef frontend fill:#6366f1,stroke:#4f46e5,color:#fff`
 
-**RULE 6: Arrow Types (Valid Syntax)**
-- Solid: `-->`, `<--`, `<-->`
-- Thick: `==>`, `<==`, `<==>`
-- Dotted: `-.->`, `<-.`, `<-.->`
+**RULE 6: Arrow Types (FROM JISON: LINK tokens)**
+- Solid: `-->`, `<--`, `<-->` (2 dashes)
+- Thick: `==>`, `<==`, `<==>` (2+ equals)
+- Dotted: `-.->`, `<-.`, `<.->` (dash-dot-dash with arrow)
 - With label: `-->|"text"|`, `==>|"text"|`, `-.->|"text"|`
+- ❌ WRONG: `--->` (3 dashes), `<---` (3 dashes), `--` (no arrow), `->` (1 dash)
+- ✅ CORRECT: `-->`, `<-->`, `==>`, `-.->` (exactly as shown)
 
-**RULE 7: Node Shapes (Valid Syntax)**
-- Rectangle: `A["text"]` or `A[text]` (if no special chars)
-- Round: `A("text")`
-- Stadium: `A(["text"])`
-- Subroutine: `A[["text"]]`
-- Cylinder: `A[("text")]`
-- Circle: `A(("text"))`
-- Diamond: `A{"text"}`
-- Hexagon: `A{{"text"}}`
-- Trapezoid: `A[/"text"\]`
-- Double Circle: `A((("text")))`
+**RULE 7: Node Shapes (FROM JISON: vertex rules)**
+- Rectangle: `A["text"]` or `A[text]` (only if text has no special chars)
+- Round edges: `A("text")` 
+- Stadium: `A(["text"])` (round rectangle)
+- Subroutine: `A[["text"]]` (rectangle with side bars)
+- Cylinder: `A[("text")]` (database shape)
+- Circle: `A(("text"))` (double parentheses)
+- Diamond: `A{"text"}` (decision shape)
+- Hexagon: `A{{"text"}}` (double braces)
+- Trapezoid: `A[/"text"\]` (forward slash + backslash)
+- Inverted Trapezoid: `A[\"text"/]` (backslash + forward slash)
+- Double Circle: `A((("text")))` (triple parentheses)
+- **ALWAYS quote text** in shapes if it contains any special characters
 
-**RULE 8: Click Events**
-- Format: `click NodeID "path/to/file"`
-- ❌ WRONG: `click API "https://..."` (will be processed later)
-- ✅ CORRECT: `click API "src/api.js"`, `click DB "database/"`
+**RULE 8: Click Events (FROM JISON: clickStatement)**
+- Format: `click NodeID "path/to/file"` (NodeID must match a defined node)
+- Path will be processed later to add GitHub URL
+- ❌ WRONG: `click API-Gateway "src/api.js"` (dash in ID), `click API 'src/api.js'` (single quotes)
+- ✅ CORRECT: `click APIGateway "src/api.js"`, `click DB "database/"`
 
-**RULE 9: String Quoting in Labels**
-- Use double quotes: `"text"` (NOT single quotes)
-- Escape quotes inside: Not needed if using double quotes consistently
-- ✅ CORRECT: `A["API calls process()"]`
+**RULE 9: String Quoting (FROM JISON: string lexer state)**
+- Use double quotes `"text"` (NOT single quotes `'text'`)
+- Single quotes are not recognized by the string lexer state
+- ❌ WRONG: `A['text']`, `A -->|'label'| B`
+- ✅ CORRECT: `A["text"]`, `A -->|"label"| B`
 
-**RULE 10: Diagram Structure**
+**RULE 10: Comments (FROM JISON: comment syntax)**
+- Comments start with `%%` (double percent)
+- ✅ CORRECT: `%% This is a comment`, `%% Node definitions below`
+
+**RULE 11: Diagram Structure Template**
 ```
 flowchart TD
     %% Comments start with %%
     
-    %% Node definitions
-    NodeID["Label"]:::style
+    %% Define all nodes first (optional but recommended)
+    NodeID1["Label 1"]:::style1
+    NodeID2["Label 2"]:::style2
     
-    %% Subgraphs
+    %% Subgraphs (if needed)
     subgraph "Group Name"
-        Node1["Item"]
-        Node2["Item"]
+        Node3["Item 3"]
+        Node4["Item 4"]
     end
     
-    %% Connections
-    Node1 -->|"relationship"| Node2
+    %% All connections
+    NodeID1 -->|"relationship"| NodeID2
+    NodeID2 ==>|"another relationship"| Node3
     
-    %% Click events
-    click Node1 "path/to/file"
+    %% Click events (must reference defined nodes)
+    click NodeID1 "path/to/file"
+    click Node3 "path/to/dir/"
     
-    %% Style definitions
-    classDef style fill:#color,stroke:#color,color:#fff
+    %% Style definitions (at the end)
+    classDef style1 fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#fff
+    classDef style2 fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
 ```
 
-**VALIDATION CHECKLIST (Verify EVERY line):**
-□ Node IDs: Only alphanumeric + underscore (NO dashes, dots)
-□ Labels with special chars: ALL in quotes
-□ Arrow labels: Format is `|"text"|` with NO spaces around pipes
-□ Subgraphs: Just `subgraph "Name"` (no aliases or :::)
-□ Class styling: Only on nodes, not subgraphs
-□ Arrows: Use -->, ==>, -.-> (not --->, <---)
-□ Quotes: Use double quotes " not single '
-□ Diagram starts with: flowchart TD (or graph TD)
+**VALIDATION CHECKLIST (Verify EVERY line before output):**
+□ Node IDs: ONLY alphanumeric + underscore (avoid all special chars)
+□ Node labels: ALWAYS in double quotes (even simple text)
+□ Arrow labels: Format `-->|"text"|` with NO spaces around pipes
+□ Arrows: Use `-->`, `==>`, `-.->` (exactly 2 dashes/equals, not 3+)
+□ Subgraphs: Just `subgraph "Name"` (no ID prefix, no ::: suffix)
+□ Class styling: Only on nodes with `:::`, never on subgraphs
+□ Quotes: ONLY double quotes `"`, never single quotes `'`
+□ Diagram starts with: `flowchart TD` or `graph TD`
+□ Click events: Node IDs must match defined nodes exactly
 □ No markdown fences: No ``` in output
+□ Comments: Use `%%` not `//` or `#`
+
+**COMMON MISTAKES TO AVOID:**
+1. ❌ `A-B` as node ID → ✅ `A_B`
+2. ❌ `A -->| "text" | B` → ✅ `A -->|"text"| B`
+3. ❌ `A[Process (1)]` → ✅ `A["Process (1)"]`
+4. ❌ `subgraph api "API"` → ✅ `subgraph "API"`
+5. ❌ `A --->  B` → ✅ `A --> B`
+6. ❌ `click A-B "path"` → ✅ `click A_B "path"`
 """
 # ^^^ note: ive generated a few diagrams now and claude still writes incorrect mermaid code sometimes. in the future, refer to those generated diagrams and add important instructions to the prompt above to avoid those mistakes. examples are best.
 
