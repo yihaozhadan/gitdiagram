@@ -27,19 +27,19 @@ export interface ModelConfig {
 const PROVIDERS = {
   openrouter: {
     name: "OpenRouter",
-    defaultModel: "openai/gpt-oss-20b:free",
+    defaultModel: process.env.NEXT_PUBLIC_DEFAULT_MODEL_OPENROUTER ?? "openrouter/andromeda-alpha",
   },
   openai: {
     name: "OpenAI",
-    defaultModel: "gpt-4",
+    defaultModel: process.env.NEXT_PUBLIC_DEFAULT_MODEL_OPENAI ?? "gpt-4",
   },
   groq: {
     name: "Groq",
-    defaultModel: "mixtral-8x7b-32768",
+    defaultModel: process.env.NEXT_PUBLIC_DEFAULT_MODEL_GROQ ?? "mixtral-8x7b-32768",
   },
   ollama: {
     name: "Ollama",
-    defaultModel: "mistral",
+    defaultModel: process.env.NEXT_PUBLIC_DEFAULT_MODEL_OLLAMA ?? "mistral",
   },
 };
 

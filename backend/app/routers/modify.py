@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from anthropic._exceptions import RateLimitError
 from app.prompts import SYSTEM_MODIFY_PROMPT
 from pydantic import BaseModel
+import os
 
 # Import all services
 from app.services.claude_service import ClaudeService
@@ -24,13 +25,13 @@ SERVICES = {
     "openrouter": OpenRouterService()
 }
 
-# Default models for each service
+# Default models for each service (read from environment variables with fallbacks)
 DEFAULT_MODELS = {
-    "claude": "claude-3-opus",
-    "ollama": "mistral",
-    "groq": "mixtral-8x7b-32768",
-    "openai": "gpt-4",
-    "openrouter": "openai/gpt-oss-20b:free"
+    "claude": os.getenv("DEFAULT_MODEL_CLAUDE", "claude-3-opus"),
+    "ollama": os.getenv("DEFAULT_MODEL_OLLAMA", "mistral"),
+    "groq": os.getenv("DEFAULT_MODEL_GROQ", "mixtral-8x7b-32768"),
+    "openai": os.getenv("DEFAULT_MODEL_OPENAI", "gpt-4"),
+    "openrouter": os.getenv("DEFAULT_MODEL_OPENROUTER", "openrouter/andromeda-alpha")
 }
 
 def get_service(service_name: str):
