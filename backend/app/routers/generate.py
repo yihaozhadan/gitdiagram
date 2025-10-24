@@ -8,6 +8,7 @@ from app.prompts import (
     SYSTEM_FIRST_PROMPT,
     SYSTEM_SECOND_PROMPT,
     SYSTEM_THIRD_PROMPT,
+    get_system_third_prompt_with_examples,
 )
 from pydantic import BaseModel
 from functools import lru_cache
@@ -244,10 +245,13 @@ async def generate_stream(request: Request, body: ApiRequest):
                 yield f"data: {json.dumps({'status': 'diagram', 'message': 'Starting diagram generation...'})}\n\n"
 
                 try:
+                    # Use the enhanced prompt with real-world examples
+                    system_prompt_with_examples = get_system_third_prompt_with_examples()
+                    
                     diagram_chunks = []
                     if hasattr(service, 'call_api_stream'):
                         async for chunk in service.call_api_stream(
-                            system_prompt=SYSTEM_THIRD_PROMPT,
+                            system_prompt=system_prompt_with_examples,
                             data={
                                 "explanation": explanation,
                                 "component_mapping": component_mapping_text,
@@ -260,7 +264,7 @@ async def generate_stream(request: Request, body: ApiRequest):
                     else:
                         # Fallback to non-streaming API
                         diagram = await service.call_api(
-                            system_prompt=SYSTEM_THIRD_PROMPT,
+                            system_prompt=system_prompt_with_examples,
                             data={
                                 "explanation": explanation,
                                 "component_mapping": component_mapping_text,

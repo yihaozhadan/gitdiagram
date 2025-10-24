@@ -1,0 +1,96 @@
+flowchart TD
+%% Node definition rules applied
+%% Global entities
+A["Ghostty System"]:::toplevel
+
+%% Core Components
+subgraph "Core Components"
+    A1["Terminal Engine"]:::core
+    click A1 "https://github.com/ghostty-org/ghostty/blob/main/src/terminal/Parser.zig"
+    A2["Input Handling"]:::core
+    click A2 "https://github.com/ghostty-org/ghostty/tree/main/src/input/"
+    A3["Text Rendering"]:::core
+    click A3 "https://github.com/ghostty-org/ghostty/blob/main/src/terminal/ansc.zig"
+    A4["Embedded Interface"]:::core
+    click A4 "https://github.com/ghostty-org/ghostty/tree/main/src/lib_vt/"
+    A5["Dependencies"]:::core
+    click A5 "https://github.com/ghostty-org/ghostty/tree/main/pkg/harfbuzz/"
+    A6["Build System"]:::core
+    click A6 "https://github.com/ghostty-org/ghostty/blob/main/build.zig"
+    A7["Service Architecture"]:::core
+    click A7 "https://github.com/ghostty-org/ghostty/blob/main/src/os/main.zig"
+    A8["Font Rendering"]:::core
+    click A8 "https://github.com/ghostty-org/ghostty/blob/main/font/shaper/harfbuzz.zig"
+end
+
+%% Platform Implementations
+subgraph "Platform Implementations"
+    subgraph macOS
+        B1["SwiftUI UI"]:::macos
+        click B1 "https://github.com/ghostty-org/ghostty/tree/main/Sources/App/"
+        MetalRenderer["Metal Renderer"]:::metal
+        click MetalRenderer "https://github.com/ghostty-org/ghostty/blob/main/metal/Pipeline.zig"
+        A1 -->|"Core APIs"| B1
+        A3 -->|"Glyphs"| MetalRenderer
+        A7 -->|"Lifecycle"| macOS_platform["macOS Platform"]
+    end
+    subgraph Linux
+        B2["GTK UI"]:::linux
+        click B2 "https://github.com/ghostty-org/ghostty/tree/main/src/apprt/gtk/"
+        GLRenderer["OpenGL Renderer"]:::opengl
+        click GLRenderer "https://github.com/ghostty-org/ghostty/tree/main/src/renderer/opengl/"
+        A2 -->|"Input"| B2
+        A3 -->|"Fonts"| GLRenderer
+        A5 -->|"Dependencies"| GLRenderer
+    end
+    subgraph Windows
+        B3["Win32 API"]:::windows
+        click B3 "https://github.com/ghostty-org/ghostty/tree/main/src/os/windows/"
+        SoftwareRenderer["Software Fallback"]:::windows
+        click SoftwareRenderer "https://github.com/ghostty-org/ghostty/blob/main/src/terminal/bitmap_allocator.zig"
+        B3 -->|"OS APIs"| SoftwareRenderer
+    end
+end
+
+%% Rendering Chain
+A3 -->|"Text→Glyphs"| A8
+A8 -->|"Font Cache"| A5
+A3 -->|"Render"| A7
+A7 -->|"Tooling"| A6
+
+%% Error Handling
+errorCluster["Error Boundaries"]:::service
+A1 -->|"Crash"| errorCluster
+A7 -->|"Recovery"| errorCluster
+
+%% Cross-cutting concerns
+UIFonts["Fonts System"]:::service
+click UIFonts "https://github.com/ghostty-org/ghostty/blob/main/src/font/discovery.zig"
+UIFonts --> A5
+UIFonts --> B1
+UIFonts --> B2
+
+%% Service Layer
+ServiceThread["IO Thread"]:::service
+click ServiceThread "https://github.com/ghostty-org/ghostty/blob/main/src/os/args.zig"
+A2 -->|"Input"| ServiceThread
+ServiceThread --> A7
+
+%% Class definitions
+classDef toplevel fill:#9c27b0,stroke:#333,stroke-width:2px,color:#fff
+classDef core fill:#4CAF50,stroke:#333,stroke-width:2px,color:#fff
+classDef macos fill:#3366cc,stroke:#333,stroke-width:2px,color:#fff
+classDef linux fill:#6666cc,stroke:#333,stroke-width:2px,color:#fff
+classDef windows fill:#cc3333,stroke:#333,stroke-width:2px,color:#fff
+classDef metal fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
+classDef opengl fill:#00bcd4,stroke:#333,stroke-width:2px,color:#fff
+classDef service fill:#607d8b,stroke:#333,stroke-width:2px,color:#fff
+
+%% Composition
+subgraph "Rendering Stack"
+    A3 --> A8
+    A8 --> A5
+    A5 --> B1
+    A5 --> B2
+    A5 --> B3
+end

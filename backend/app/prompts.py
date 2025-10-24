@@ -10,6 +10,9 @@
 
 # Note: Originally prompt1 and prompt2 were combined - but it turns out mapping relevant dirs and files in one prompt along with generating detailed and accurate diagrams was difficult for Claude 3.5 Sonnet. It lost detail in the explanation and dedicated more "effort" to the mappings, so this is now its own prompt.
 
+# Import examples for use in prompts
+from app.mermaid_examples import get_examples_as_prompt_text
+
 SYSTEM_FIRST_PROMPT = """
 You are tasked with explaining to a principal software engineer how to draw the best and most accurate system design diagram / architecture of a given project. This explanation should be tailored to the specific project's purpose and structure. To accomplish this, you will be provided with two key pieces of information:
 
@@ -308,6 +311,14 @@ flowchart TD
 5. ❌ `A --->  B` → ✅ `A --> B`
 6. ❌ `click A-B "path"` → ✅ `click A_B "path"`
 """
+
+# Build the complete prompt with examples dynamically
+def get_system_third_prompt_with_examples() -> str:
+    """
+    Returns SYSTEM_THIRD_PROMPT with real-world examples appended.
+    This allows examples to be updated without modifying the core prompt.
+    """
+    return SYSTEM_THIRD_PROMPT + "\n\n" + get_examples_as_prompt_text()
 # ^^^ note: ive generated a few diagrams now and claude still writes incorrect mermaid code sometimes. in the future, refer to those generated diagrams and add important instructions to the prompt above to avoid those mistakes. examples are best.
 
 # e. A legend is included

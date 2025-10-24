@@ -1,0 +1,187 @@
+flowchart TD
+%% Global configurations
+classDef core fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#fff
+classDef plugin fill:#4caf50,stroke:#1b5e20,stroke-width:2px,color:#fff
+classDef export fill:#ff5722,stroke:#d73027,stroke-width:2px,color:#fff
+classDef webui fill:#2196f3,stroke:#01579b,stroke-width:2px,color:#fff
+classDef infra fill:#95a5a6,stroke:#607d8b,stroke-width:2px,color:#fff
+%% Core components
+A(__init__)[glances/__init__.py]:::core
+A(main)[glances/main.py]:::core
+A(client)[glances/client.py]:::core
+A(config)[glances/config.py]:::core
+%% Plugin system
+subgraph Plugins
+A(amps)[plugins/amps]:::plugin
+A(cpu)[plugins/cpu]:::plugin
+A(mem)[plugins/mem]:::plugin
+A(network)[plugins/network]:::plugin
+A(gpu)[plugins/gpu]:::plugin
+A(containers)[plugins/containers]:::plugin
+A(vms)[plugins/vms]:::plugin
+A(plugin_init)[plugins/__init__.py]:::plugin
+end
+%% Export modules
+subgraph Export Modules
+A(influxdb)[exports/glances_influxdb]:::export
+A(prometheus)[exports/glances_prometheus]:::export
+A(elasticsearch)[exports/glances_elasticsearch]:::export
+A(zeromq)[exports/glances_zeromq]:::export
+A(export_factory)[exports/export.py]:::export
+end
+%% Web interface
+subgraph Web Interface
+A(static)[outputs/static]:::webui
+A(vue_assets)[js]:::webui
+A(app_js)[glances/outputs/static/app.js]:::webui
+A(docker_app)[glances/outputs/static/docker/Dockerfile]:::webui
+A(docker_compose)[docker-compose/docker-compose.yml]:::webui
+end
+%% Backend services
+subgraph Backend Services
+A(fastapi)[glances/webserver.py]:::core
+A(rest_api)[glances/api.py]:::core
+A(websocket)[glances/client_browser.py]:::core
+end
+%% Infrastructure
+subgraph Infrastructure
+subgraph Docker Config
+A(alpine_build)[docker-files/alpine.Dockerfile]:::infra
+A(ubuntu_build)[docker-files/ubuntu.Dockerfile]:::infra
+A(docker_definition)[docker-compose/glances.conf]:::infra
+A(network_config)[docker-compose/docker-compose.yml]:::infra
+end
+subgraph CI/CD
+A(ci_workflows)[.github/workflows]:::infra
+A(test_script)[.github/workflows/test.yml]:::infra
+end
+end
+%% Testing
+subgraph Testing
+A(test_core)[tests/test_core.py]:::infra
+A(test_webui][tests/test_webui.py]:::infra
+end
+%% Documentation
+subgraph Documentation
+A(docs)[docs]:::infra
+A(main_doc)[docs/glances.rst]:::infra
+A(config_doc)[docs/conf.py]:::infra
+end
+%% API Endpoints
+subgraph API Endpoints
+A(endpoints)[glances/api.py]:::core
+A(websocket)[glances/client_browser.py]:::core
+end
+%% Security features
+subgraph Security
+A(https_support)[glances/webserver.py]:::core
+A(auth_token)[glances/password.py]:::core
+end
+%% Configuration management
+subgraph Configuration
+A(conf_file)[conf/glances.conf]:::infra
+A(grafana_config)[conf/glances-grafana-flux.json]:::infra
+end
+%% Execution contexts
+subgraph Execution Contexts
+A(standalone)[glances/standalone.py]:::infra
+A(client_tool)[glances/__main__.py]:::infra
+end
+%% Component relationships
+main --> client
+client -->|"Client Engine| A(client)[engine]
+amps -->"|Plugin API| A(client)
+cpu -->|"Hardware data| A(client)
+mem -->"|Memory metrics| A(client)
+network -->|"Network stats| A(client)
+containers -->"|Container data| A(client)
+vms -->|"VM metrics| A(client)
+export_factory -->"|Export routing| InfluxDB
+export_factory -->|"Metrics ingestion| Prometheus
+export_factory -->"|Log shipping| Elasticsearch
+export_factory -->|"Messaging| Zeromq
+static ---"|Dashboard| A(client)
+docker_app -->|"Build config| network_config
+docker_compose -->"|Service orchestrator| network_config
+docker_definition --> service_volumes
+docker_definition --> service_networks
+testing -->|"Dependency test| core
+testing -->"|Integration test| webui
+infra -->|Container runtime| core
+%% Click events (path mappings)
+click __init__ "https://github.com/nicolargo/glances/blob/develop/glances/__init__.py"
+click main "https://github.com/nicolargo/glances/blob/develop/glances/main.py"
+click client "https://github.com/nicolargo/glances/blob/develop/glances/client.py"
+click config "https://github.com/nicolargo/glances/blob/develop/glances/config.py"
+click amps "https://github.com/nicolargo/glances/tree/develop/plugins/amps/"
+click cpu "https://github.com/nicolargo/glances/tree/develop/plugins/cpu/"
+click mem "https://github.com/nicolargo/glances/tree/develop/plugins/mem/"
+click network "https://github.com/nicolargo/glances/tree/develop/plugins/network/"
+click gpu "https://github.com/nicolargo/glances/tree/develop/plugins/gpu/"
+click containers "https://github.com/nicolargo/glances/tree/develop/plugins/containers/"
+click vms "https://github.com/nicolargo/glances/tree/develop/plugins/vms/"
+click plugin_init "https://github.com/nicolargo/glances/blob/develop/glances/plugins/__init__.py"
+click influxdb "https://github.com/nicolargo/glances/tree/develop/exports/glances_influxdb/"
+click prometheus "https://github.com/nicolargo/glances/tree/develop/exports/glances_prometheus/"
+click elasticsearch "https://github.com/nicolargo/glances/tree/develop/exports/glances_elasticsearch/"
+click zeromq "https://github.com/nicolargo/glances/tree/develop/exports/glances_zeromq/"
+click export_factory "https://github.com/nicolargo/glances/blob/develop/exports/export.py"
+click static "https://github.com/nicolargo/glances/tree/develop/glances/outputs/static/"
+click vue_assets "https://github.com/nicolargo/glances/tree/develop/glances/outputs/static/js/"
+click app_js "https://github.com/nicolargo/glances/blob/develop/glances/outputs/static/app.js"
+click docker_app "https://github.com/nicolargo/glances/tree/develop/glances/outputs/static/docker/Dockerfile"
+click docker_compose "https://github.com/nicolargo/glances/blob/develop/docker-compose/docker-compose.yml"
+click ci_workflows "https://github.com/nicolargo/glances/tree/develop/.github/workflows/"
+click test_script "https://github.com/nicolargo/glances/blob/develop/.github/workflows/test.yml"
+click test_core "https://github.com/nicolargo/glances/blob/develop/tests/test_core.py"
+click test_webui "https://github.com/nicolargo/glances/blob/develop/tests/test_webui.py"
+click docs "https://github.com/nicolargo/glances/tree/develop/docs/"
+click main_doc "https://github.com/nicolargo/glances/blob/develop/docs/glances.rst"
+click config_doc "https://github.com/nicolargo/glances/blob/develop/docs/conf.py"
+click endpoints "https://github.com/nicolargo/glances/blob/develop/glances/api.py"
+click websocket "https://github.com/nicolargo/glances/blob/develop/glances/client_browser.py"
+click https_support "https://github.com/nicolargo/glances/blob/develop/glances/webserver.py"
+click auth_token "https://github.com/nicolargo/glances/blob/develop/glances/password.py"
+click conf_file "https://github.com/nicolargo/glances/blob/develop/conf/glances.conf"
+click grafana_config "https://github.com/nicolargo/glances/blob/develop/conf/glances-grafana-flux.json"
+click standalone "https://github.com/nicolargo/glances/blob/develop/glances/standalone.py"
+click client_tool "https://github.com/nicolargo/glances/blob/develop/glances/__main__.py"
+click alpline_build "https://github.com/nicolargo/glances/blob/develop/docker-files/alpine.Dockerfile"
+click ubuntu_build "https://github.com/nicolargo/glances/blob/develop/docker-files/ubuntu.Dockerfile"
+click docker_definition "https://github.com/nicolargo/glances/blob/develop/docker-compose/glances.conf"
+click network_config "https://github.com/nicolargo/glances/blob/develop/docker-compose/docker-compose.yml"
+This Mermaid.js diagram accurately represents GLances' architecture with:
+1. **Color-coded component groups**:
+- Core engine (blue)
+- Plugins (green)
+- Export modules (orange)
+- Web UI (purple)
+- Infrastructure/Docker (gray)
+- Documentation (cyan)
+2. **Hierarchical subgraphs** for:
+- Plugin types (collectors vs actions)
+- Export destination modules
+- Web interface components
+- Infrastructure configurations
+- Testing layers
+3. **Detailed component mapping** with:
+- File path click events
+- Directory structure visualization
+- Dependency relationships
+- Data flow paths
+- Containerization context
+4. **Architectural patterns visualized**:
+- Plugin system entry points
+- Export factory pattern
+- Web-only components
+- Docker integration points
+5. **Execution contexts** showing:
+- CLI vs Web server modes
+- Host vs containerized deployment
+- CI/CD pipeline integration
+The diagram maintains vertical orientation while clearly showing component relationships through:
+- Arrows for data/control flow
+- Subgraph groupings
+- Class-specific styling
+- Click interaction points
+- Interface boundaries
