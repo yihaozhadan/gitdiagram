@@ -46,7 +46,7 @@ DEFAULT_MODELS = {
     "ollama": os.getenv("DEFAULT_MODEL_OLLAMA", "mistral"),
     "groq": os.getenv("DEFAULT_MODEL_GROQ", "mixtral-8x7b-32768"),
     "openai": os.getenv("DEFAULT_MODEL_OPENAI", "gpt-4"),
-    "openrouter": os.getenv("DEFAULT_MODEL_OPENROUTER", "openrouter/andromeda-alpha")
+    "openrouter": os.getenv("DEFAULT_MODEL_OPENROUTER", "minimax/minimax-m2:free")
 }
 
 def get_service(service_name: str):
@@ -339,12 +339,14 @@ async def generate_stream(request: Request, body: ApiRequest):
                     yield f"data: {json.dumps({'error': 'Invalid Mermaid diagram syntax - must start with a valid diagram type'})}\n\n"
                     return
 
-                # Send final result
+                # Send final result with model info
                 yield f"data: {json.dumps({
                     'status': 'complete',
                     'diagram': full_diagram,
                     'explanation': explanation,
-                    'mapping': component_mapping_text
+                    'mapping': component_mapping_text,
+                    'model_used': model,
+                    'service_used': body.service
                 })}\n\n"
 
             except Exception as e:

@@ -15,6 +15,8 @@ interface GenerateApiResponse {
 interface ModifyApiResponse {
   error?: string;
   diagram?: string;
+  model_used?: string;
+  service_used?: string;
 }
 
 export async function generateAndCacheDiagram(

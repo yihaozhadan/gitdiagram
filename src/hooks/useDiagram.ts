@@ -26,6 +26,8 @@ interface StreamState {
   mapping?: string;
   diagram?: string;
   error?: string;
+  modelUsed?: string;
+  serviceUsed?: string;
 }
 
 interface StreamResponse {
@@ -36,6 +38,8 @@ interface StreamResponse {
   mapping?: string;
   diagram?: string;
   error?: string;
+  model_used?: string;
+  service_used?: string;
 }
 
 export function useDiagram(username: string, repo: string) {
@@ -64,6 +68,15 @@ export function useDiagram(username: string, repo: string) {
         const baseUrl =
           process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_DEV_URL ?? "http://localhost:3000";
 
+        // Get model configuration from localStorage
+        let modelConfig = { service: "openrouter", model: "", apiKey: "" };
+        if (typeof window !== "undefined") {
+          const savedConfig = localStorage.getItem("model_config");
+          if (savedConfig) {
+            modelConfig = JSON.parse(savedConfig) as { service: string; model: string; apiKey: string };
+          }
+        }
+
         const response = await fetch(`${baseUrl}/generate/stream`, {
           method: "POST",
           headers: {
@@ -73,8 +86,10 @@ export function useDiagram(username: string, repo: string) {
             username,
             repo,
             instructions,
-            api_key: localStorage.getItem("api_key") ?? undefined,
+            api_key: modelConfig.apiKey || localStorage.getItem("api_key") || undefined,
             github_pat: githubPat,
+            service: modelConfig.service,
+            model: modelConfig.model,
           }),
         });
         if (!response.ok) {
@@ -213,11 +228,15 @@ export function useDiagram(username: string, repo: string) {
                         
                         console.log(`[Stream Debug] final diagram length:`, finalDiagram.length);
                         console.log(`[Stream Debug] final explanation length:`, finalExplanation.length);
+                        console.log(`[Stream Debug] model used:`, data.model_used);
+                        console.log(`[Stream Debug] service used:`, data.service_used);
                         
                         setState({
                           status: "complete",
                           explanation: finalExplanation,
                           diagram: finalDiagram,
+                          modelUsed: data.model_used,
+                          serviceUsed: data.service_used,
                         });
                         const date = await getLastGeneratedDate(username, repo);
                         setLastGenerated(date ?? undefined);
@@ -264,10 +283,18 @@ export function useDiagram(username: string, repo: string) {
                           
                           console.log(`[Stream Debug] Extracted diagram from malformed JSON, length: ${extractedDiagram.length}`);
                           
+                          // Try to extract model info
+                          const modelRegex = /"model_used":\s*"([^"]*)"/;
+                          const serviceRegex = /"service_used":\s*"([^"]*)"/;
+                          const modelMatch = modelRegex.exec(jsonStr);
+                          const serviceMatch = serviceRegex.exec(jsonStr);
+                          
                           setState({
                             status: "complete",
                             diagram: extractedDiagram,
                             explanation: extractedExplanation,
+                            modelUsed: modelMatch?.[1],
+                            serviceUsed: serviceMatch?.[1],
                           });
                           
                           const date = await getLastGeneratedDate(username, repo);
@@ -311,6 +338,8 @@ export function useDiagram(username: string, repo: string) {
                         status: "complete",
                         explanation: finalExplanation,
                         diagram: finalDiagram,
+                        modelUsed: data.model_used,
+                        serviceUsed: data.service_used,
                       });
                       const date = await getLastGeneratedDate(username, repo);
                       setLastGenerated(date ?? undefined);
@@ -332,10 +361,18 @@ export function useDiagram(username: string, repo: string) {
                             .replace(/\\"/g, '"')
                             .replace(/\\\\/g, '\\');
                           
+                          // Try to extract model info
+                          const modelRegex = /"model_used":\s*"([^"]*)"/;
+                          const serviceRegex = /"service_used":\s*"([^"]*)"/;
+                          const modelMatch = modelRegex.exec(jsonStr);
+                          const serviceMatch = serviceRegex.exec(jsonStr);
+                          
                           setState({
                             status: "complete",
                             diagram: extractedDiagram,
                             explanation: "Diagram generated successfully",
+                            modelUsed: modelMatch?.[1],
+                            serviceUsed: serviceMatch?.[1],
                           });
                           
                           const date = await getLastGeneratedDate(username, repo);

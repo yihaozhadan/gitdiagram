@@ -23,7 +23,7 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 ## 🤖 AI Model Configuration
 
 - **Model Selection**: Choose from multiple LLM providers:
-  - OpenRouter (default): openrouter/andromeda-alpha
+  - OpenRouter (default): minimax/minimax-m2:free
   - OpenAI: GPT-4, GPT-3.5-turbo
   - Groq: mixtral-8x7b-32768
   - Ollama: mistral, llama2, codellama
@@ -106,7 +106,7 @@ Backend (used when no API key is provided):
 - `DEFAULT_MODEL_OLLAMA`: Default Ollama model (default: `mistral`)
 - `DEFAULT_MODEL_GROQ`: Default Groq model (default: `mixtral-8x7b-32768`)
 - `DEFAULT_MODEL_OPENAI`: Default OpenAI model (default: `gpt-4`)
-- `DEFAULT_MODEL_OPENROUTER`: Default OpenRouter model (default: `openrouter/andromeda-alpha`)
+- `DEFAULT_MODEL_OPENROUTER`: Default OpenRouter model (default: `minimax/minimax-m2:free`)
 
 Frontend (used for UI placeholders and defaults):
 - `NEXT_PUBLIC_DEFAULT_MODEL_CLAUDE`: Frontend default for Claude

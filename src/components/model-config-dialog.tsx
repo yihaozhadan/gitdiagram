@@ -27,7 +27,7 @@ export interface ModelConfig {
 const PROVIDERS = {
   openrouter: {
     name: "OpenRouter",
-    defaultModel: process.env.NEXT_PUBLIC_DEFAULT_MODEL_OPENROUTER ?? "openrouter/andromeda-alpha",
+    defaultModel: process.env.NEXT_PUBLIC_DEFAULT_MODEL_OPENROUTER ?? "minimax/minimax-m2:free",
   },
   openai: {
     name: "OpenAI",
