@@ -104,6 +104,13 @@ end""",
 end""",
         "Cannot apply class styling directly to subgraphs. Style the nodes inside instead."
     ),
+
+    (
+        "Relationship with arrow labels",
+        """A __>| "calls" | B""",
+        """A -->| "calls" | B""",
+        "Arrow labels must be enclosed in pipe delimiters: -->|\"text\"|. The format 'underscore arrow or underscore dot arrow' are not valid syntax."
+    ),
     
     # Complex real-world examples
     (
