@@ -1,0 +1,93 @@
+# Copy-Paste Template for Adding Mermaid Examples
+# Add this to MERMAID_SYNTAX_EXAMPLES list in mermaid_examples.py
+
+    (
+        "Brief description of the error type",
+        """❌ INCORRECT CODE:
+flowchart TD
+    BadNode[Label]
+    BadNode --> Other""",
+        """✅ CORRECT CODE:
+flowchart TD
+    GoodNode["Label"]
+    GoodNode --> Other""",
+        "Explanation: What was wrong, why it failed, and what was fixed."
+    ),
+
+# ============================================================
+# EXAMPLE CATEGORIES - Use these as templates
+# ============================================================
+
+# ARROW SYNTAX ERROR
+    (
+        "Arrow label with [describe issue]",
+        """A -->| "label" | B""",
+        """A -->|"label"| B""",
+        "Explanation of arrow syntax rule violated."
+    ),
+
+# NODE ID ERROR
+    (
+        "Node ID with [special character]",
+        """Bad-Node["Label"]""",
+        """GoodNode["Label"]""",
+        "Explanation of node ID rules."
+    ),
+
+# LABEL QUOTING ERROR
+    (
+        "Label with [special characters] unquoted",
+        """A[Label: Value]""",
+        """A["Label: Value"]""",
+        "Explanation of quoting rules."
+    ),
+
+# SUBGRAPH ERROR
+    (
+        "Subgraph with [invalid syntax]",
+        """subgraph id "Name"
+    Node
+end""",
+        """subgraph "Name"
+    Node
+end""",
+        "Explanation of subgraph rules."
+    ),
+
+# COMPLEX REAL-WORLD ERROR
+    (
+        "Production error from [date/issue]: [description]",
+        """flowchart TD
+    [Multiple lines of incorrect code]""",
+        """flowchart TD
+    [Multiple lines of correct code]""",
+        "Detailed explanation of all fixes applied. Reference issue number if applicable."
+    ),
+
+# ============================================================
+# TIPS FOR GOOD EXAMPLES
+# ============================================================
+
+# ✅ DO:
+# - Use real production errors
+# - Include context (2-3 lines of code)
+# - Explain WHY it fails, not just WHAT to fix
+# - Reference the grammar rule or jison token
+# - Add date/issue number for complex cases
+
+# ❌ DON'T:
+# - Make up theoretical errors
+# - Show only the single problematic line
+# - Use vague explanations like "this is wrong"
+# - Mix too many unrelated errors in one example
+# - Forget to test after adding
+
+# ============================================================
+# AFTER ADDING
+# ============================================================
+
+# 1. Save mermaid_examples.py
+# 2. Restart backend: docker-compose restart backend
+# 3. Test by generating a diagram
+# 4. Commit with descriptive message:
+#    git commit -m "Add example for [error type] from production"

@@ -14,6 +14,7 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 - ⚡ **Fast Generation**: Powered by various AI models for quick and accurate diagrams
 - 🔄 **Customization**: Modify and regenerate diagrams with custom instructions
 - 🐛 **Debug Support**: View Mermaid diagram source code and syntax errors for easy debugging
+- ✨ **Auto-Correction**: Intelligent validation and auto-fixing of Mermaid syntax errors
 - 📊 **Caching**: Generated diagrams are cached in the database to save API tokens and provide up-to-date results
 - 🤖 **AI Chatbot**: Interact with the AI chatbot to get answers to your questions.
 - 📱 **Mobile Support**: Access GitDiagram on your phone or tablet.
@@ -22,7 +23,7 @@ Turn any GitHub repository into an interactive diagram for visualization in seco
 ## 🤖 AI Model Configuration
 
 - **Model Selection**: Choose from multiple LLM providers:
-  - OpenRouter (default): x-ai/grok-4-fast:free
+  - OpenRouter (default): minimax/minimax-m2:free
   - OpenAI: GPT-4, GPT-3.5-turbo
   - Groq: mixtral-8x7b-32768
   - Ollama: mistral, llama2, codellama
@@ -84,7 +85,37 @@ pnpm i
 cp .env.example .env
 ```
 
-Then edit the `.env` file with your Anthropic API key and optional GitHub personal access token.
+Then edit the `.env` file with your API keys and configuration options.
+
+### Environment Variables
+
+**Required:**
+- `POSTGRES_URL`: PostgreSQL database connection string
+- `NEXT_PUBLIC_API_DEV_URL`: Backend API URL (default: http://localhost:8000)
+
+**Optional:**
+- `GITHUB_PAT`: GitHub Personal Access Token (increases rate limits from 60/hr to 5000/hr)
+- `NEXT_PUBLIC_FORMSUBMIT_KEY`: FormSubmit.co key for contact form
+
+**Default AI Model Configuration:**
+
+You can customize the default models for each AI provider by setting these environment variables. If not set, the application will use the built-in defaults.
+
+Backend (used when no API key is provided):
+- `DEFAULT_MODEL_CLAUDE`: Default Claude model (default: `claude-3-opus`)
+- `DEFAULT_MODEL_OLLAMA`: Default Ollama model (default: `mistral`)
+- `DEFAULT_MODEL_GROQ`: Default Groq model (default: `mixtral-8x7b-32768`)
+- `DEFAULT_MODEL_OPENAI`: Default OpenAI model (default: `gpt-4`)
+- `DEFAULT_MODEL_OPENROUTER`: Default OpenRouter model (default: `minimax/minimax-m2:free`)
+
+Frontend (used for UI placeholders and defaults):
+- `NEXT_PUBLIC_DEFAULT_MODEL_CLAUDE`: Frontend default for Claude
+- `NEXT_PUBLIC_DEFAULT_MODEL_OLLAMA`: Frontend default for Ollama
+- `NEXT_PUBLIC_DEFAULT_MODEL_GROQ`: Frontend default for Groq
+- `NEXT_PUBLIC_DEFAULT_MODEL_OPENAI`: Frontend default for OpenAI
+- `NEXT_PUBLIC_DEFAULT_MODEL_OPENROUTER`: Frontend default for OpenRouter
+
+These environment variables allow you to deploy the project with different default models without modifying the source code.
 
 4. Run backend
 

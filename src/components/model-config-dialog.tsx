@@ -27,23 +27,19 @@ export interface ModelConfig {
 const PROVIDERS = {
   openrouter: {
     name: "OpenRouter",
-    defaultModel: "x-ai/grok-4-fast:free",
-    models: ["x-ai/grok-4-fast:free"],
+    defaultModel: process.env.NEXT_PUBLIC_DEFAULT_MODEL_OPENROUTER ?? "minimax/minimax-m2:free",
   },
   openai: {
     name: "OpenAI",
-    defaultModel: "gpt-4",
-    models: ["gpt-4", "gpt-3.5-turbo"],
+    defaultModel: process.env.NEXT_PUBLIC_DEFAULT_MODEL_OPENAI ?? "gpt-4",
   },
   groq: {
     name: "Groq",
-    defaultModel: "mixtral-8x7b-32768",
-    models: ["mixtral-8x7b-32768"],
+    defaultModel: process.env.NEXT_PUBLIC_DEFAULT_MODEL_GROQ ?? "mixtral-8x7b-32768",
   },
   ollama: {
     name: "Ollama",
-    defaultModel: "mistral",
-    models: ["mistral", "llama2", "codellama"],
+    defaultModel: process.env.NEXT_PUBLIC_DEFAULT_MODEL_OLLAMA ?? "mistral",
   },
 };
 
@@ -148,23 +144,18 @@ export function ModelConfigDialog({
 
           <div className="space-y-2">
             <label className={`text-sm font-medium ${isDark ? 'text-white' : 'text-black'}`}>Model</label>
-            <Select
+            <Input
+              type="text"
+              placeholder={`e.g., ${PROVIDERS[config.provider as keyof typeof PROVIDERS].defaultModel}`}
               value={config.model}
-              onValueChange={(model: string) => setConfig((prev) => ({ ...prev, model }))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PROVIDERS[config.provider as keyof typeof PROVIDERS].models.map(
-                  (model) => (
-                    <SelectItem key={model} value={model}>
-                      {model}
-                    </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
+              onChange={(e) =>
+                setConfig((prev) => ({ ...prev, model: e.target.value }))
+              }
+              className="border-2 border-black bg-white"
+            />
+            <p className={`text-xs ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              Enter any OpenRouter-supported model ID. Leave empty to use default.
+            </p>
           </div>
 
           <div className="space-y-2">

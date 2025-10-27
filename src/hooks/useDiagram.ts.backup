@@ -26,8 +26,6 @@ interface StreamState {
   mapping?: string;
   diagram?: string;
   error?: string;
-  modelUsed?: string;
-  serviceUsed?: string;
 }
 
 interface StreamResponse {
@@ -38,8 +36,6 @@ interface StreamResponse {
   mapping?: string;
   diagram?: string;
   error?: string;
-  model_used?: string;
-  service_used?: string;
 }
 
 export function useDiagram(username: string, repo: string) {
@@ -66,16 +62,7 @@ export function useDiagram(username: string, repo: string) {
 
       try {
         const baseUrl =
-          process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_DEV_URL ?? "http://localhost:3000";
-
-        // Get model configuration from localStorage
-        let modelConfig = { service: "openrouter", model: "", apiKey: "" };
-        if (typeof window !== "undefined") {
-          const savedConfig = localStorage.getItem("model_config");
-          if (savedConfig) {
-            modelConfig = JSON.parse(savedConfig) as { service: string; model: string; apiKey: string };
-          }
-        }
+          process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_API_DEV_URL ?? "http://localhost:8000";
 
         const response = await fetch(`${baseUrl}/generate/stream`, {
           method: "POST",
@@ -86,10 +73,8 @@ export function useDiagram(username: string, repo: string) {
             username,
             repo,
             instructions,
-            api_key: modelConfig.apiKey || localStorage.getItem("api_key") || undefined,
+            api_key: localStorage.getItem("api_key") ?? undefined,
             github_pat: githubPat,
-            service: modelConfig.service,
-            model: modelConfig.model,
           }),
         });
         if (!response.ok) {
@@ -117,10 +102,10 @@ export function useDiagram(username: string, repo: string) {
               buffer += chunk;
 
               // Process complete lines from the buffer
-              const lines = buffer.split('\n');
+              let lines = buffer.split('\n');
               
               // Keep the last potentially incomplete line in the buffer
-              buffer = lines.pop() ?? '';
+              buffer = lines.pop() || '';
 
               // Process each complete line
               for (const line of lines) {
@@ -216,27 +201,10 @@ export function useDiagram(username: string, repo: string) {
                         }
                         break;
                       case "complete":
-                        console.log(`[Stream Debug] Complete status received`);
-                        console.log(`[Stream Debug] data.diagram length:`, data.diagram?.length ?? 0);
-                        console.log(`[Stream Debug] data.explanation length:`, data.explanation?.length ?? 0);
-                        console.log(`[Stream Debug] accumulated diagram length:`, diagram.length);
-                        console.log(`[Stream Debug] accumulated explanation length:`, explanation.length);
-                        
-                        // Use accumulated data if server data is empty
-                        const finalDiagram = data.diagram ?? diagram;
-                        const finalExplanation = data.explanation ?? explanation;
-                        
-                        console.log(`[Stream Debug] final diagram length:`, finalDiagram.length);
-                        console.log(`[Stream Debug] final explanation length:`, finalExplanation.length);
-                        console.log(`[Stream Debug] model used:`, data.model_used);
-                        console.log(`[Stream Debug] service used:`, data.service_used);
-                        
                         setState({
                           status: "complete",
-                          explanation: finalExplanation,
-                          diagram: finalDiagram,
-                          modelUsed: data.model_used,
-                          serviceUsed: data.service_used,
+                          explanation: data.explanation,
+                          diagram: data.diagram,
                         });
                         const date = await getLastGeneratedDate(username, repo);
                         setLastGenerated(date ?? undefined);
@@ -252,61 +220,41 @@ export function useDiagram(username: string, repo: string) {
                         setState({ status: "error", error: data.error });
                         break;
                     }
-                  } catch (parseError) {
-                    // If there's a JSON parse error, log it and try to extract useful data
-                    console.error("Error parsing SSE message:", parseError);
-                    console.error("Raw SSE line (first 200 chars):", jsonStr.substring(0, 200));
-                    
-                    // Try to handle the case where the JSON might be malformed
-                    // but still contains useful data (especially for complete status)
-                    if (jsonStr.includes('"status":"complete"') && jsonStr.includes('"diagram"')) {
-                      // Try to extract diagram from malformed JSON using regex
-                      try {
-                        // Look for the diagram field in the JSON string
-                        const diagramRegex = /"diagram":\s*"((?:[^"\\]|\\.)*)"/;
-                        const diagramMatch = diagramRegex.exec(jsonStr);
-                        if (diagramMatch?.[1]) {
-                          const extractedDiagram = diagramMatch[1]
-                            .replace(/\\n/g, '\n')
-                            .replace(/\\"/g, '"')
-                            .replace(/\\\\/g, '\\')
-                            .replace(/\\t/g, '\t')
-                            .replace(/\\r/g, '\r');
-                          
-                          // Also try to extract explanation if available
-                          const explanationRegex = /"explanation":\s*"((?:[^"\\]|\\.)*)"/;
-                          const explanationMatch = explanationRegex.exec(jsonStr);
-                          const extractedExplanation = explanationMatch?.[1]
-                            ?.replace(/\\n/g, '\n')
-                            ?.replace(/\\"/g, '"')
-                            ?.replace(/\\\\/g, '\\') ?? "Diagram generated successfully";
-                          
-                          console.log(`[Stream Debug] Extracted diagram from malformed JSON, length: ${extractedDiagram.length}`);
-                          
-                          // Try to extract model info
-                          const modelRegex = /"model_used":\s*"([^"]*)"/;
-                          const serviceRegex = /"service_used":\s*"([^"]*)"/;
-                          const modelMatch = modelRegex.exec(jsonStr);
-                          const serviceMatch = serviceRegex.exec(jsonStr);
-                          
-                          setState({
-                            status: "complete",
-                            diagram: extractedDiagram,
-                            explanation: extractedExplanation,
-                            modelUsed: modelMatch?.[1],
-                            serviceUsed: serviceMatch?.[1],
-                          });
-                          
-                          const date = await getLastGeneratedDate(username, repo);
-                          setLastGenerated(date ?? undefined);
-                          if (!hasUsedFreeGeneration) {
-                            localStorage?.setItem("has_used_free_generation", "true");
-                            setHasUsedFreeGeneration(true);
+                    } catch (parseError) {
+                      // If there's a JSON parse error, log it and continue
+                      console.error("Error parsing SSE message:", parseError);
+                      console.error("Raw SSE line:", line);
+                      
+                      // Try to handle the case where the JSON might be malformed
+                      // but still contains useful data
+                      const rawData = line.slice(6);
+                      if (rawData.includes('"status":"complete"') && rawData.includes('"diagram"')) {
+                        // Try to extract diagram from malformed JSON
+                        try {
+                          const diagramMatch = rawData.match(/"diagram":\s*"([^"]*(?:\\.[^"]*)*)"/) ||
+                                             rawData.match(/"diagram":\s*"((?:[^"\\]|\\.)*)"/);
+                          if (diagramMatch?.[1]) {
+                            const extractedDiagram = diagramMatch[1]
+                              .replace(/\\n/g, '\n')
+                              .replace(/\\"/g, '"')
+                              .replace(/\\\\/g, '\\');
+                            
+                            setState({
+                              status: "complete",
+                              diagram: extractedDiagram,
+                              explanation: "Diagram generated successfully",
+                            });
+                            
+                            const date = await getLastGeneratedDate(username, repo);
+                            setLastGenerated(date ?? undefined);
+                            if (!hasUsedFreeGeneration) {
+                              localStorage?.setItem("has_used_free_generation", "true");
+                              setHasUsedFreeGeneration(true);
+                            }
                           }
-                          return; // Exit the processing loop since we got the complete data
+                        } catch (extractError) {
+                          console.error("Failed to extract diagram from malformed JSON:", extractError);
                         }
-                      } catch (extractError) {
-                        console.error("Failed to extract diagram from malformed JSON:", extractError);
                       }
                     }
                   }
@@ -319,27 +267,17 @@ export function useDiagram(username: string, repo: string) {
               const lines = buffer.split("\n");
               for (const line of lines) {
                 if (line.startsWith("data: ")) {
-                  const jsonStr = line.slice(6).trim();
-                  if (!jsonStr) continue;
-                  
                   try {
+                    const jsonStr = line.slice(6);
+                    if (!jsonStr.trim()) continue;
+                    
                     const data = JSON.parse(jsonStr) as StreamResponse;
                     
                     if (data.status === "complete") {
-                      console.log(`[Stream Debug] Final buffer complete status`);
-                      console.log(`[Stream Debug] Final buffer data.diagram length:`, data.diagram?.length ?? 0);
-                      console.log(`[Stream Debug] Final buffer accumulated diagram length:`, diagram.length);
-                      
-                      // Use accumulated data if server data is empty
-                      const finalDiagram = data.diagram ?? diagram;
-                      const finalExplanation = data.explanation ?? explanation;
-                      
                       setState({
                         status: "complete",
-                        explanation: finalExplanation,
-                        diagram: finalDiagram,
-                        modelUsed: data.model_used,
-                        serviceUsed: data.service_used,
+                        explanation: data.explanation,
+                        diagram: data.diagram,
                       });
                       const date = await getLastGeneratedDate(username, repo);
                       setLastGenerated(date ?? undefined);
@@ -350,42 +288,6 @@ export function useDiagram(username: string, repo: string) {
                     }
                   } catch (parseError) {
                     console.error("Error parsing final buffer:", parseError);
-                    // Try regex extraction for final buffer too
-                    if (jsonStr.includes('"status":"complete"') && jsonStr.includes('"diagram"')) {
-                      try {
-                        const diagramRegex = /"diagram":\s*"((?:[^"\\]|\\.)*)"/;
-                        const diagramMatch = diagramRegex.exec(jsonStr);
-                        if (diagramMatch?.[1]) {
-                          const extractedDiagram = diagramMatch[1]
-                            .replace(/\\n/g, '\n')
-                            .replace(/\\"/g, '"')
-                            .replace(/\\\\/g, '\\');
-                          
-                          // Try to extract model info
-                          const modelRegex = /"model_used":\s*"([^"]*)"/;
-                          const serviceRegex = /"service_used":\s*"([^"]*)"/;
-                          const modelMatch = modelRegex.exec(jsonStr);
-                          const serviceMatch = serviceRegex.exec(jsonStr);
-                          
-                          setState({
-                            status: "complete",
-                            diagram: extractedDiagram,
-                            explanation: "Diagram generated successfully",
-                            modelUsed: modelMatch?.[1],
-                            serviceUsed: serviceMatch?.[1],
-                          });
-                          
-                          const date = await getLastGeneratedDate(username, repo);
-                          setLastGenerated(date ?? undefined);
-                          if (!hasUsedFreeGeneration) {
-                            localStorage?.setItem("has_used_free_generation", "true");
-                            setHasUsedFreeGeneration(true);
-                          }
-                        }
-                      } catch (extractError) {
-                        console.error("Failed to extract from final buffer:", extractError);
-                      }
-                    }
                   }
                 }
               }
@@ -412,25 +314,16 @@ export function useDiagram(username: string, repo: string) {
 
   useEffect(() => {
     if (state.status === "complete" && state.diagram) {
-      console.log(`[useDiagram] Caching completed diagram (${state.diagram.length} chars)`);
-      
       // Cache the completed diagram with the usedOwnKey flag
       const hasApiKey = !!localStorage.getItem("api_key");
-      
-      cacheDiagramAndExplanation(
+      void cacheDiagramAndExplanation(
         username,
         repo,
         state.diagram,
         state.explanation ?? "No explanation provided",
         hasApiKey,
-      ).then(() => {
-        console.log(`[useDiagram] Cache operation completed successfully`);
-      }).catch((error) => {
-        console.error(`[useDiagram] Cache operation failed:`, error);
-      });
-      
+      );
       setDiagram(state.diagram);
-      setLoading(false); // Set loading to false when diagram generation is complete
       void getLastGeneratedDate(username, repo).then((date) =>
         setLastGenerated(date ?? undefined),
       );
@@ -542,8 +435,6 @@ export function useDiagram(username: string, repo: string) {
   };
 
   const handleExportImage = () => {
-    if (typeof document === 'undefined') return;
-    
     const svgElement = document.querySelector(".mermaid svg");
     if (!(svgElement instanceof SVGSVGElement)) return;
 

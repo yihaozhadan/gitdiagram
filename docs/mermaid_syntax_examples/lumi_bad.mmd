@@ -1,0 +1,85 @@
+flowchart TD
+%% Style definitions
+classDef frontend fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#fff
+classDef backend fill:#dd1c37,stroke:#4f46e5,stroke-width:2px,color:#fff
+classDef database fill:#F39C12,stroke:#4f46e5,stroke-width:2px,color:#fff
+classDef collaboration fill:#4ECDC4,stroke:#4f46e5,stroke-width:2px,color:#fff
+classDef api fill:#327457,stroke:#4f46e5,stroke-width:2px,color:#fff
+%% Frontend Layer
+subgraph "Frontend (Web/Desktop)" {
+%% Web/Desktop UI
+WebUI["Web/Desktop UI (Vue/Electron)"]:::frontend
+click WebUI "https://github.com/nupthale/lumi/tree/main/apps/web/src/Editor"
+ElectronApp["Electron Desktop (Native)"]:::frontend
+click ElectronApp "https://github.com/nupthale/lumi/blob/main/apps/client/main.js"
+%% Editor Components
+EditEngine["ProseMirror Editor"]:::editor
+click EditEngine "https://github.com/nupthale/lumi/tree/main/apps/web/src/Editor"
+CollabPlugin["Yjs Collaboration"]:::collaboration
+click CollabPlugin "https://github.com/nupthale/lumi/tree/main/packages/editor/src/plugins/collab"
+%% Content Components
+BlocksComp["Blocks Store (Yjs)"]:::collaboration
+click BlocksComp "https://github.com/nupthale/lumi/blob/main/packages/collection/src/store/index.ts"
+PluginsComp["Plugin Hub (Tables, Code, etc.)"]:::editor
+click PluginsComp "https://github.com/nupthale/lumi/tree/main/packages/editor/src/plugins/core"
+}
+%% Sync Backend Layer
+subgraph "Sync Backend" {
+%% Yjs Collaboration Services
+YjsServer["Yjs Server (WebSocket)"]:::backend
+click YjsServer "https://github.com/nupthale/lumi/blob/main/apps/server-yjs/index.js"
+YjsWorker["Yjs Operational OT Worker"]:::backend
+click YjsWorker "https://github.com/nupthale/lumi/blob/main/apps/editor/server/worker.js"
+%% Database Sync Services
+PouchDBService["PouchDB Local"]:::database
+click PouchDBService "https://github.com/nupthale/lumi/blob/main/apps/server-pouchdb/pouchdb/index.js"
+CouchDBServer["CouchDB (Central)"]:::database
+click CouchDBServer "https://github.com/nupthale/lumi/tree/main/db/couchdb"
+}
+%% API Layer
+subgraph "API Layer" {
+%% Auth Services
+AuthEnd["/auth (JWT)"]:::api
+click AuthEnd "https://github.com/nupthale/lumi/blob/main/apps/server-api/routes/auth.js"
+%% Storage Services
+StorageEnd["/storage API"]:::storage
+click StorageEnd "https://github.com/nupthale/lumi/blob/main/apps/server-api/routes/storage.js"
+%% Yjs Sync Endpoints
+YjsAPI["Yjs Sync API"]:::api
+EndpointStorage["PouchDB Endpoint"]:::api
+click EndpointStorage "https://github.com/nupthale/lumi/blob/main/apps/server-pouchdb/routes/share.js"
+}
+%% Data Flow
+%% Editor → Collaboration Layer
+EditEngine --> CollabPlugin
+CollabPlugin --> YjsServer
+YjsServer --> YjsWorker
+%% Data Storage Flow
+YjsWorker --> PouchDBService
+PouchDBService --> CouchDBServer
+CouchDBServer -->> PouchDBService "Bidirectional Sync"
+YjsServer --> PouchDBService "Live Yjs Docs"
+%% API Data Flow
+WebUI --> RESTAPI["REST API (Express)"]:::api
+RESTAPI --> AuthEnd
+RESTAPI --> StorageEnd
+RESTAPI -->> CouchDBServer "User Spaces"
+%% Conflict Resolution
+PouchDBService --> YjsServer "Conflict: Editor Update"
+YjsServer --> PouchDBService "Conflict: PouchDB Sync"
+%% Shared Components
+subgraph "Design System" {
+DesignTokens["Ant Design Tokens"]:::frontend
+click DesignTokens "https://github.com/nupthale/lumi/tree/main/shared/design/ant"
+}
+%% Electron_Specific Paths
+ElectronApp --> FileService["Desktop File Access"]:::backend
+click FileService "https://github.com/nupthale/lumi/blob/main/apps/client/services/fileUpload.js"
+%% Final Click Events (Bonus)
+subgraph "Component Paths" {
+YjsWire["WebSocket Gateway"]:::backend
+click YjsWire "https://github.com/nupthale/lumi/blob/main/apps/server-pouchdb.io:*"
+CollabWorker["OT Worker"]:::backend
+click CollabWorker "https://github.com/nupthale/lumi/blob/main/packages/editor/src/plugin/collab/core.ts"
+}
+%% Diagram ends

@@ -73,7 +73,18 @@ export default function Repo() {
             )}
             {/* Always show diagram if available */}
             {diagram && (
-              <div className="flex w-full justify-center px-4">
+              <div className="flex w-full flex-col items-center gap-4 px-4">
+                {/* Model info badge */}
+                {state.modelUsed && state.serviceUsed && (
+                  <div className="rounded-md border-2 border-purple-500 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20 px-4 py-2 text-sm">
+                    <span className="font-semibold text-purple-700 dark:text-purple-300">
+                      Generated with:
+                    </span>{" "}
+                    <span className="font-mono text-purple-600 dark:text-purple-400">
+                      {state.serviceUsed}/{state.modelUsed}
+                    </span>
+                  </div>
+                )}
                 <MermaidChart chart={diagram} zoomingEnabled={zoomingEnabled} />
               </div>
             )}

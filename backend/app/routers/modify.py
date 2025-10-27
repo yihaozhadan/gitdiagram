@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from anthropic._exceptions import RateLimitError
 from app.prompts import SYSTEM_MODIFY_PROMPT
 from pydantic import BaseModel
+import os
 
 # Import all services
 from app.services.claude_service import ClaudeService
@@ -24,13 +25,13 @@ SERVICES = {
     "openrouter": OpenRouterService()
 }
 
-# Default models for each service
+# Default models for each service (read from environment variables with fallbacks)
 DEFAULT_MODELS = {
-    "claude": "claude-3-opus",
-    "ollama": "mistral",
-    "groq": "mixtral-8x7b-32768",
-    "openai": "gpt-4",
-    "openrouter": "x-ai/grok-4-fast:free"
+    "claude": os.getenv("DEFAULT_MODEL_CLAUDE", "claude-3-opus"),
+    "ollama": os.getenv("DEFAULT_MODEL_OLLAMA", "mistral"),
+    "groq": os.getenv("DEFAULT_MODEL_GROQ", "mixtral-8x7b-32768"),
+    "openai": os.getenv("DEFAULT_MODEL_OPENAI", "gpt-4"),
+    "openrouter": os.getenv("DEFAULT_MODEL_OPENROUTER", "minimax/minimax-m2:free")
 }
 
 def get_service(service_name: str):
@@ -51,6 +52,7 @@ class ModifyRequest(BaseModel):
     explanation: str
     service: str = "openrouter"  # Default to OpenRouter
     model: str | None = None  # If None, will use service's default model
+    api_key: str | None = None  # API key for the service
 
 
 @router.post("")
@@ -86,8 +88,11 @@ async def modify(request: Request, body: ModifyRequest):
         # Get the requested service
         service = get_service(body.service)
 
-        # Use specified model or default for the service
-        model = body.model or DEFAULT_MODELS[body.service]
+        # Use default model if API key is empty, otherwise use specified model or service default
+        if not body.api_key or body.api_key.strip() == "":
+            model = DEFAULT_MODELS[body.service]
+        else:
+            model = body.model if body.model and body.model.strip() else DEFAULT_MODELS[body.service]
 
         modified_mermaid_code = service.call_api(
             system_prompt=SYSTEM_MODIFY_PROMPT,
@@ -103,7 +108,11 @@ async def modify(request: Request, body: ModifyRequest):
         if "BAD_INSTRUCTIONS" in modified_mermaid_code:
             return {"error": "Invalid or unclear instructions provided"}
 
-        return {"diagram": modified_mermaid_code}
+        return {
+            "diagram": modified_mermaid_code,
+            "model_used": model,
+            "service_used": body.service
+        }
     except RateLimitError as e:
         raise HTTPException(
             status_code=429,

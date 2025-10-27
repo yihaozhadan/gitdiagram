@@ -10,6 +10,9 @@
 
 # Note: Originally prompt1 and prompt2 were combined - but it turns out mapping relevant dirs and files in one prompt along with generating detailed and accurate diagrams was difficult for Claude 3.5 Sonnet. It lost detail in the explanation and dedicated more "effort" to the mappings, so this is now its own prompt.
 
+# Import examples for use in prompts
+from app.mermaid_examples import get_examples_as_prompt_text
+
 SYSTEM_FIRST_PROMPT = """
 You are tasked with explaining to a principal software engineer how to draw the best and most accurate system design diagram / architecture of a given project. This explanation should be tailored to the specific project's purpose and structure. To accomplish this, you will be provided with two key pieces of information:
 
@@ -179,24 +182,149 @@ flowchart TD
     %% and a lot more...
 
     %% Styles
-    classDef frontend %%...
+    classDef frontend fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#fff
     %% and a lot more...
 ```
 
-EXTREMELY Important notes on syntax!!! (PAY ATTENTION TO THIS):
-- Make sure to add colour to the diagram!!! This is extremely critical.
-- In Mermaid.js syntax, we cannot include special characters for nodes without being inside quotes! For example: `EX[/api/process (Backend)]:::api` and `API -->|calls Process()| Backend` are two examples of syntax errors. They should be `EX["/api/process (Backend)"]:::api` and `API -->|"calls Process()"| Backend` respectively. Notice the quotes. This is extremely important. Make sure to include quotes for any string that contains special characters.
-- In Mermaid.js syntax, you cannot apply a class style directly within a subgraph declaration. For example: `subgraph "Frontend Layer":::frontend` is a syntax error. However, you can apply them to nodes within the subgraph. For example: `Example["Example Node"]:::frontend` is valid, and `class Example1,Example2 frontend` is valid.
-- In Mermaid.js syntax, there cannot be spaces in the relationship label names. For example: `A -->| "example relationship" | B` is a syntax error. It should be `A -->|"example relationship"| B` 
-- In Mermaid.js syntax, you cannot give subgraphs an alias like nodes. For example: `subgraph A "Layer A"` is a syntax error. It should be `subgraph "Layer A"` 
-- In Mermaid.js syntax, when applying a class style, try to distinguish font color from background color. For example, if the background color is dark, try to use a light font color. If the background color is light, try to use a dark font color.
-- In Mermaid.js syntax, avoid syntax like `subgraph "Layer A":::frontend`, the correct syntax should be `subgraph "Layer A"`. When the line has "subgraph" keyword, do not include ":::".
+CRITICAL MERMAID.JS SYNTAX RULES (Based on flow_parser.jison lexical grammar):
+
+**RULE 1: Node ID Syntax (FROM JISON: NODE_STRING token)**
+- Valid chars in Node IDs: A-Z, a-z, 0-9, and ONLY these special chars: ! " # $ % & ' * + . ` ? \ _ /
+- Dash (-) is ONLY valid if NOT followed by > or - or .
+- Equals (=) is ONLY valid if NOT followed by another =
+- ❌ WRONG: `API-Gateway` (dash followed by uppercase creates ambiguity), `user.service` (dot can break parsing)
+- ✅ CORRECT: `APIGateway`, `UserService`, `API_Gateway`, `User_Service`
+- **BEST PRACTICE**: Use ONLY alphanumeric + underscore to avoid all ambiguity
+
+**RULE 2: Node Label Quoting (CRITICAL - MOST COMMON ERROR)**
+- If label contains ANY of these chars, it MUST be in double quotes: / ( ) [ ] { } | : ; , . ! ? @ # $ % ^ & * + = < > -
+- Even simple text should be quoted for safety
+- ❌ WRONG: `A[/api/endpoint]`, `B[Process (Backend)]`, `C[User:Service]`, `D[API-Gateway]`
+- ✅ CORRECT: `A["/api/endpoint"]`, `B["Process (Backend)"]`, `C["User:Service"]`, `D["API Gateway"]`
+- **BEST PRACTICE**: Always quote all node labels to prevent parsing errors
+
+**RULE 3: Arrow Label Syntax (CRITICAL - CAUSES MOST SYNTAX ERRORS)**
+- Format: `-->|"label"|` (NO spaces around pipes, ALWAYS use quotes)
+- The pipes | are delimiters that enter/exit text mode in the lexer
+- ❌ WRONG: `A -->| "label" | B` (spaces around pipes), `A -->|label| B` (missing quotes), `A --> |"label"| B` (space before pipe)
+- ✅ CORRECT: `A -->|"label"| B`, `A -->|"calls API()"| B`, `A ==>|"HTTP request"| B`
+- **CRITICAL**: No spaces between arrow and first pipe, no spaces between pipes and arrow end
+
+**RULE 4: Subgraph Syntax (FROM JISON: subgraph statement)**
+- Format: `subgraph "Name"` or `subgraph Name` (if Name has no spaces/special chars)
+- NO aliases allowed (e.g., `subgraph ID "Name"` is INVALID in basic flowcharts)
+- NO class styling on subgraph line (e.g., `subgraph "Name":::style` is INVALID)
+- ❌ WRONG: `subgraph api "API Layer"`, `subgraph "Backend":::backend`
+- ✅ CORRECT: `subgraph "API Layer"`, `subgraph Backend`
+- Close with: `end` (lowercase, no quotes)
+
+**RULE 5: Class Styling (FROM JISON: STYLE_SEPARATOR token)**
+- Apply to nodes using `:::` separator: `NodeID["Label"]:::className`
+- Define classes: `classDef className fill:#color,stroke:#color,stroke-width:2px,color:#fff`
+- ❌ WRONG: `subgraph "Layer":::style` (can't style subgraphs), `NodeID:::style["Label"]` (wrong order)
+- ✅ CORRECT: `NodeID["Label"]:::frontend`, then `classDef frontend fill:#6366f1,stroke:#4f46e5,color:#fff`
+
+**RULE 6: Arrow Types (FROM JISON: LINK tokens)**
+- Solid: `-->`, `<--`, `<-->` (2 dashes)
+- Thick: `==>`, `<==`, `<==>` (2+ equals)
+- Dotted: `-.->`, `<-.`, `<.->` (dash-dot-dash with arrow)
+- With label: `-->|"text"|`, `==>|"text"|`, `-.->|"text"|`
+- ❌ WRONG: `--->` (3 dashes), `<---` (3 dashes), `--` (no arrow), `->` (1 dash)
+- ✅ CORRECT: `-->`, `<-->`, `==>`, `-.->` (exactly as shown)
+
+**RULE 7: Node Shapes (FROM JISON: vertex rules)**
+- Rectangle: `A["text"]` or `A[text]` (only if text has no special chars)
+- Round edges: `A("text")` 
+- Stadium: `A(["text"])` (round rectangle)
+- Subroutine: `A[["text"]]` (rectangle with side bars)
+- Cylinder: `A[("text")]` (database shape)
+- Circle: `A(("text"))` (double parentheses)
+- Diamond: `A{"text"}` (decision shape)
+- Hexagon: `A{{"text"}}` (double braces)
+- Trapezoid: `A[/"text"\]` (forward slash + backslash)
+- Inverted Trapezoid: `A[\"text"/]` (backslash + forward slash)
+- Double Circle: `A((("text")))` (triple parentheses)
+- **ALWAYS quote text** in shapes if it contains any special characters
+
+**RULE 8: Click Events (FROM JISON: clickStatement)**
+- Format: `click NodeID "path/to/file"` (NodeID must match a defined node)
+- Path will be processed later to add GitHub URL
+- ❌ WRONG: `click API-Gateway "src/api.js"` (dash in ID), `click API 'src/api.js'` (single quotes)
+- ✅ CORRECT: `click APIGateway "src/api.js"`, `click DB "database/"`
+
+**RULE 9: String Quoting (FROM JISON: string lexer state)**
+- Use double quotes `"text"` (NOT single quotes `'text'`)
+- Single quotes are not recognized by the string lexer state
+- ❌ WRONG: `A['text']`, `A -->|'label'| B`
+- ✅ CORRECT: `A["text"]`, `A -->|"label"| B`
+
+**RULE 10: Comments (FROM JISON: comment syntax)**
+- Comments start with `%%` (double percent)
+- ✅ CORRECT: `%% This is a comment`, `%% Node definitions below`
+
+**RULE 11: Diagram Structure Template**
+```
+flowchart TD
+    %% Comments start with %%
+    
+    %% Define all nodes first (optional but recommended)
+    NodeID1["Label 1"]:::style1
+    NodeID2["Label 2"]:::style2
+    
+    %% Subgraphs (if needed)
+    subgraph "Group Name"
+        Node3["Item 3"]
+        Node4["Item 4"]
+    end
+    
+    %% All connections
+    NodeID1 -->|"relationship"| NodeID2
+    NodeID2 ==>|"another relationship"| Node3
+    
+    %% Click events (must reference defined nodes)
+    click NodeID1 "path/to/file"
+    click Node3 "path/to/dir/"
+    
+    %% Style definitions (at the end)
+    classDef style1 fill:#6366f1,stroke:#4f46e5,stroke-width:2px,color:#fff
+    classDef style2 fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
+```
+
+**VALIDATION CHECKLIST (Verify EVERY line before output):**
+□ Node IDs: ONLY alphanumeric + underscore (avoid all special chars)
+□ Node labels: ALWAYS in double quotes (even simple text)
+□ Arrow labels: Format `-->|"text"|` with NO spaces around pipes
+□ Arrows: Use `-->`, `==>`, `-.->` (exactly 2 dashes/equals, not 3+)
+□ Subgraphs: Just `subgraph "Name"` (no ID prefix, no ::: suffix)
+□ Class styling: Only on nodes with `:::`, never on subgraphs
+□ Quotes: ONLY double quotes `"`, never single quotes `'`
+□ Diagram starts with: `flowchart TD` or `graph TD`
+□ Click events: Node IDs must match defined nodes exactly
+□ No markdown fences: No ``` in output
+□ Comments: Use `%%` not `//` or `#`
+
+**COMMON MISTAKES TO AVOID:**
+1. ❌ `A-B` as node ID → ✅ `A_B`
+2. ❌ `A -->| "text" | B` → ✅ `A -->|"text"| B`
+3. ❌ `A[Process (1)]` → ✅ `A["Process (1)"]`
+4. ❌ `subgraph api "API"` → ✅ `subgraph "API"`
+5. ❌ `A --->  B` → ✅ `A --> B`
+6. ❌ `click A-B "path"` → ✅ `click A_B "path"`
 """
+
+# Build the complete prompt with examples dynamically
+def get_system_third_prompt_with_examples() -> str:
+    """
+    Returns SYSTEM_THIRD_PROMPT with real-world examples appended.
+    This allows examples to be updated without modifying the core prompt.
+    """
+    return SYSTEM_THIRD_PROMPT + "\n\n" + get_examples_as_prompt_text()
 # ^^^ note: ive generated a few diagrams now and claude still writes incorrect mermaid code sometimes. in the future, refer to those generated diagrams and add important instructions to the prompt above to avoid those mistakes. examples are best.
 
 # e. A legend is included
 # ^ removed since it was making the diagrams very long
 
+# Strictly follow the lexicon and syntax of https://github.com/mermaid-js/mermaid/blob/develop/packages/mermaid/src/diagrams/flowchart/parser/flow.jison
 
 ADDITIONAL_SYSTEM_INSTRUCTIONS_PROMPT = """
 IMPORTANT: the user will provide custom additional instructions enclosed in <instructions> tags. Please take these into account and give priority to them. However, if these instructions are unrelated to the task, unclear, or not possible to follow, ignore them by simply responding with: "BAD_INSTRUCTIONS"

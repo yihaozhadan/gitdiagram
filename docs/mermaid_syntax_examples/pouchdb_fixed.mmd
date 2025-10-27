@@ -1,0 +1,108 @@
+flowchart TD
+%% Colors
+classDef red fill:#c41e3a,stroke:#333
+classDef blue fill:#264653,stroke:#333
+classDef green fill:#265acd,stroke:#333
+classDef black fill:#1a1a1a,stroke:#333
+
+%% Client Layer
+ClientApp["Client App"]:::black
+PouchDB["PouchDB Core"]:::red
+
+subgraph "Core Source"
+    AdaptersDir["Adapters Dir"]:::red
+    PluginsDir["Plugins Dir"]:::red
+    ReplicatorDir["Replicator Dir"]:::red
+end
+
+%% Adapters & Storage
+IndexedDB["IndexedDB"]:::red
+LevelDB["LevelDB"]:::red
+
+subgraph "Adapters Layer"
+    AdapterFiles["Adapter Files"]:::black
+    TestActiveTasks["test.active_tasks.js"]:::black
+end
+
+%% Replication System
+CouchDB["CouchDB Server"]:::green
+ReplicatorModule["Replicator Module"]:::red
+
+subgraph "Replication Layer"
+    ReplicationTests["test.replication.js"]:::black
+    SyncTests["test.sync.js"]:::black
+end
+
+%% Build & Testing
+BuildScripts["bin/"]:::blue
+CompileOutput["dist/browser"]:::blue
+TestSuites["tests/"]:::blue
+CICD["ci.yml"]:::blue
+
+subgraph "Build & CI Pipeline"
+    PublishScript["publish-packages.sh"]:::blue
+    DockerDocs["docs/Dockerfile"]:::blue
+end
+
+%% Documentation & UI
+JekyllSite["Jekyll Site"]:::blue
+DocsBlog["docs/_posts/"]:::black
+
+subgraph "Documentation Layer"
+    DockerBuild["docs/Dockerfile"]:::blue
+    ConfigFile["_config.yml"]:::blue
+end
+
+%% Specialized Components
+WorkerScript["test.browser.worker.js"]:::black
+BrowserTests["test.browser.worker.js"]:::black
+SyncGateway["Sync Gateway"]:::green
+
+%% Security & Extensions
+CryptoGuide["docs/_guides/encryption.md"]:::blue
+PluginAPI["docs/_guides/plugins.md"]:::blue
+
+%% Cross-Platform Dependencies
+CrossDeps["Cross-Platform Dependencies"]:::black
+LegacyAdapters["Legacy Adapters"]:::red
+
+%% Additional nodes referenced in connections
+NPMPackages["NPM packages"]:::blue
+TestReplication["Test Replication"]:::black
+TestSync["Test Sync"]:::black
+Jenkins["Jenkins"]:::blue
+GitHubPages["GitHub Pages"]:::blue
+SecuritySSL["Security: SSL"]:::green
+SecurityCrypto["Security: Crypto"]:::green
+PluginExtensions["Plugin Extensions"]:::black
+PluginDevelopers["Plugin Developers"]:::black
+
+%% Connections
+ClientApp --> PouchDB
+PouchDB --> AdaptersDir
+AdaptersDir --> IndexedDB
+PouchDB --> AdaptersDir
+AdaptersDir --> LevelDB
+PouchDB --> ReplicatorDir
+ReplicatorDir --> ReplicatorModule
+ReplicatorModule --> CouchDB
+PouchDB --> PluginsDir
+ClientApp --> ReplicatorDir
+BuildScripts --> CompileOutput
+CompileOutput --> NPMPackages
+TestSuites --> TestActiveTasks
+TestSuites --> TestReplication
+TestSuites --> TestSync
+CICD --> CompileOutput
+CICD --> Jenkins
+CICD --> DockerDocs
+JekyllSite --> GitHubPages
+SyncGateway --> ReplicatorModule
+WorkerScript --> BrowserTests
+PluginAPI --> PluginsDir
+CrossDeps --> LegacyAdapters
+CrossDeps --> BrowserTests
+CryptoGuide --> SecuritySSL
+CryptoGuide --> SecurityCrypto
+PluginAPI --> PluginExtensions
+PluginAPI --> PluginDevelopers
