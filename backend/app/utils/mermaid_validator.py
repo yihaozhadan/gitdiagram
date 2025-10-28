@@ -98,6 +98,33 @@ def validate_and_fix_mermaid(diagram: str) -> Tuple[str, List[str]]:
             fixes_applied.append("Added missing diagram type declaration")
     
     # 7. Fix common wrong arrow syntax (based on LINK tokens in jison)
+    
+    # 7a. Fix underscore arrows (CRITICAL - NOT valid Mermaid syntax)
+    # Fix thick arrows first (to avoid partial replacements)
+    if '__>>' in fixed:
+        fixed = fixed.replace('__>>', '==>')
+        fixes_applied.append("Fixed underscore thick arrows (__>> to ==>)")
+    if '<<__' in fixed:
+        fixed = fixed.replace('<<__', '<==')
+        fixes_applied.append("Fixed reverse underscore thick arrows (<<__ to <==)")
+    
+    # Then fix regular arrows
+    if '__>' in fixed:
+        fixed = fixed.replace('__>', '-->')
+        fixes_applied.append("Fixed underscore solid arrows (__> to -->)")
+    if '<__' in fixed:
+        fixed = fixed.replace('<__', '<--')
+        fixes_applied.append("Fixed reverse underscore solid arrows (<__ to <--)")
+    
+    # Fix dotted arrows
+    if '_._>' in fixed:
+        fixed = fixed.replace('_._>', '.->')
+        fixes_applied.append("Fixed underscore dotted arrows (_._> to .->)")
+    if '<_._' in fixed:
+        fixed = fixed.replace('<_._', '<-.-')
+        fixes_applied.append("Fixed reverse underscore dotted arrows (<_._ to <-.-)")
+    
+    # 7b. Fix triple-dash arrows
     if '--->' in fixed:
         fixed = fixed.replace('--->', '-->')
         fixes_applied.append("Fixed arrow syntax (---> to -->)")
@@ -110,7 +137,8 @@ def validate_and_fix_mermaid(diagram: str) -> Tuple[str, List[str]]:
     if '<===' in fixed:
         fixed = fixed.replace('<===', '<==')
         fixes_applied.append("Fixed arrow syntax (<=== to <==)")
-    # Fix single dash arrows (not valid)
+    
+    # 7c. Fix single dash arrows (not valid)
     single_arrow_pattern = r'(?<!-)(?<!\.)\->(?!-)'
     if re.search(single_arrow_pattern, fixed):
         fixed = re.sub(single_arrow_pattern, '-->', fixed)
@@ -234,7 +262,14 @@ def get_validation_report(diagram: str) -> dict:
     if re.search(r"(-->|<--|<-->|==>|<==|<==>|\.\->)\|'[^']+'\|", diagram):
         issues.append("Arrow labels use single quotes (should be double quotes)")
     
-    # Check 7: Wrong arrow syntax (3+ dashes/equals)
+    # Check 7: Wrong arrow syntax
+    # Check 7a: Underscore arrows (CRITICAL - not valid)
+    if '__>' in diagram or '<__' in diagram:
+        issues.append("Arrows use underscore syntax (__>, <__) which is NOT valid Mermaid syntax")
+    if '_._>' in diagram or '<_._' in diagram:
+        issues.append("Dotted arrows use underscore syntax (_._>, <_._) which is NOT valid Mermaid syntax")
+    
+    # Check 7b: 3+ dashes/equals
     if '--->' in diagram or '<---' in diagram:
         issues.append("Arrows use 3+ dashes (should be exactly 2: -->)")
     if '===>' in diagram or '<===' in diagram:

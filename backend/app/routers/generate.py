@@ -299,7 +299,29 @@ async def generate_stream(request: Request, body: ApiRequest):
                     yield f"data: {json.dumps({'error': 'Generated diagram is empty. Please try again with different instructions.'})}\n\n"
                     return
                 
-                full_diagram = full_diagram.replace("```mermaid", "").replace("```", "")
+                # Extract Mermaid code from markdown code fence if present
+                # Pattern: ```mermaid ... ``` or ```...```
+                mermaid_pattern = r'```(?:mermaid)?\s*\n(.*?)```'
+                mermaid_match = re.search(mermaid_pattern, full_diagram, re.DOTALL)
+                
+                if mermaid_match:
+                    # Extract the content between code fences
+                    full_diagram = mermaid_match.group(1).strip()
+                    if DEBUG:
+                        print(f"[DEBUG] Extracted Mermaid code from markdown fence ({len(full_diagram)} chars)")
+                else:
+                    # No code fence found, try to remove fence markers if they exist
+                    full_diagram = full_diagram.replace("```mermaid", "").replace("```", "")
+                    if DEBUG:
+                        print(f"[DEBUG] No markdown fence found, cleaned fence markers")
+                
+                # Additional check: if diagram is empty after extraction
+                if not full_diagram.strip():
+                    if DEBUG:
+                        print("[DEBUG] Diagram is empty after extraction")
+                    yield f"data: {json.dumps({'error': 'AI response did not contain valid Mermaid diagram code. Please try again.'})}\n\n"
+                    return
+                
                 full_diagram = re.sub(r"^\s*graph\s+[A-Za-z]+\s*$", "graph TD", full_diagram, flags=re.MULTILINE)
 
                 if "BAD_INSTRUCTIONS" in full_diagram:

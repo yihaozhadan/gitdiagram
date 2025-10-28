@@ -229,8 +229,9 @@ CRITICAL MERMAID.JS SYNTAX RULES (Based on flow_parser.jison lexical grammar):
 - Thick: `==>`, `<==`, `<==>` (2+ equals)
 - Dotted: `-.->`, `<-.`, `<.->` (dash-dot-dash with arrow)
 - With label: `-->|"text"|`, `==>|"text"|`, `-.->|"text"|`
-- ❌ WRONG: `--->` (3 dashes), `<---` (3 dashes), `--` (no arrow), `->` (1 dash)
+- ❌ WRONG: `--->` (3 dashes), `<---` (3 dashes), `--` (no arrow), `->` (1 dash), `__>` (underscore arrows), `_._>` (underscore dot arrows)
 - ✅ CORRECT: `-->`, `<-->`, `==>`, `-.->` (exactly as shown)
+- **CRITICAL**: NEVER use underscores in arrow syntax. Underscore arrows like `__>`, `_._>`, `__>>` are NOT valid Mermaid syntax
 
 **RULE 7: Node Shapes (FROM JISON: vertex rules)**
 - Rectangle: `A["text"]` or `A[text]` (only if text has no special chars)
@@ -295,6 +296,7 @@ flowchart TD
 □ Node labels: ALWAYS in double quotes (even simple text)
 □ Arrow labels: Format `-->|"text"|` with NO spaces around pipes
 □ Arrows: Use `-->`, `==>`, `-.->` (exactly 2 dashes/equals, not 3+)
+□ NO underscore arrows: NEVER use `__>`, `_._>`, or any underscore-based arrow syntax
 □ Subgraphs: Just `subgraph "Name"` (no ID prefix, no ::: suffix)
 □ Class styling: Only on nodes with `:::`, never on subgraphs
 □ Quotes: ONLY double quotes `"`, never single quotes `'`
@@ -309,7 +311,8 @@ flowchart TD
 3. ❌ `A[Process (1)]` → ✅ `A["Process (1)"]`
 4. ❌ `subgraph api "API"` → ✅ `subgraph "API"`
 5. ❌ `A --->  B` → ✅ `A --> B`
-6. ❌ `click A-B "path"` → ✅ `click A_B "path"`
+6. ❌ `A __> B` or `A _._> B` → ✅ `A --> B` or `A -.-> B`
+7. ❌ `click A-B "path"` → ✅ `click A_B "path"`
 """
 
 # Build the complete prompt with examples dynamically

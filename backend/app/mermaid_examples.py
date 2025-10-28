@@ -106,10 +106,14 @@ end""",
     ),
 
     (
-        "Relationship with arrow labels",
-        """A __>| "calls" | B""",
-        """A -->| "calls" | B""",
-        "Arrow labels must be enclosed in pipe delimiters: -->|\"text\"|. The format 'underscore arrow or underscore dot arrow' are not valid syntax."
+        "Invalid underscore arrow syntax",
+        """A __> B
+A _._> C
+A __>|"calls"| D""",
+        """A --> B
+A -.-> C
+A -->|"calls"| D""",
+        "CRITICAL: Underscore arrows (__>, _._>, etc.) are NOT valid Mermaid syntax. Always use double-dash arrows (-->) for solid lines or dash-dot-dash (-.->)  for dotted lines. Never use underscores in arrow syntax."
     ),
     
     # Complex real-world examples
