@@ -104,6 +104,17 @@ end""",
 end""",
         "Cannot apply class styling directly to subgraphs. Style the nodes inside instead."
     ),
+
+    (
+        "Invalid underscore arrow syntax",
+        """A __> B
+A _._> C
+A __>|"calls"| D""",
+        """A --> B
+A -.-> C
+A -->|"calls"| D""",
+        "CRITICAL: Underscore arrows (__>, _._>, etc.) are NOT valid Mermaid syntax. Always use double-dash arrows (-->) for solid lines or dash-dot-dash (-.->)  for dotted lines. Never use underscores in arrow syntax."
+    ),
     
     # Complex real-world examples
     (
