@@ -1,5 +1,5 @@
 # Stage 1: Dependencies and Build
-FROM node:20-slim AS builder
+FROM node:22-slim AS builder
 WORKDIR /app
 
 # Define build arguments
